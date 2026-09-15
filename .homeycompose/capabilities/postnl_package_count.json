@@ -1,0 +1,12 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Parcels underway",
+    "nl": "Pakketten onderweg"
+  },
+  "getable": true,
+  "setable": false,
+  "decimals": 0,
+  "insights": true,
+  "icon": "/assets/package.svg"
+}

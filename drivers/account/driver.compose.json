@@ -1,5 +1,8 @@
 {
-  "name": { "en": "PostNL account", "nl": "PostNL-account" },
+  "name": {
+    "en": "PostNL account",
+    "nl": "PostNL-account"
+  },
   "class": "sensor",
   "capabilities": [
     "postnl_mail_expected",
@@ -9,7 +12,16 @@
     "postnl_status",
     "postnl_last_update"
   ],
-  "platforms": ["local"],
-  "images": { "small": "/drivers/account/assets/images/small.png", "large": "/drivers/account/assets/images/large.png" },
-  "pair": [{ "id": "login", "template": "login" }]
+  "platforms": [
+    "local"
+  ],
+  "images": {
+    "small": "/drivers/account/assets/images/small.png",
+    "large": "/drivers/account/assets/images/large.png"
+  },
+  "pair": [
+    {
+      "id": "login"
+    }
+  ]
 }

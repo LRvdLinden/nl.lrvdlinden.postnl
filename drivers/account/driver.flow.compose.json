@@ -1,0 +1,152 @@
+{
+  "triggers": [
+    {
+      "id": "new_mail",
+      "title": {
+        "en": "New mail is expected",
+        "nl": "Er is nieuwe post onderweg"
+      },
+      "args": [],
+      "tokens": [
+        {
+          "name": "count",
+          "type": "number",
+          "title": {
+            "en": "Number of mail items",
+            "nl": "Aantal poststukken"
+          }
+        },
+        {
+          "name": "date",
+          "type": "string",
+          "title": {
+            "en": "Delivery date",
+            "nl": "Bezorgdatum"
+          }
+        }
+      ]
+    },
+    {
+      "id": "new_package",
+      "title": {
+        "en": "A new parcel was found",
+        "nl": "Er is een nieuw pakket gevonden"
+      },
+      "args": [],
+      "tokens": [
+        {
+          "name": "title",
+          "type": "string",
+          "title": {
+            "en": "Parcel",
+            "nl": "Pakket"
+          }
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "title": {
+            "en": "Status",
+            "nl": "Status"
+          }
+        },
+        {
+          "name": "delivery_window",
+          "type": "string",
+          "title": {
+            "en": "Delivery window",
+            "nl": "Bezorgvenster"
+          }
+        }
+      ]
+    },
+    {
+      "id": "package_status_changed",
+      "title": {
+        "en": "A parcel status changed",
+        "nl": "De status van een pakket is gewijzigd"
+      },
+      "args": [],
+      "tokens": [
+        {
+          "name": "title",
+          "type": "string",
+          "title": {
+            "en": "Parcel",
+            "nl": "Pakket"
+          }
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "title": {
+            "en": "Status",
+            "nl": "Status"
+          }
+        },
+        {
+          "name": "delivery_window",
+          "type": "string",
+          "title": {
+            "en": "Delivery window",
+            "nl": "Bezorgvenster"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sync_failed",
+      "title": {
+        "en": "PostNL synchronization failed",
+        "nl": "PostNL-synchronisatie is mislukt"
+      },
+      "args": [],
+      "tokens": [
+        {
+          "name": "error",
+          "type": "string",
+          "title": {
+            "en": "Error",
+            "nl": "Foutmelding"
+          }
+        }
+      ]
+    },
+    {
+      "id": "login_expired",
+      "title": {
+        "en": "The PostNL login expired",
+        "nl": "De PostNL-aanmelding is verlopen"
+      },
+      "args": []
+    }
+  ],
+  "conditions": [
+    {
+      "id": "mail_expected",
+      "title": {
+        "en": "Mail is expected",
+        "nl": "Er wordt post verwacht"
+      },
+      "args": []
+    },
+    {
+      "id": "packages_underway",
+      "title": {
+        "en": "Parcels are underway",
+        "nl": "Er zijn pakketten onderweg"
+      },
+      "args": []
+    }
+  ],
+  "actions": [
+    {
+      "id": "sync_now",
+      "title": {
+        "en": "Synchronize PostNL",
+        "nl": "Synchroniseer PostNL"
+      },
+      "args": []
+    }
+  ]
+}
