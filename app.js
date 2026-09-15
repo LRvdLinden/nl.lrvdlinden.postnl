@@ -16,7 +16,7 @@ class PostNLApp extends Homey.App {
     if (this.api.hasCredentials()) {
       this.homey.setTimeout(() => this.sync({ reason: 'startup' }).catch(this.error), 10 * 1000);
     }
-    this.log('PostNL 0.1.0 initialized');
+    this.log(`PostNL ${Homey.manifest.version} initialized`);
   }
 
   async onUninit() {

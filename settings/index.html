@@ -68,6 +68,13 @@
       const api = (method, path, body = {}) => new Promise((resolve, reject) => {
         Homey.api(method, path, body, (error, result) => error ? reject(error) : resolve(result));
       });
+      const getSetting = name => new Promise((resolve, reject) => {
+        Homey.get(name, (error, value) => error ? reject(error) : resolve(value));
+      });
+      const setSetting = (name, value) => new Promise((resolve, reject) => {
+        Homey.set(name, value, error => error ? reject(error) : resolve());
+      });
+      const alertError = error => Homey.alert(error?.message || String(error));
       const showStatus = result => {
         const connected = Boolean(result?.authenticated);
         loginPanel.classList.toggle('hidden', connected);
@@ -91,7 +98,7 @@
         }
       };
       Promise.all([
-        api('GET', '/auth/status'), Homey.get('api_version'), Homey.get('ios_version')
+        api('GET', '/auth/status'), getSetting('api_version'), getSetting('ios_version')
       ]).then(([authStatus,apiVersion,iosVersion]) => {
         showStatus(authStatus);
         if (!authStatus?.authenticated) return prepareLoginLink().then(() => [apiVersion, iosVersion]);
@@ -107,30 +114,32 @@
       startLogin.onclick = event => {
         if (!startLogin.href || startLogin.getAttribute('href') === '#') {
           event.preventDefault();
-          prepareLoginLink().catch(error => Homey.alert(error.message || String(error), 'error'));
+          prepareLoginLink().catch(alertError);
           return;
         }
         completePanel.classList.remove('hidden');
         setTimeout(() => callback.focus(), 100);
       };
       document.getElementById('completeLogin').onclick = async () => {
-        if (!callback.value.trim()) return Homey.alert('Plak eerst de callback-URL of autorisatiecode.', 'error');
-        Homey.showLoadingOverlay();
+        if (!callback.value.trim()) return Homey.alert('Plak eerst de callback-URL of autorisatiecode.');
+        if (Homey.showLoadingOverlay) Homey.showLoadingOverlay();
         try {
           const result = await api('POST', '/auth/complete', { callback: callback.value.trim() });
           completePanel.classList.add('hidden');
           showStatus(result);
-          Homey.alert('PostNL is gekoppeld. Je kunt nu het PostNL-apparaat toevoegen.', 'info');
-        } catch (error) { Homey.alert(error.message || String(error), 'error'); }
-        finally { Homey.hideLoadingOverlay(); }
+          Homey.alert('PostNL is gekoppeld. Je kunt nu Mijn PostNL toevoegen.');
+        } catch (error) { alertError(error); }
+        finally { if (Homey.hideLoadingOverlay) Homey.hideLoadingOverlay(); }
       };
       document.getElementById('save').onclick = async () => {
-        await Homey.set('api_version', document.getElementById('apiVersion').value.trim());
-        await Homey.set('ios_version', document.getElementById('iosVersion').value.trim());
-        Homey.alert('Instellingen opgeslagen.');
+        try {
+          await setSetting('api_version', document.getElementById('apiVersion').value.trim());
+          await setSetting('ios_version', document.getElementById('iosVersion').value.trim());
+          Homey.alert('Instellingen opgeslagen.');
+        } catch (error) { alertError(error); }
       };
-      document.getElementById('sync').onclick = () => Homey.api('POST','/sync',{},error => Homey.alert(error ? error.message : 'Synchronisatie voltooid.', error ? 'error' : 'info'));
-      document.getElementById('logout').onclick = () => Homey.confirm('Weet je zeker dat je het PostNL-account wilt ontkoppelen?', 'warning', async (_, yes) => {
+      document.getElementById('sync').onclick = () => Homey.api('POST','/sync',{},error => Homey.alert(error ? error.message : 'Synchronisatie voltooid.'));
+      document.getElementById('logout').onclick = () => Homey.confirm('Weet je zeker dat je het PostNL-account wilt ontkoppelen?', async (_, yes) => {
         if (!yes) return;
         try {
           await api('POST', '/auth/logout');
@@ -138,7 +147,7 @@
           completePanel.classList.add('hidden');
           showStatus({ authenticated: false });
           await prepareLoginLink();
-        } catch (error) { Homey.alert(error.message || String(error), 'error'); }
+        } catch (error) { alertError(error); }
       });
     }
   </script>

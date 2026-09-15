@@ -1,4 +1,4 @@
 {
   "errors": { "not_authenticated": "PostNL is niet gekoppeld." },
-  "pair": { "title": "Aanmelden bij PostNL", "subtitle": "Koppel je persoonlijke PostNL-account om post en pakketten op te halen." }
+  "pair": { "title": "Mijn PostNL toevoegen", "subtitle": "Meld je eerst aan via App-instellingen en voeg daarna Mijn PostNL toe." }
 }

@@ -8,12 +8,18 @@ module.exports = {
     return homey.app.getWidgetData();
   },
   async authStatus({ homey }) {
-    const authenticated = homey.app.api.hasCredentials();
-    const profile = authenticated
-      ? await homey.app.api.fetchProfile().catch(() => null)
-      : null;
+    if (!homey.app.api.hasCredentials()) {
+      return { authenticated: false, username: null, updatedAt: null };
+    }
+    let profile;
+    try {
+      profile = await homey.app.api.fetchProfile();
+    } catch (error) {
+      homey.app.error('PostNL login validation failed', error);
+      return { authenticated: false, username: null, updatedAt: null };
+    }
     return {
-      authenticated,
+      authenticated: true,
       username: profile?.username || null,
       updatedAt: homey.settings.get('snapshot')?.updatedAt || null,
     };

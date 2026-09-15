@@ -29,5 +29,9 @@
   "0.1.7": {
     "en": "Fixed the PostNL login button in App Settings. The authorization URL is prepared in advance and opens as a real link in a new blank browser tab, including on iOS.",
     "nl": "De PostNL-loginbutton in App-instellingen opgelost. De aanmeld-URL wordt vooraf klaargezet en opent als echte link in een nieuw leeg browsertabblad, ook op iOS."
+  },
+  "0.1.8": {
+    "en": "Fixed App Settings login and device creation, added strict PostNL session validation before pairing, renamed all visible device references to Mijn PostNL, and added the new package-search device icon.",
+    "nl": "Inloggen via App-instellingen en device toevoegen opgelost, strikte PostNL-sessiecontrole vóór pairing toegevoegd, alle zichtbare deviceverwijzingen hernoemd naar Mijn PostNL en het nieuwe pakketzoek-device-icoon toegevoegd."
   }
 }

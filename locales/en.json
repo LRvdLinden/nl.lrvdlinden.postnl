@@ -1,4 +1,4 @@
 {
   "errors": { "not_authenticated": "PostNL is not connected." },
-  "pair": { "title": "Sign in to PostNL", "subtitle": "Connect your personal PostNL account to retrieve mail and parcels." }
+  "pair": { "title": "Add Mijn PostNL", "subtitle": "Sign in through App Settings first, then add Mijn PostNL." }
 }

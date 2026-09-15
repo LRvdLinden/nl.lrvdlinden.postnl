@@ -14,7 +14,7 @@
 </head>
 <body>
   <div class="logo"><img src="../../../assets/icon.svg" alt="PostNL"></div>
-  <h1 class="homey-title">PostNL-account controleren</h1>
+  <h1 class="homey-title">Mijn PostNL controleren</h1>
   <div id="checking" class="status">Controleren of je al bent aangemeld…</div>
   <div id="login" class="hidden">
     <p class="homey-subtitle">Je bent nog niet aangemeld bij PostNL.</p>
@@ -30,10 +30,10 @@
       if (result?.authenticated) return Homey.nextView();
       checking.classList.add('hidden');
       login.classList.remove('hidden');
-      Homey.alert('Meld je eerst aan via Meer → Apps → PostNL → Instellingen en voeg daarna Mijn PostNL opnieuw toe.', 'info');
+      Homey.alert('Meld je eerst aan via Meer → Apps → PostNL → Instellingen en voeg daarna Mijn PostNL opnieuw toe.');
     }).catch(error => {
       checking.textContent = error.message || String(error);
-      Homey.alert(error.message || String(error), 'error');
+      Homey.alert(error.message || String(error));
     });
 
     document.getElementById('close').addEventListener('click', () => Homey.done());
