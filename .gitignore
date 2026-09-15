@@ -1,0 +1,5 @@
+node_modules/
+.homeybuild/
+.DS_Store
+*.zip
+npm-debug.log*
