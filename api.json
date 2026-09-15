@@ -1,8 +1,0 @@
-{
-  "sync": { "method": "POST", "path": "/sync", "fn": "sync" },
-  "status": { "method": "GET", "path": "/status", "fn": "status" },
-  "authStatus": { "method": "GET", "path": "/auth/status", "fn": "authStatus" },
-  "startAuth": { "method": "POST", "path": "/auth/start", "fn": "startAuth" },
-  "completeAuth": { "method": "POST", "path": "/auth/complete", "fn": "completeAuth" },
-  "logout": { "method": "POST", "path": "/auth/logout", "fn": "logout" }
-}

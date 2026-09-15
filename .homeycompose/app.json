@@ -1,6 +1,6 @@
 {
   "id": "nl.lrvdlinden.postnl",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "compatibility": ">=12.3.0",
   "sdk": 3,
   "platforms": [
@@ -34,6 +34,14 @@
     "large": "/assets/images/large.png"
   },
   "permissions": [],
+  "api": {
+    "sync": { "method": "POST", "path": "/sync" },
+    "status": { "method": "GET", "path": "/status" },
+    "authStatus": { "method": "GET", "path": "/auth/status" },
+    "startAuth": { "method": "POST", "path": "/auth/start" },
+    "completeAuth": { "method": "POST", "path": "/auth/complete" },
+    "logout": { "method": "POST", "path": "/auth/logout" }
+  },
   "widgets": {
     "mijn-post": {
       "id": "mijn-post",

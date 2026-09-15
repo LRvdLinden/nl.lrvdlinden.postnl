@@ -37,5 +37,9 @@
   "0.1.9": {
     "en": "Renamed the device and widget to My PostNL in English and Mijn PostNL in Dutch. Reduced production build size by moving the Homey SDK to development dependencies and excluding macOS build folders.",
     "nl": "Device en widget hernoemd naar My PostNL in het Engels en Mijn PostNL in het Nederlands. De productiebuild verkleind door de Homey SDK naar ontwikkelafhankelijkheden te verplaatsen en macOS-buildmappen uit te sluiten."
+  },
+  "0.1.10": {
+    "en": "Fixed the missing App Settings API routes that caused Cannot GET and Cannot POST errors. PostNL OAuth can now be started and completed from App Settings, pairing uses the saved login, and the settings header has a centered PostNL logo and name.",
+    "nl": "Ontbrekende App Settings API-routes opgelost die Cannot GET- en Cannot POST-fouten veroorzaakten. PostNL OAuth kan nu vanuit App-instellingen worden gestart en voltooid, pairing gebruikt de opgeslagen login en de instellingen hebben een gecentreerd PostNL-logo met naam."
   }
 }
