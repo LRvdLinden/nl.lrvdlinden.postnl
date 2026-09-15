@@ -13,7 +13,7 @@
       "min": 1,
       "max": 6,
       "step": 1,
-      "label": { "en": "Maximum mail items", "nl": "Maximaal aantal poststukken" }
+      "title": { "en": "Maximum mail items", "nl": "Maximaal aantal poststukken" }
     },
     {
       "id": "historyDays",
@@ -22,7 +22,12 @@
       "min": 1,
       "max": 14,
       "step": 1,
-      "label": { "en": "Number of days", "nl": "Aantal dagen" }
+      "title": { "en": "Number of days", "nl": "Aantal dagen" }
     }
-  ]
+  ],
+  "devices": {
+    "type": "app",
+    "singular": false,
+    "filter": { "capabilities": "postnl_mail_count" }
+  }
 }

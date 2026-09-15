@@ -9,8 +9,6 @@
     "postnl_status",
     "postnl_last_update"
   ],
-  "energy": { "batteries": [] },
-  "connectivity": ["cloud"],
   "platforms": ["local"],
   "images": { "small": "/drivers/account/assets/images/small.png", "large": "/drivers/account/assets/images/large.png" },
   "pair": [{ "id": "login", "template": "login" }]
