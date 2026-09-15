@@ -10,6 +10,7 @@
     .brand strong { color:#fb6200; font-size:24px; }
     .status { margin:16px 0; padding:12px; border-radius:12px; background:var(--homey-color-mono-050,#f3f3f3); }
     .actions { display:grid; gap:10px; }
+    .login-link { display:block; box-sizing:border-box; text-align:center; text-decoration:none; }
     .hidden { display:none !important; }
     .steps { padding-left:22px; line-height:1.55; }
     .callback { min-height:88px; resize:vertical; }
@@ -28,7 +29,7 @@
         <li>Kopieer na het aanmelden de volledige callback-URL of autorisatiecode.</li>
         <li>Plak deze hieronder en voltooi de aanmelding.</li>
       </ol>
-      <button id="startLogin" class="homey-button-primary-full">Aanmelden bij PostNL</button>
+      <a id="startLogin" class="homey-button-primary-full login-link" href="#" target="_blank" rel="noopener noreferrer">PostNL-link voorbereiden…</a>
       <div id="completePanel" class="hidden">
         <div class="homey-form-group">
           <label class="homey-form-label" for="callback">Callback-URL of autorisatiecode</label>
@@ -62,6 +63,7 @@
       const loginPanel = document.getElementById('loginPanel');
       const completePanel = document.getElementById('completePanel');
       const connectedActions = document.getElementById('connectedActions');
+      const startLogin = document.getElementById('startLogin');
       const callback = document.getElementById('callback');
       const api = (method, path, body = {}) => new Promise((resolve, reject) => {
         Homey.api(method, path, body, (error, result) => error ? reject(error) : resolve(result));
@@ -74,25 +76,42 @@
           ? `Verbonden${result.username ? ` als ${result.username}` : ''}${result.updatedAt ? ` • Laatste update ${new Date(result.updatedAt).toLocaleString()}` : ''}. Je kunt nu het PostNL-apparaat toevoegen.`
           : 'Niet verbonden. Meld je hieronder eerst aan bij PostNL.';
       };
+      const prepareLoginLink = async () => {
+        startLogin.removeAttribute('href');
+        startLogin.textContent = 'PostNL-link voorbereiden…';
+        try {
+          const auth = await api('POST', '/auth/start');
+          if (!auth?.url) throw new Error('PostNL gaf geen aanmeldlink terug.');
+          startLogin.href = auth.url;
+          startLogin.textContent = 'Open PostNL';
+        } catch (error) {
+          startLogin.href = '#';
+          startLogin.textContent = 'PostNL-link opnieuw proberen';
+          throw error;
+        }
+      };
       Promise.all([
         api('GET', '/auth/status'), Homey.get('api_version'), Homey.get('ios_version')
       ]).then(([authStatus,apiVersion,iosVersion]) => {
         showStatus(authStatus);
+        if (!authStatus?.authenticated) return prepareLoginLink().then(() => [apiVersion, iosVersion]);
+        return [apiVersion, iosVersion];
+      }).then(versions => {
+        const [apiVersion, iosVersion] = versions;
         document.getElementById('apiVersion').value = apiVersion || '4.18';
         document.getElementById('iosVersion').value = iosVersion || '7.1.0';
       }).catch(error => {
         status.textContent = `Status kon niet worden opgehaald: ${error.message || error}`;
         loginPanel.classList.remove('hidden');
       }).finally(() => Homey.ready());
-      document.getElementById('startLogin').onclick = async () => {
-        Homey.showLoadingOverlay();
-        try {
-          const auth = await api('POST', '/auth/start');
-          completePanel.classList.remove('hidden');
-          Homey.openURL(auth.url);
-          callback.focus();
-        } catch (error) { Homey.alert(error.message || String(error), 'error'); }
-        finally { Homey.hideLoadingOverlay(); }
+      startLogin.onclick = event => {
+        if (!startLogin.href || startLogin.getAttribute('href') === '#') {
+          event.preventDefault();
+          prepareLoginLink().catch(error => Homey.alert(error.message || String(error), 'error'));
+          return;
+        }
+        completePanel.classList.remove('hidden');
+        setTimeout(() => callback.focus(), 100);
       };
       document.getElementById('completeLogin').onclick = async () => {
         if (!callback.value.trim()) return Homey.alert('Plak eerst de callback-URL of autorisatiecode.', 'error');
@@ -118,6 +137,7 @@
           callback.value = '';
           completePanel.classList.add('hidden');
           showStatus({ authenticated: false });
+          await prepareLoginLink();
         } catch (error) { Homey.alert(error.message || String(error), 'error'); }
       });
     }
