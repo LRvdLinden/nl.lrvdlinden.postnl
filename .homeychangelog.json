@@ -7,7 +7,11 @@
     "en": "bugfix drivers"
   },
   "0.1.2": {
-    "en": "New app icon and images. Fixed the pairing screen not loading after selecting the PostNL device.",
-    "nl": "Nieuw app-icoon en nieuwe afbeeldingen. De pairingpagina wordt nu correct geladen na het selecteren van het PostNL-apparaat."
+    "en": "New app icon and images.",
+    "nl": "Nieuw app-icoon en nieuwe afbeeldingen."
+  },
+  "0.1.3": {
+    "en": "Fixed adding the PostNL account device. The custom pairing screen now loads correctly after selecting the device and pressing Connect.",
+    "nl": "Probleem met het toevoegen van het PostNL-accountapparaat opgelost. De aangepaste pairingpagina wordt nu correct geladen na het selecteren van het apparaat en het drukken op Verbinden."
   }
 }
