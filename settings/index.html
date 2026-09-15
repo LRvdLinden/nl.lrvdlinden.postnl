@@ -10,6 +10,10 @@
     .brand strong { color:#fb6200; font-size:24px; }
     .status { margin:16px 0; padding:12px; border-radius:12px; background:var(--homey-color-mono-050,#f3f3f3); }
     .actions { display:grid; gap:10px; }
+    .hidden { display:none !important; }
+    .steps { padding-left:22px; line-height:1.55; }
+    .callback { min-height:88px; resize:vertical; }
+    .hint { opacity:.7; font-size:12px; line-height:1.45; }
   </style>
 </head>
 <body class="homey-widget-full">
@@ -17,7 +21,24 @@
   <fieldset class="homey-form-fieldset">
     <legend class="homey-form-legend">Verbinding</legend>
     <div id="status" class="status">Status ophalen…</div>
-    <div class="actions">
+    <div id="loginPanel" class="hidden">
+      <p>Meld je hier eerst aan. Daarna kun je het PostNL-apparaat via <strong>Apparaat toevoegen</strong> aan Homey toevoegen.</p>
+      <ol class="steps">
+        <li>Kies <strong>Aanmelden bij PostNL</strong> en meld je aan.</li>
+        <li>Kopieer na het aanmelden de volledige callback-URL of autorisatiecode.</li>
+        <li>Plak deze hieronder en voltooi de aanmelding.</li>
+      </ol>
+      <button id="startLogin" class="homey-button-primary-full">Aanmelden bij PostNL</button>
+      <div id="completePanel" class="hidden">
+        <div class="homey-form-group">
+          <label class="homey-form-label" for="callback">Callback-URL of autorisatiecode</label>
+          <textarea id="callback" class="homey-form-input callback" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="postnl://login?code=…"></textarea>
+        </div>
+        <button id="completeLogin" class="homey-button-primary-full">Aanmelding voltooien</button>
+      </div>
+      <p class="hint">Je PostNL-wachtwoord wordt alleen op de beveiligde PostNL-pagina ingevoerd en niet door deze app opgeslagen.</p>
+    </div>
+    <div id="connectedActions" class="actions hidden">
       <button id="sync" class="homey-button-primary-full">Nu synchroniseren</button>
       <button id="logout" class="homey-button-danger-full">Account ontkoppelen</button>
     </div>
@@ -38,13 +59,52 @@
   <script>
     function onHomeyReady(Homey) {
       const status = document.getElementById('status');
+      const loginPanel = document.getElementById('loginPanel');
+      const completePanel = document.getElementById('completePanel');
+      const connectedActions = document.getElementById('connectedActions');
+      const callback = document.getElementById('callback');
+      const api = (method, path, body = {}) => new Promise((resolve, reject) => {
+        Homey.api(method, path, body, (error, result) => error ? reject(error) : resolve(result));
+      });
+      const showStatus = result => {
+        const connected = Boolean(result?.authenticated);
+        loginPanel.classList.toggle('hidden', connected);
+        connectedActions.classList.toggle('hidden', !connected);
+        status.textContent = connected
+          ? `Verbonden${result.username ? ` als ${result.username}` : ''}${result.updatedAt ? ` • Laatste update ${new Date(result.updatedAt).toLocaleString()}` : ''}. Je kunt nu het PostNL-apparaat toevoegen.`
+          : 'Niet verbonden. Meld je hieronder eerst aan bij PostNL.';
+      };
       Promise.all([
-        Homey.get('auth'), Homey.get('snapshot'), Homey.get('api_version'), Homey.get('ios_version')
-      ]).then(([auth,snapshot,apiVersion,iosVersion]) => {
-        status.textContent = auth ? `Verbonden${snapshot?.updatedAt ? ` • Laatste update ${new Date(snapshot.updatedAt).toLocaleString()}` : ''}` : 'Niet verbonden. Voeg het PostNL-apparaat opnieuw toe om aan te melden.';
+        api('GET', '/auth/status'), Homey.get('api_version'), Homey.get('ios_version')
+      ]).then(([authStatus,apiVersion,iosVersion]) => {
+        showStatus(authStatus);
         document.getElementById('apiVersion').value = apiVersion || '4.18';
         document.getElementById('iosVersion').value = iosVersion || '7.1.0';
+      }).catch(error => {
+        status.textContent = `Status kon niet worden opgehaald: ${error.message || error}`;
+        loginPanel.classList.remove('hidden');
       }).finally(() => Homey.ready());
+      document.getElementById('startLogin').onclick = async () => {
+        Homey.showLoadingOverlay();
+        try {
+          const auth = await api('POST', '/auth/start');
+          completePanel.classList.remove('hidden');
+          window.open(auth.url, '_blank', 'noopener,noreferrer');
+          callback.focus();
+        } catch (error) { Homey.alert(error.message || String(error), 'error'); }
+        finally { Homey.hideLoadingOverlay(); }
+      };
+      document.getElementById('completeLogin').onclick = async () => {
+        if (!callback.value.trim()) return Homey.alert('Plak eerst de callback-URL of autorisatiecode.', 'error');
+        Homey.showLoadingOverlay();
+        try {
+          const result = await api('POST', '/auth/complete', { callback: callback.value.trim() });
+          completePanel.classList.add('hidden');
+          showStatus(result);
+          Homey.alert('PostNL is gekoppeld. Je kunt nu het PostNL-apparaat toevoegen.', 'info');
+        } catch (error) { Homey.alert(error.message || String(error), 'error'); }
+        finally { Homey.hideLoadingOverlay(); }
+      };
       document.getElementById('save').onclick = async () => {
         await Homey.set('api_version', document.getElementById('apiVersion').value.trim());
         await Homey.set('ios_version', document.getElementById('iosVersion').value.trim());
@@ -53,7 +113,12 @@
       document.getElementById('sync').onclick = () => Homey.api('POST','/sync',{},error => Homey.alert(error ? error.message : 'Synchronisatie voltooid.', error ? 'error' : 'info'));
       document.getElementById('logout').onclick = () => Homey.confirm('Weet je zeker dat je het PostNL-account wilt ontkoppelen?', 'warning', async (_, yes) => {
         if (!yes) return;
-        await Homey.set('auth', null); status.textContent = 'Niet verbonden.';
+        try {
+          await api('POST', '/auth/logout');
+          callback.value = '';
+          completePanel.classList.add('hidden');
+          showStatus({ authenticated: false });
+        } catch (error) { Homey.alert(error.message || String(error), 'error'); }
       });
     }
   </script>

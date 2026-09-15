@@ -13,5 +13,9 @@
   "0.1.3": {
     "en": "Fixed adding the PostNL account device. The custom pairing screen now loads correctly after selecting the device and pressing Connect.",
     "nl": "Probleem met het toevoegen van het PostNL-accountapparaat opgelost. De aangepaste pairingpagina wordt nu correct geladen na het selecteren van het apparaat en het drukken op Verbinden."
+  },
+  "0.1.4": {
+    "en": "Moved PostNL authentication to App Settings. After signing in, the PostNL account device can be added using Homey's standard device pairing flow.",
+    "nl": "PostNL-aanmelding verplaatst naar App-instellingen. Na het aanmelden kan het PostNL-accountapparaat via de standaard Homey-koppelroute worden toegevoegd."
   }
 }
