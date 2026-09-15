@@ -21,5 +21,9 @@
   "0.1.5": {
     "en": "Fixed opening the PostNL authorization page. Device pairing now checks the App Settings login first and redirects unauthenticated users to a clear login step before any device can be added.",
     "nl": "Openen van de PostNL-aanmeldpagina opgelost. De device-koppeling controleert nu eerst de aanmelding uit App-instellingen en stuurt niet-aangemelde gebruikers naar een duidelijke aanmeldstap voordat een apparaat kan worden toegevoegd."
+  },
+  "0.1.6": {
+    "en": "Authentication is now exclusively handled in App Settings. Device pairing blocks unauthenticated devices with clear instructions, and the driver and device are now named My PostNL.",
+    "nl": "Aanmelden verloopt nu uitsluitend via App-instellingen. De device-koppeling blokkeert apparaten zonder aanmelding met duidelijke instructies en de driver en het apparaat heten nu Mijn PostNL."
   }
 }

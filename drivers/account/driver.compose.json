@@ -1,7 +1,7 @@
 {
   "name": {
-    "en": "PostNL account",
-    "nl": "PostNL-account"
+    "en": "My PostNL",
+    "nl": "Mijn PostNL"
   },
   "class": "sensor",
   "capabilities": [
