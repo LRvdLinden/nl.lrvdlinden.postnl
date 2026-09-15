@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body { padding:0 4px 24px; }
+    .logo { display:flex; justify-content:center; margin:12px 0 20px; }
+    .logo img { width:92px; height:92px; }
+    .status { margin:16px 0; padding:12px; border-radius:12px; background:var(--homey-color-mono-050,#f3f3f3); }
+    .steps { padding-left:22px; line-height:1.55; }
+    .callback { width:100%; min-height:88px; resize:vertical; }
+    .muted { opacity:.68; font-size:12px; line-height:1.45; }
+    .hidden { display:none !important; }
+  </style>
+</head>
+<body>
+  <div class="logo"><img src="../../../assets/icon.svg" alt="PostNL"></div>
+  <h1 class="homey-title">PostNL-account controleren</h1>
+  <div id="checking" class="status">Controleren of je al bent aangemeld…</div>
+  <div id="login" class="hidden">
+    <p class="homey-subtitle">Je bent nog niet aangemeld. Meld je eerst aan bij PostNL; daarna ga je automatisch door naar het toevoegen van het apparaat.</p>
+    <ol class="steps">
+      <li>Kies <strong>Aanmelden bij PostNL</strong>.</li>
+      <li>Meld je aan op de beveiligde PostNL-pagina.</li>
+      <li>Kopieer de callback-URL of autorisatiecode en plak deze hieronder.</li>
+    </ol>
+    <button id="open" class="homey-button-primary-full">Aanmelden bij PostNL</button>
+    <div id="finish" class="hidden">
+      <fieldset class="homey-form-fieldset">
+        <div class="homey-form-group">
+          <label class="homey-form-label" for="callback">Callback-URL of autorisatiecode</label>
+          <textarea id="callback" class="homey-form-input callback" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="postnl://login?code=…"></textarea>
+        </div>
+      </fieldset>
+      <button id="connect" class="homey-button-primary-full">Aanmelding voltooien</button>
+    </div>
+    <p class="muted">Je wachtwoord wordt uitsluitend bij PostNL ingevoerd en niet door deze Homey-app opgeslagen.</p>
+  </div>
+  <script>
+    const checking = document.getElementById('checking');
+    const login = document.getElementById('login');
+    const finish = document.getElementById('finish');
+    const callback = document.getElementById('callback');
+
+    Homey.emit('is_authenticated').then(result => {
+      if (result?.authenticated) return Homey.nextView();
+      checking.classList.add('hidden');
+      login.classList.remove('hidden');
+      Homey.alert('Je bent nog niet aangemeld bij PostNL. Meld je eerst aan om het apparaat toe te voegen.', 'info');
+    }).catch(error => {
+      checking.textContent = error.message || String(error);
+      Homey.alert(error.message || String(error), 'error');
+    });
+
+    document.getElementById('open').addEventListener('click', async () => {
+      Homey.showLoadingOverlay();
+      try {
+        const auth = await Homey.emit('start_auth');
+        finish.classList.remove('hidden');
+        Homey.openURL(auth.url);
+        callback.focus();
+      } catch (error) { Homey.alert(error.message || String(error), 'error'); }
+      finally { Homey.hideLoadingOverlay(); }
+    });
+
+    document.getElementById('connect').addEventListener('click', async () => {
+      if (!callback.value.trim()) return Homey.alert('Plak eerst de callback-URL of autorisatiecode.', 'error');
+      Homey.showLoadingOverlay();
+      try {
+        await Homey.emit('complete_auth', { callback: callback.value.trim() });
+        Homey.nextView();
+      } catch (error) { Homey.alert(error.message || String(error), 'error'); }
+      finally { Homey.hideLoadingOverlay(); }
+    });
+  </script>
+</body>
+</html>

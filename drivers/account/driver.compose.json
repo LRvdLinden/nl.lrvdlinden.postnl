@@ -21,6 +21,12 @@
   },
   "pair": [
     {
+      "id": "check_login",
+      "navigation": {
+        "next": "list_devices"
+      }
+    },
+    {
       "id": "list_devices",
       "template": "list_devices",
       "navigation": {

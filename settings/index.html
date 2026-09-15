@@ -89,7 +89,7 @@
         try {
           const auth = await api('POST', '/auth/start');
           completePanel.classList.remove('hidden');
-          window.open(auth.url, '_blank', 'noopener,noreferrer');
+          Homey.openURL(auth.url);
           callback.focus();
         } catch (error) { Homey.alert(error.message || String(error), 'error'); }
         finally { Homey.hideLoadingOverlay(); }
