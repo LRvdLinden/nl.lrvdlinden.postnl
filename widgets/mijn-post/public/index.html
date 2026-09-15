@@ -1,0 +1,116 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    * { box-sizing:border-box; }
+    html,body { width:100%; height:100%; margin:0; overflow:hidden; background:transparent; color:#232323; font:16px/1.25 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    .card { display:grid; grid-template-rows:50px minmax(0,1fr); width:100%; height:100%; overflow:hidden; border-radius:17px; background:#f4f4f5; box-shadow:0 1px 1px #0000000d; }
+    header { display:flex; align-items:center; min-width:0; padding:0 24px; border-bottom:1px solid #dedee0; background:#fafafa; }
+    .brand { display:flex; align-items:center; gap:11px; min-width:0; color:#fb6200; font-size:18px; font-weight:750; }
+    .envelope { position:relative; width:20px; height:14px; flex:0 0 auto; border:1.5px solid currentColor; background:currentColor; color:#292929; }
+    .envelope::before,.envelope::after { content:""; position:absolute; top:0; width:12px; height:1.5px; background:#fff; transform-origin:top; }
+    .envelope::before { left:0; transform:rotate(33deg); }
+    .envelope::after { right:0; transform:rotate(-33deg); }
+    h1 { margin:0 0 0 auto; overflow:hidden; color:#858488; font-size:18px; font-weight:500; text-overflow:ellipsis; white-space:nowrap; }
+    #content { display:grid; place-items:center; min-height:0; padding:16px 24px 15px; }
+    #letters { display:grid; grid-template-columns:repeat(var(--count,3),minmax(0,1fr)); gap:10px; align-items:stretch; width:100%; height:100%; }
+    .letter { display:grid; grid-template-rows:minmax(0,1fr) 26px; gap:8px; min-width:0; min-height:0; }
+    .image-shell { display:grid; place-items:center; min-width:0; min-height:0; padding:7px; overflow:hidden; border-radius:6px; background:#e4e4e5; }
+    .image-shell img { display:block; width:100%; max-height:100%; object-fit:contain; background:#fff; box-shadow:0 1px 4px #0003; }
+    .placeholder { display:grid; place-items:center; width:100%; height:100%; color:#a1a0a4; font-size:30px; }
+    .date { justify-self:center; align-self:start; max-width:100%; overflow:hidden; padding:2px 12px 3px; border-radius:16px; background:#dadadd; color:#4d4c50; font-size:15px; line-height:20px; font-weight:750; text-overflow:ellipsis; white-space:nowrap; }
+    .empty { max-width:280px; color:#77767b; text-align:center; }
+    .empty-icon { display:block; margin-bottom:9px; font-size:32px; }
+    .loading { color:#77767b; }
+    .error { color:#bd1c2b; }
+    button.refresh { position:absolute; top:13px; right:104px; width:26px; height:26px; padding:0; border:0; border-radius:50%; background:transparent; color:#8c8b90; font-size:18px; cursor:pointer; opacity:0; transition:opacity .15s; }
+    .card:hover button.refresh,button.refresh:focus-visible { opacity:1; }
+    button.refresh.spinning { opacity:1; animation:spin .8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    @media(max-width:350px) {
+      header { padding:0 16px; }
+      #content { padding:13px 16px; }
+      .brand,h1 { font-size:16px; }
+      .date { padding-inline:8px; font-size:13px; }
+    }
+    @media(prefers-color-scheme:dark) {
+      html,body { color:#f2f2f3; }
+      .card { background:#2d2d2f; box-shadow:none; }
+      header { border-color:#39393b; background:#2a2a2c; }
+      .envelope { color:#f5f5f5; }
+      .envelope::before,.envelope::after { background:#29292b; }
+      h1 { color:#a7a5aa; }
+      .image-shell { background:#1d1d1f; }
+      .date { color:#f2f1f3; background:#555458; }
+      .empty,.loading { color:#aaa8ad; }
+      .placeholder { color:#656469; }
+      button.refresh { color:#aaa8ad; }
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <header>
+      <div class="brand"><span class="envelope" aria-hidden="true"></span><span>PostNL</span></div>
+      <button id="refresh" class="refresh" type="button" title="Synchroniseren" aria-label="Synchroniseren">↻</button>
+      <h1 id="title">Mijn Post</h1>
+    </header>
+    <section id="content"><div class="loading">Post ophalen…</div></section>
+  </main>
+  <script>
+    const content = document.getElementById('content');
+    const refresh = document.getElementById('refresh');
+    let settings = {};
+    const words = {
+      nl: { title:'Mijn Post', loading:'Post ophalen…', empty:'Er wordt momenteel geen post verwacht.', login:'Koppel eerst je PostNL-account.', error:'Post kon niet worden opgehaald.' },
+      en: { title:'My Mail', loading:'Loading mail…', empty:'No mail is currently expected.', login:'Connect your PostNL account first.', error:'Mail could not be loaded.' }
+    };
+    function localeText(locale) { return words[String(locale || '').toLowerCase().split('-')[0]] || words.en; }
+    function dateLabel(value, locale, timeZone) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '—';
+      return new Intl.DateTimeFormat(locale === 'nl' ? 'nl-NL' : 'en-GB', { day:'numeric', month:'long', timeZone }).format(date);
+    }
+    function render(data) {
+      const lang = String(data.locale || 'nl').split('-')[0];
+      const t = localeText(lang);
+      document.getElementById('title').textContent = t.title;
+      if (!data.authenticated) { content.innerHTML = `<div class="empty"><span class="empty-icon">✉</span>${t.login}</div>`; return; }
+      if (!data.letters?.length) { content.innerHTML = `<div class="empty"><span class="empty-icon">✉</span>${t.empty}</div>`; return; }
+      const letters = document.createElement('div');
+      letters.id = 'letters';
+      letters.style.setProperty('--count', Math.min(data.letters.length, 6));
+      for (const item of data.letters) {
+        const article = document.createElement('article'); article.className = 'letter';
+        const shell = document.createElement('div'); shell.className = 'image-shell';
+        if (item.imageData || item.imageUrl) {
+          const img = document.createElement('img'); img.alt = `Post ${dateLabel(item.deliveryDate, lang, data.timeZone)}`; img.src = item.imageData || item.imageUrl; shell.appendChild(img);
+        } else { const placeholder = document.createElement('div'); placeholder.className='placeholder'; placeholder.textContent='✉'; shell.appendChild(placeholder); }
+        const date = document.createElement('div'); date.className = 'date'; date.textContent = dateLabel(item.deliveryDate, lang, data.timeZone);
+        article.append(shell,date); letters.appendChild(article);
+      }
+      content.replaceChildren(letters);
+    }
+    async function load() {
+      const t = localeText('nl'); content.innerHTML = `<div class="loading">${t.loading}</div>`;
+      try {
+        const query = { maximumItems: settings.maximumItems || 3, historyDays: settings.historyDays || 1 };
+        render(await Homey.api('GET','/',query));
+      } catch (error) { content.innerHTML = `<div class="empty error">${t.error}<br><small>${String(error.message || error)}</small></div>`; }
+    }
+    async function onHomeyReady(Homey) {
+      settings = Homey.getSettings() || {};
+      Homey.on('settings', value => { settings = value || {}; load(); });
+      refresh.onclick = async () => {
+        refresh.classList.add('spinning');
+        try { await Homey.api('POST','/sync',{}); await load(); } catch (error) { content.innerHTML = `<div class="empty error">${String(error.message || error)}</div>`; }
+        finally { refresh.classList.remove('spinning'); }
+      };
+      await load();
+      Homey.ready();
+    }
+  </script>
+</body>
+</html>

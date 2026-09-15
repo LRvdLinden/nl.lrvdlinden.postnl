@@ -1,0 +1,138 @@
+{
+  "id": "nl.lrvdlinden.postnl",
+  "version": "0.1.0",
+  "compatibility": ">=12.3.0",
+  "sdk": 3,
+  "platforms": ["local"],
+  "name": { "en": "PostNL", "nl": "PostNL" },
+  "description": {
+    "en": "See incoming mail and PostNL parcels in Homey, with widgets and Flow cards.",
+    "nl": "Bekijk verwachte post en PostNL-pakketten in Homey, met widgets en Flow-kaarten."
+  },
+  "category": ["internet"],
+  "brandColor": "#FB6200",
+  "author": { "name": "Léon van der Linden", "email": "homey@vdlinden.xyz" },
+  "copyright": "Léon van der Linden",
+  "license": "GPL-3.0-or-later",
+  "homepage": "https://github.com/LRvdLinden/nl.lrvdlinden.postnl",
+  "support": "mailto:homey@vdlinden.xyz",
+  "bugs": { "url": "https://github.com/LRvdLinden/nl.lrvdlinden.postnl/issues" },
+  "images": { "small": "/assets/images/small.png", "large": "/assets/images/large.png" },
+  "permissions": [],
+  "capabilities": {
+    "postnl_mail_expected": {
+      "type": "boolean",
+      "title": { "en": "Mail expected", "nl": "Post verwacht" },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "insights": true,
+      "icon": "/assets/mail.svg"
+    },
+    "postnl_mail_count": {
+      "type": "number",
+      "title": { "en": "Mail items", "nl": "Poststukken" },
+      "getable": true,
+      "setable": false,
+      "decimals": 0,
+      "insights": true,
+      "icon": "/assets/mail.svg"
+    },
+    "postnl_package_count": {
+      "type": "number",
+      "title": { "en": "Parcels underway", "nl": "Pakketten onderweg" },
+      "getable": true,
+      "setable": false,
+      "decimals": 0,
+      "insights": true,
+      "icon": "/assets/package.svg"
+    },
+    "postnl_next_delivery": {
+      "type": "string",
+      "title": { "en": "Next delivery", "nl": "Volgende bezorging" },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/calendar.svg"
+    },
+    "postnl_status": {
+      "type": "string",
+      "title": { "en": "Status", "nl": "Status" },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/status.svg"
+    },
+    "postnl_last_update": {
+      "type": "string",
+      "title": { "en": "Last update", "nl": "Laatste update" },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/clock.svg"
+    }
+  },
+  "flow": {
+    "triggers": [
+      {
+        "id": "new_mail",
+        "title": { "en": "New mail is expected", "nl": "Er is nieuwe post onderweg" },
+        "args": [{ "type": "device", "name": "device", "filter": "driver_id=account" }],
+        "tokens": [
+          { "name": "count", "type": "number", "title": { "en": "Number of mail items", "nl": "Aantal poststukken" } },
+          { "name": "date", "type": "string", "title": { "en": "Delivery date", "nl": "Bezorgdatum" } }
+        ]
+      },
+      {
+        "id": "new_package",
+        "title": { "en": "A new parcel was found", "nl": "Er is een nieuw pakket gevonden" },
+        "args": [{ "type": "device", "name": "device", "filter": "driver_id=account" }],
+        "tokens": [
+          { "name": "title", "type": "string", "title": { "en": "Parcel", "nl": "Pakket" } },
+          { "name": "status", "type": "string", "title": { "en": "Status", "nl": "Status" } },
+          { "name": "delivery_window", "type": "string", "title": { "en": "Delivery window", "nl": "Bezorgvenster" } }
+        ]
+      },
+      {
+        "id": "package_status_changed",
+        "title": { "en": "A parcel status changed", "nl": "De status van een pakket is gewijzigd" },
+        "args": [{ "type": "device", "name": "device", "filter": "driver_id=account" }],
+        "tokens": [
+          { "name": "title", "type": "string", "title": { "en": "Parcel", "nl": "Pakket" } },
+          { "name": "status", "type": "string", "title": { "en": "Status", "nl": "Status" } },
+          { "name": "delivery_window", "type": "string", "title": { "en": "Delivery window", "nl": "Bezorgvenster" } }
+        ]
+      },
+      {
+        "id": "sync_failed",
+        "title": { "en": "PostNL synchronization failed", "nl": "PostNL-synchronisatie is mislukt" },
+        "args": [{ "type": "device", "name": "device", "filter": "driver_id=account" }],
+        "tokens": [{ "name": "error", "type": "string", "title": { "en": "Error", "nl": "Foutmelding" } }]
+      },
+      {
+        "id": "login_expired",
+        "title": { "en": "The PostNL login expired", "nl": "De PostNL-aanmelding is verlopen" },
+        "args": [{ "type": "device", "name": "device", "filter": "driver_id=account" }]
+      }
+    ],
+    "conditions": [
+      {
+        "id": "mail_expected",
+        "title": { "en": "Mail is expected", "nl": "Er wordt post verwacht" },
+        "args": [{ "type": "device", "name": "device", "filter": "driver_id=account" }]
+      },
+      {
+        "id": "packages_underway",
+        "title": { "en": "Parcels are underway", "nl": "Er zijn pakketten onderweg" },
+        "args": [{ "type": "device", "name": "device", "filter": "driver_id=account" }]
+      }
+    ],
+    "actions": [
+      {
+        "id": "sync_now",
+        "title": { "en": "Synchronize PostNL", "nl": "Synchroniseer PostNL" },
+        "args": [{ "type": "device", "name": "device", "filter": "driver_id=account" }]
+      }
+    ]
+  }
+}

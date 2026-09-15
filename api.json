@@ -1,0 +1,4 @@
+{
+  "sync": { "method": "POST", "path": "/sync", "fn": "sync" },
+  "status": { "method": "GET", "path": "/status", "fn": "status" }
+}

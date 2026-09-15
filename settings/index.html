@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="/homey.js" data-origin="settings"></script>
+  <style>
+    .brand { display:flex; align-items:center; justify-content:center; gap:12px; margin:12px 0 24px; }
+    .brand img { width:72px; height:72px; }
+    .brand strong { color:#fb6200; font-size:24px; }
+    .status { margin:16px 0; padding:12px; border-radius:12px; background:var(--homey-color-mono-050,#f3f3f3); }
+    .actions { display:grid; gap:10px; }
+  </style>
+</head>
+<body class="homey-widget-full">
+  <div class="brand"><img src="../assets/icon.svg" alt="PostNL"><strong>PostNL</strong></div>
+  <fieldset class="homey-form-fieldset">
+    <legend class="homey-form-legend">Verbinding</legend>
+    <div id="status" class="status">Status ophalen…</div>
+    <div class="actions">
+      <button id="sync" class="homey-button-primary-full">Nu synchroniseren</button>
+      <button id="logout" class="homey-button-danger-full">Account ontkoppelen</button>
+    </div>
+  </fieldset>
+  <fieldset class="homey-form-fieldset">
+    <legend class="homey-form-legend">Geavanceerd</legend>
+    <div class="homey-form-group">
+      <label class="homey-form-label" for="apiVersion">Mobiele API-versie</label>
+      <input id="apiVersion" class="homey-form-input" value="4.18">
+    </div>
+    <div class="homey-form-group">
+      <label class="homey-form-label" for="iosVersion">PostNL iOS-appversie</label>
+      <input id="iosVersion" class="homey-form-input" value="7.1.0">
+    </div>
+    <button id="save" class="homey-button-secondary-full">Instellingen opslaan</button>
+    <p class="homey-form-description">Wijzig deze waarden alleen wanneer PostNL een nieuwe minimale mobiele versie afdwingt.</p>
+  </fieldset>
+  <script>
+    function onHomeyReady(Homey) {
+      const status = document.getElementById('status');
+      Promise.all([
+        Homey.get('auth'), Homey.get('snapshot'), Homey.get('api_version'), Homey.get('ios_version')
+      ]).then(([auth,snapshot,apiVersion,iosVersion]) => {
+        status.textContent = auth ? `Verbonden${snapshot?.updatedAt ? ` • Laatste update ${new Date(snapshot.updatedAt).toLocaleString()}` : ''}` : 'Niet verbonden. Voeg het PostNL-apparaat opnieuw toe om aan te melden.';
+        document.getElementById('apiVersion').value = apiVersion || '4.18';
+        document.getElementById('iosVersion').value = iosVersion || '7.1.0';
+      }).finally(() => Homey.ready());
+      document.getElementById('save').onclick = async () => {
+        await Homey.set('api_version', document.getElementById('apiVersion').value.trim());
+        await Homey.set('ios_version', document.getElementById('iosVersion').value.trim());
+        Homey.alert('Instellingen opgeslagen.');
+      };
+      document.getElementById('sync').onclick = () => Homey.api('POST','/sync',{},error => Homey.alert(error ? error.message : 'Synchronisatie voltooid.', error ? 'error' : 'info'));
+      document.getElementById('logout').onclick = () => Homey.confirm('Weet je zeker dat je het PostNL-account wilt ontkoppelen?', 'warning', async (_, yes) => {
+        if (!yes) return;
+        await Homey.set('auth', null); status.textContent = 'Niet verbonden.';
+      });
+    }
+  </script>
+</body>
+</html>

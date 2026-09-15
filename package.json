@@ -1,0 +1,11 @@
+{
+  "name": "nl.lrvdlinden.postnl",
+  "version": "0.1.0",
+  "private": true,
+  "main": "app.js",
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "homey": "^3.0.0"
+  },
+  "devDependencies": {}
+}

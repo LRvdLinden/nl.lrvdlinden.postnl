@@ -1,0 +1,17 @@
+{
+  "name": { "en": "PostNL account", "nl": "PostNL-account" },
+  "class": "sensor",
+  "capabilities": [
+    "postnl_mail_expected",
+    "postnl_mail_count",
+    "postnl_package_count",
+    "postnl_next_delivery",
+    "postnl_status",
+    "postnl_last_update"
+  ],
+  "energy": { "batteries": [] },
+  "connectivity": ["cloud"],
+  "platforms": ["local"],
+  "images": { "small": "/drivers/account/assets/images/small.png", "large": "/drivers/account/assets/images/large.png" },
+  "pair": [{ "id": "login", "template": "login" }]
+}
