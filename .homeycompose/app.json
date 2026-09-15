@@ -1,6 +1,6 @@
 {
   "id": "nl.lrvdlinden.postnl",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "compatibility": ">=12.3.0",
   "sdk": 3,
   "platforms": [
@@ -38,8 +38,8 @@
     "mijn-post": {
       "id": "mijn-post",
       "name": {
-        "en": "My Mail",
-        "nl": "Mijn Post"
+        "en": "My PostNL",
+        "nl": "Mijn PostNL"
       },
       "height": 240,
       "settings": [

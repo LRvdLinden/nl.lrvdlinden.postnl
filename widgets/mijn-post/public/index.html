@@ -55,7 +55,7 @@
     <header>
       <div class="brand"><span class="envelope" aria-hidden="true"></span><span>PostNL</span></div>
       <button id="refresh" class="refresh" type="button" title="Synchroniseren" aria-label="Synchroniseren">↻</button>
-      <h1 id="title">Mijn Post</h1>
+      <h1 id="title">Mijn PostNL</h1>
     </header>
     <section id="content"><div class="loading">Post ophalen…</div></section>
   </main>
@@ -64,8 +64,8 @@
     const refresh = document.getElementById('refresh');
     let settings = {};
     const words = {
-      nl: { title:'Mijn Post', loading:'Post ophalen…', empty:'Er wordt momenteel geen post verwacht.', login:'Koppel eerst je PostNL-account.', error:'Post kon niet worden opgehaald.' },
-      en: { title:'My Mail', loading:'Loading mail…', empty:'No mail is currently expected.', login:'Connect your PostNL account first.', error:'Mail could not be loaded.' }
+      nl: { title:'Mijn PostNL', loading:'Post ophalen…', empty:'Er wordt momenteel geen post verwacht.', login:'Koppel eerst je PostNL-account.', error:'Post kon niet worden opgehaald.' },
+      en: { title:'My PostNL', loading:'Loading mail…', empty:'No mail is currently expected.', login:'Connect your PostNL account first.', error:'Mail could not be loaded.' }
     };
     function localeText(locale) { return words[String(locale || '').toLowerCase().split('-')[0]] || words.en; }
     function dateLabel(value, locale, timeZone) {

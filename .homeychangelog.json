@@ -33,5 +33,9 @@
   "0.1.8": {
     "en": "Fixed App Settings login and device creation, added strict PostNL session validation before pairing, renamed all visible device references to Mijn PostNL, and added the new package-search device icon.",
     "nl": "Inloggen via App-instellingen en device toevoegen opgelost, strikte PostNL-sessiecontrole vóór pairing toegevoegd, alle zichtbare deviceverwijzingen hernoemd naar Mijn PostNL en het nieuwe pakketzoek-device-icoon toegevoegd."
+  },
+  "0.1.9": {
+    "en": "Renamed the device and widget to My PostNL in English and Mijn PostNL in Dutch. Reduced production build size by moving the Homey SDK to development dependencies and excluding macOS build folders.",
+    "nl": "Device en widget hernoemd naar My PostNL in het Engels en Mijn PostNL in het Nederlands. De productiebuild verkleind door de Homey SDK naar ontwikkelafhankelijkheden te verplaatsen en macOS-buildmappen uit te sluiten."
   }
 }

@@ -21,7 +21,7 @@ class PostNLDriver extends Homey.Driver {
       const profile = await this.homey.app.api.fetchProfile();
       const username = profile?.username || '';
       return [{
-        name: 'Mijn PostNL',
+        name: this.homey.__('device.name'),
         data: { id: username || 'postnl-account' },
         store: { username },
       }];

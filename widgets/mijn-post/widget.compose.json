@@ -1,5 +1,5 @@
 {
-  "name": { "en": "My Mail", "nl": "Mijn Post" },
+  "name": { "en": "My PostNL", "nl": "Mijn PostNL" },
   "height": 240,
   "api": {
     "getData": { "method": "GET", "path": "/" },
