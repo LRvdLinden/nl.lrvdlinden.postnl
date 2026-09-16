@@ -4,6 +4,7 @@ const Homey = require('homey');
 
 class PostNLDevice extends Homey.Device {
   async onInit() {
+    this._latestMailImageId = null;
     await this.applySnapshot(this.homey.app.snapshot, null);
   }
 
@@ -42,6 +43,22 @@ class PostNLDevice extends Homey.Device {
     for (const [capability, value] of Object.entries(values)) {
       if (this.hasCapability(capability)) await this.setCapabilityValue(capability, value).catch(this.error);
     }
+
+    // Expose the newest available My PostNL scan as a native Homey camera image.
+    const latestWithImage = letters.find(item => item?.imageData);
+    if (latestWithImage && latestWithImage.id !== this._latestMailImageId) {
+      try {
+        const image = await this.homey.app.getLetterImage(latestWithImage);
+        if (image) {
+          const title = this.homey.i18n.getLanguage() === 'nl' ? 'Laatste poststuk' : 'Latest mail item';
+          await this.setCameraImage('latest_mail_item', title, image);
+          this._latestMailImageId = latestWithImage.id;
+        }
+      } catch (imageError) {
+        this.error('Could not set latest My PostNL image', imageError);
+      }
+    }
+
     if (error) await this.setUnavailable(error.message).catch(this.error);
     else await this.setAvailable().catch(this.error);
   }

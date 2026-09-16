@@ -8,6 +8,7 @@ class PostNLApp extends Homey.App {
     this.api = new PostNLApi({ homey: this.homey, log: (...args) => this.log(...args) });
     this.snapshot = this.homey.settings.get('snapshot') || { letters: [], packages: [], updatedAt: null };
     this.syncing = null;
+    this._letterImageCache = new Map();
 
     this._registerFlows();
     this._interval = this.homey.setInterval(() => this.sync({ reason: 'interval' }).catch(this.error), 5 * 60 * 1000);
@@ -83,6 +84,58 @@ class PostNLApp extends Homey.App {
     }
   }
 
+  async getLetterImage(letter) {
+    if (!letter?.imageData || !String(letter.imageData).startsWith('data:')) return null;
+    const cacheKey = `${letter.id || 'mail'}:${letter.imageData.length}`;
+    if (this._letterImageCache.has(cacheKey)) return this._letterImageCache.get(cacheKey);
+
+    const match = String(letter.imageData).match(/^data:([^;]+);base64,(.+)$/s);
+    if (!match) return null;
+    const contentType = match[1] || 'image/jpeg';
+    const buffer = Buffer.from(match[2], 'base64');
+    if (!buffer.length) return null;
+
+    const image = await this.homey.images.createImage();
+    image.setStream(async stream => {
+      stream.contentType = contentType;
+      stream.filename = `postnl-${String(letter.id || 'mail').replace(/[^a-zA-Z0-9_-]/g, '_')}.jpg`;
+      stream.end(buffer);
+      return stream;
+    });
+    this._letterImageCache.set(cacheKey, image);
+
+    // Keep the cache bounded. PostNL itself only retains a short MyMail history.
+    if (this._letterImageCache.size > 25) {
+      const first = this._letterImageCache.keys().next().value;
+      this._letterImageCache.delete(first);
+    }
+    return image;
+  }
+
+  _packageTokens(parcel) {
+    return {
+      id: parcel.id || '',
+      sender: parcel.sender || '',
+      receiver: parcel.receiver || '',
+      title: parcel.title || parcel.sender || parcel.barcode || 'PostNL',
+      barcode: parcel.barcode || '',
+      status: parcel.status || '',
+      delivery_date: parcel.deliveryDate ? this.api.formatDate(parcel.deliveryDate) : '',
+      delivery_window: parcel.deliveryWindow || '',
+      delivery_window_from: parcel.deliveryWindowFrom || '',
+      delivery_window_to: parcel.deliveryWindowTo || '',
+      delivery_window_type: parcel.deliveryWindowType || '',
+      details_url: parcel.detailsUrl || '',
+      shipment_type: parcel.shipmentType || '',
+      delivery_address_type: parcel.deliveryAddressType || '',
+      direction: parcel.direction || '',
+      created_at: parcel.createdAt || '',
+      delivered: Boolean(parcel.delivered),
+      shared_from: parcel.sourceDisplayName || '',
+      source_account_id: parcel.sourceAccountId || '',
+    };
+  }
+
   async _triggerChanges(previous, current) {
     const devices = this.homey.drivers.getDriver('account').getDevices();
     const oldLetterIds = new Set((previous.letters || []).map(item => item.id));
@@ -91,17 +144,31 @@ class PostNLApp extends Homey.App {
 
     for (const device of devices) {
       if (newLetters.length) {
-        await this.homey.flow.getTriggerCard('new_mail').trigger(device, {
+        const newest = newLetters[0];
+        const image = await this.getLetterImage(newest).catch(error => {
+          this.error('Could not create Homey image token', error);
+          return null;
+        });
+        const tokens = {
           count: newLetters.length,
-          date: this.api.formatDate(newLetters[0].deliveryDate),
-        }).catch(this.error);
+          id: newest.id || '',
+          title: newest.title || '',
+          sender: newest.sender || '',
+          date: this.api.formatDate(newest.deliveryDate),
+          unread: Boolean(newest.unread),
+          image_available: Boolean(image),
+        };
+        if (image) tokens.image = image;
+        await this.homey.flow.getTriggerCard('new_mail').trigger(device, tokens).catch(this.error);
       }
+
       for (const parcel of current.packages) {
         const old = oldPackages.get(parcel.id);
-        const tokens = { title: parcel.title || parcel.barcode || 'PostNL', status: parcel.status || '', delivery_window: parcel.deliveryWindow || '' };
-        if (!old) await this.homey.flow.getTriggerCard('new_package').trigger(device, tokens).catch(this.error);
-        else if (`${old.status}|${old.deliveryWindow}` !== `${parcel.status}|${parcel.deliveryWindow}`) {
-          await this.homey.flow.getTriggerCard('package_status_changed').trigger(device, tokens).catch(this.error);
+        const tokens = this._packageTokens(parcel);
+        if (!old) {
+          await this.homey.flow.getTriggerCard('new_package').trigger(device, tokens).catch(this.error);
+        } else if (`${old.status}|${old.deliveryWindow}|${old.deliveryDate}` !== `${parcel.status}|${parcel.deliveryWindow}|${parcel.deliveryDate}`) {
+          await this.homey.flow.getTriggerCard('package_status_changed').trigger(device, { ...tokens, old_status: old?.status || '' }).catch(this.error);
         }
       }
     }
