@@ -52,7 +52,11 @@ class PostNLApp extends Homey.App {
   }
 
   async _sync({ reason }) {
-    if (!this.api.hasCredentials()) throw new Error(this.homey.__('errors.not_authenticated'));
+    if (!this.api.hasCredentials()) {
+      // Normal state before the user has linked PostNL. Do not pollute diagnostics.
+      if (reason !== 'interval' && reason !== 'midnight') this.log(`PostNL sync skipped (${reason}): account is not linked`);
+      return { ...this.snapshot, authenticated: false, skipped: true, reason };
+    }
     const previous = this.snapshot || { letters: [], packages: [] };
     try {
       const live = await this.api.fetchAll();
