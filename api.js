@@ -9,14 +9,14 @@ module.exports = {
   },
   async authStatus({ homey }) {
     if (!homey.app.api.hasCredentials()) {
-      return { authenticated: false, username: null, updatedAt: null };
+      return { authenticated: false, username: null, updatedAt: null, ...homey.app.api.getAuthHealth() };
     }
     let profile;
     try {
       profile = await homey.app.api.fetchProfile();
     } catch (error) {
       homey.app.error('PostNL login validation failed', error);
-      return { authenticated: false, username: null, updatedAt: null };
+      return { authenticated: false, username: null, updatedAt: null, ...homey.app.api.getAuthHealth(), validationError: error.message };
     }
     const snapshot = homey.settings.get('snapshot') || {};
     const packages = snapshot.packages || [];
@@ -28,6 +28,7 @@ module.exports = {
       mailApiError: snapshot.mailApiError || null,
       activePackageCount: packages.filter(item => !item.delivered).length,
       deliveredPackageCount: packages.filter(item => item.delivered).length,
+      ...homey.app.api.getAuthHealth(),
     };
   },
   async startAuth({ homey }) {
