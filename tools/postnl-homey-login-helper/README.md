@@ -18,4 +18,6 @@ Deze Chrome-extensie onderschept de `postnl://login` OAuth-callback van PostNL e
 4. Kies **Callback kopiëren**.
 5. Plak de callback in Homey en voltooi de aanmelding.
 
+Opent de callbackpagina niet automatisch, klik dan rechtsboven in Chrome op het extensie-icoon en open **PostNL Homey Login Helper**. De laatst onderschepte callback kan daar alsnog worden gekopieerd. Staat daar nog geen callback, controleer dan of de inloglink vanuit Homey `client_id=deb0a372-6d72-4e09-83fe-997beacbd137` bevat; de gewone PostNL-website gebruikt een andere client en levert geen `postnl://`-callback.
+
 De extensie leest uitsluitend redirects vanaf `*.postnl.nl`. De callback blijft lokaal in Chrome en wordt nergens geüpload.

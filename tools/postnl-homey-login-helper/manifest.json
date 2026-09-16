@@ -2,14 +2,20 @@
   "manifest_version": 3,
   "name": "PostNL Homey Login Helper",
   "description": "Vangt de PostNL OAuth-callback op zodat deze in de Homey App Settings kan worden geplakt.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "permissions": [
-    "webRequest"
+    "webRequest",
+    "storage",
+    "tabs"
   ],
   "host_permissions": [
     "*://*.postnl.nl/*"
   ],
   "background": {
     "service_worker": "service_worker.js"
+  },
+  "action": {
+    "default_title": "PostNL Homey Login Helper",
+    "default_popup": "popup.html"
   }
 }

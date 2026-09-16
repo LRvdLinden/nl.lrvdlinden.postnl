@@ -1,11 +1,19 @@
 'use strict';
 
 chrome.webRequest.onBeforeRedirect.addListener(
-  details => {
-    if (!details.redirectUrl.startsWith('postnl://login')) return;
+  async details => {
+    if (!details.redirectUrl.includes('postnl://login')) return;
 
+    await chrome.storage.local.set({
+      lastCallback: details.redirectUrl,
+      capturedAt: Date.now(),
+    });
     const helperUrl = `${chrome.runtime.getURL('callback.html')}#${encodeURIComponent(details.redirectUrl)}`;
-    chrome.tabs.update(details.tabId, { url: helperUrl });
+    if (details.tabId >= 0) {
+      await chrome.tabs.update(details.tabId, { url: helperUrl });
+    } else {
+      await chrome.tabs.create({ url: helperUrl });
+    }
   },
-  { urls: ['*://*.postnl.nl/*'] },
+  { urls: ['<all_urls>'] },
 );
