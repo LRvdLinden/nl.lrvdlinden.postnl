@@ -65,5 +65,9 @@
   "0.1.16": {
     "en": "My PostNL widget now shows up to the 5 most recent mail items and 5 most recent parcels, including delivered parcel history, with a scrollable layout and expandable mail images.",
     "nl": "De Mijn PostNL-widget toont nu maximaal de 5 meest recente poststukken én 5 meest recente pakketten, inclusief bezorgde pakketten, in een scrollbare indeling met vergrootbare poststuk-afbeeldingen."
+  },
+  "0.1.17": {
+    "en": "Split the dashboard into My Post and My Package widgets. My Post now uses a horizontal swipe/scroll gallery with date badges and expandable mail scans. My Package shows the five latest parcels with clear Incoming, In transit and Delivered phases. Updated developer website and connection documentation.",
+    "nl": "Dashboard opgesplitst in de widgets Mijn Post en Mijn Pakket. Mijn Post gebruikt nu een horizontaal swipe-/scrolloverzicht met datumbadges en vergrootbare postscans. Mijn Pakket toont de vijf laatste pakketten met duidelijke fasen Inkomend, Onderweg en Bezorgd. Developerwebsite en koppelhandleiding bijgewerkt."
   }
 }
