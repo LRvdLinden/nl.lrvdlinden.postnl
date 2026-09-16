@@ -1,6 +1,6 @@
 {
   "id": "nl.lrvdlinden.postnl",
-  "version": "0.1.17",
+  "version": "0.2.0",
   "compatibility": ">=12.3.0",
   "sdk": 3,
   "platforms": [
@@ -25,13 +25,14 @@
   "copyright": "Léon van der Linden",
   "license": "GPL-3.0-or-later",
   "homepage": "https://lrvdlinden.app",
-  "support": "mailto:homey@vdlinden.xyz",
+  "support": "https://community.homey.app/t/app-pro-postnl-for-homey/159674",
   "bugs": {
-    "url": "https://github.com/LRvdLinden/nl.lrvdlinden.postnl/issues"
+    "url": "https://community.homey.app/t/app-pro-postnl-for-homey/159674"
   },
   "images": {
     "small": "/assets/images/small.png",
-    "large": "/assets/images/large.png"
+    "large": "/assets/images/large.png",
+      "xlarge": "/assets/images/xlarge.png"
   },
   "permissions": [],
   "api": {
