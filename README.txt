@@ -6,8 +6,8 @@ PostNL zijn mobiele app of aanmeldprocedure wijzigt.
 
 Koppelen
 1. Download en pak de PostNL Homey Login Helper uit.
-2. Open chrome://extensions, schakel Ontwikkelaarsmodus in en kies
-   Uitgepakte extensie laden.
+2. Zie voor het installeren van de helper het Community-forumtopic:
+   https://community.homey.app/t/postnl-app-notification-when-post-letters-are-on-the-way/2662
 3. Open Meer → Apps → PostNL → Instellingen.
 4. Kies Open PostNL en meld je aan op de beveiligde PostNL-pagina.
 5. De helper vangt de callback automatisch op. Kopieer deze naar de

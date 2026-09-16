@@ -8,6 +8,9 @@ App-instellingen in Homey, meld je aan en kopieer de automatisch onderschepte
 callback terug naar Homey. Er worden geen wachtwoorden door de Homey-app of
 browserhelper opgeslagen.
 
+Zie voor het installeren van de helper het Community-forumtopic:
+https://community.homey.app/t/postnl-app-notification-when-post-letters-are-on-the-way/2662
+
 Let op: PostNL heeft geen openbare consumenten-API. Wanneer een niet-openbaar
 Mijn Post-endpoint verandert, blijft het apparaat beschikbaar en blijven
 pakketgegevens werken; de app toont dan duidelijk dat Mijn Post tijdelijk niet

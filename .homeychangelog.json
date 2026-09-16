@@ -43,7 +43,7 @@
     "nl": "Ontbrekende App Settings API-routes opgelost die Cannot GET- en Cannot POST-fouten veroorzaakten. PostNL OAuth kan nu vanuit App-instellingen worden gestart en voltooid, pairing gebruikt de opgeslagen login en de instellingen hebben een gecentreerd PostNL-logo met naam."
   },
   "0.1.11": {
-    "en": "Kept My PostNL available when PostNL rejects the legacy My Mail endpoint, while parcel data continues to update. The widget header now uses the PostNL logo without a written brand label, and the app documentation explains the Chrome login helper.",
-    "nl": "Mijn PostNL blijft beschikbaar wanneer PostNL het verouderde Mijn Post-endpoint weigert, terwijl pakketgegevens blijven bijwerken. De widgetheader gebruikt nu het PostNL-logo zonder uitgeschreven merknaam en de appdocumentatie beschrijft de Chrome-loginhelper."
+    "en": "Migrated My PostNL to PostNL's current server-driven mobile endpoint with the required persistent device token. Invalid refresh tokens now request a clean reconnect. The scrollable widget opens mail images full-screen, uses the My PostNL title, and App Settings shows only the centered logo. Documentation and links were updated.",
+    "nl": "Mijn PostNL is overgezet naar het actuele servergestuurde mobiele PostNL-endpoint met de vereiste blijvende device-token. Bij een ongeldige refresh-token vraagt de app opnieuw te koppelen. De scrolbare widget opent postafbeeldingen schermvullend, gebruikt de titel Mijn PostNL en App-instellingen toont alleen het gecentreerde logo. Documentatie en links zijn bijgewerkt."
   }
 }
