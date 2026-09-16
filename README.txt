@@ -6,8 +6,8 @@ PostNL zijn mobiele app of aanmeldprocedure wijzigt.
 
 Koppelen
 1. Download en pak de PostNL Homey Login Helper uit.
-2. Zie voor het installeren van de helper het Community-forumtopic:
-   https://community.homey.app/t/postnl-app-notification-when-post-letters-are-on-the-way/2662
+2. Open chrome://extensions, schakel Ontwikkelaarsmodus in en kies
+   Uitgepakte extensie laden.
 3. Open Meer → Apps → PostNL → Instellingen.
 4. Kies Open PostNL en meld je aan op de beveiligde PostNL-pagina.
 5. De helper vangt de callback automatisch op. Kopieer deze naar de
@@ -19,10 +19,9 @@ en tokens nooit met anderen.
 
 De app controleert dagelijks automatisch de actuele PostNL iOS-appversie,
 haalt iedere vijf minuten nieuwe gegevens op en controleert rond
-middernacht extra vaak op nieuwe Mijn Post-items. Briefgegevens en afbeeldingen
+middernacht extra vaak op nieuwe Mijn PostNL-items. Briefgegevens en afbeeldingen
 worden maximaal 21 dagen lokaal in Homey bewaard.
 
-PostNL biedt geen openbare consumenten-API. Wanneer een niet-openbaar Mijn
-Post-endpoint verandert, blijft Mijn PostNL beschikbaar en blijven pakketten
-werken. De status en widget melden dan dat Mijn Post tijdelijk niet beschikbaar
+PostNL biedt geen openbare consumenten-API. Wanneer een niet-openbaar Mijn PostNL-endpoint verandert, blijft Mijn PostNL beschikbaar en blijven pakketten
+werken. De status en widget melden dan dat Mijn PostNL tijdelijk niet beschikbaar
 is, in plaats van het volledige apparaat onbeschikbaar te maken.
