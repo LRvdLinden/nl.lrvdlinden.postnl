@@ -2,6 +2,8 @@
 
 Deze Chrome-extensie onderschept de `postnl://login` OAuth-callback van PostNL en toont hem op een lokale extensiepagina. Plak de callback daarna in de PostNL App Settings van Homey.
 
+Versie 1.2.0 gebruikt het PostNL-app-logo in de Chrome-extensielijst, werkbalk en popup.
+
 ## Installeren in Chrome
 
 1. Pak `PostNL-Homey-Login-Helper.zip` uit.
