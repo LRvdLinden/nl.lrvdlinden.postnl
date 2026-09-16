@@ -1,141 +1,53 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <script src="/homey.js" data-origin="settings"></script>
   <style>
-    .brand { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; margin:12px 0 28px; text-align:center; }
-    .brand img { display:block; width:92px; height:92px; }
-    .status { margin:16px 0; padding:12px; border-radius:12px; background:var(--homey-color-mono-050,#f3f3f3); }
-    .actions { display:grid; gap:10px; }
-    .login-link { display:block; box-sizing:border-box; text-align:center; text-decoration:none; }
-    .hidden { display:none !important; }
-    .steps { padding-left:22px; line-height:1.55; }
-    .callback { min-height:88px; resize:vertical; }
-    .hint { opacity:.7; font-size:12px; line-height:1.45; }
+    .brand{display:flex;justify-content:center;margin:12px 0 24px}.brand img{width:92px;height:92px}
+    .status,.panel{margin:14px 0;padding:14px;border-radius:14px;background:var(--homey-color-mono-050,#f3f3f3)}
+    .hidden{display:none!important}.actions{display:grid;gap:10px}.steps{padding-left:22px;line-height:1.55}.hint{opacity:.7;font-size:12px;line-height:1.45}
+    .progress{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:14px 0}.step{padding:8px 4px;border-radius:10px;text-align:center;font-size:11px;background:var(--homey-color-mono-100,#ddd)}.step.active{font-weight:700;outline:2px solid var(--homey-color-blue,#007aff)}.step.done{opacity:.65}
+    .secure{font-family:monospace}.kv{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:12px}.ok{font-weight:700}.warn{font-weight:700}.login-link{display:block;box-sizing:border-box;text-align:center;text-decoration:none}
   </style>
 </head>
 <body class="homey-widget-full">
-  <header class="brand"><img src="../assets/icon.svg" alt="PostNL-logo"></header>
-  <fieldset class="homey-form-fieldset">
-    <legend class="homey-form-legend">Verbinding</legend>
-    <div id="status" class="status">Status ophalen…</div>
-    <div id="loginPanel" class="hidden">
-      <p>Meld je hier eerst aan. Daarna kun je het PostNL-apparaat via <strong>Apparaat toevoegen</strong> aan Homey toevoegen.</p>
-      <ol class="steps">
-        <li>Kies <strong>Aanmelden bij PostNL</strong> en meld je aan.</li>
-        <li>Kopieer na het aanmelden de volledige callback-URL of autorisatiecode.</li>
-        <li>Plak deze hieronder en voltooi de aanmelding.</li>
-      </ol>
-      <a id="startLogin" class="homey-button-primary-full login-link" href="#" target="_blank" rel="noopener noreferrer">PostNL-link voorbereiden…</a>
-      <div id="completePanel" class="hidden">
-        <div class="homey-form-group">
-          <label class="homey-form-label" for="callback">Callback-URL of autorisatiecode</label>
-          <textarea id="callback" class="homey-form-input callback" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="postnl://login?code=…"></textarea>
-        </div>
-        <button id="completeLogin" class="homey-button-primary-full">Aanmelding voltooien</button>
-      </div>
-      <p class="hint">Je PostNL-wachtwoord wordt alleen op de beveiligde PostNL-pagina ingevoerd en niet door deze app opgeslagen.</p>
+<header class="brand"><img src="../assets/icon.svg" alt="PostNL"></header>
+<fieldset class="homey-form-fieldset"><legend class="homey-form-legend">PostNL-account</legend>
+<div id="status" class="status">Status ophalen…</div>
+<div id="loginPanel" class="hidden">
+  <div class="progress"><div id="s1" class="step active">1. Start</div><div id="s2" class="step">2. PostNL</div><div id="s3" class="step">3. Callback</div><div id="s4" class="step">4. Klaar</div></div>
+  <div class="panel">
+    <strong>Beveiligde aanmelding</strong>
+    <ol class="steps"><li>Open PostNL via de knop hieronder.</li><li>Meld je aan op de officiële PostNL-pagina.</li><li>De Chrome Login Helper vangt de callback op en kopieert die voor Homey.</li><li>Plak de callback hieronder. De waarde wordt verborgen weergegeven.</li></ol>
+    <a id="startLogin" class="homey-button-primary-full login-link" href="#" target="_blank" rel="noopener noreferrer">Aanmelding voorbereiden…</a>
+    <div id="completePanel" class="hidden" style="margin-top:14px">
+      <label class="homey-form-label" for="callback">Callback uit Chrome Login Helper</label>
+      <input id="callback" type="password" class="homey-form-input secure" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="postnl://login?code=••••••••">
+      <p id="callbackCheck" class="hint">De callback en autorisatiecode worden nooit zichtbaar weergegeven of gelogd.</p>
+      <button id="completeLogin" class="homey-button-primary-full">Callback controleren en koppelen</button>
     </div>
-    <div id="connectedActions" class="actions hidden">
-      <button id="sync" class="homey-button-primary-full">Nu synchroniseren</button>
-      <button id="logout" class="homey-button-danger-full">Account ontkoppelen</button>
-    </div>
-  </fieldset>
-  <script>
-    function onHomeyReady(Homey) {
-      const status = document.getElementById('status');
-      const loginPanel = document.getElementById('loginPanel');
-      const completePanel = document.getElementById('completePanel');
-      const connectedActions = document.getElementById('connectedActions');
-      const startLogin = document.getElementById('startLogin');
-      const callback = document.getElementById('callback');
-      const api = (method, path, body = {}) => new Promise((resolve, reject) => {
-        Homey.api(method, path, body, (error, result) => error ? reject(error) : resolve(result));
-      });
-      const alertError = error => Homey.alert(error?.message || String(error));
-      const showStatus = result => {
-        const connected = Boolean(result?.authenticated);
-        loginPanel.classList.toggle('hidden', connected);
-        connectedActions.classList.toggle('hidden', !connected);
-        if (!connected) {
-          status.textContent = 'Niet verbonden. Meld je hieronder eerst aan bij PostNL.';
-          return;
-        }
-        const parts = [`Verbonden${result.username ? ` als ${result.username}` : ''}`];
-        if (result.mailApiStatus === 'available') parts.push('Mijn PostNL actief');
-        else if (result.mailApiStatus === 'temporarily_unavailable') parts.push(`Mijn PostNL niet beschikbaar${result.mailApiError ? ` (${result.mailApiError})` : ''}`);
-        if (Number.isFinite(result.activePackageCount)) parts.push(`${result.activePackageCount} pakket(ten) onderweg`);
-        if (Number.isFinite(result.deliveredPackageCount)) parts.push(`${result.deliveredPackageCount} bezorgd pakket(ten) bekend`);
-        if (result.updatedAt) parts.push(`laatste update ${new Date(result.updatedAt).toLocaleString()}`);
-        status.textContent = parts.join(' • ');
-      };
-      const prepareLoginLink = async () => {
-        startLogin.removeAttribute('href');
-        startLogin.textContent = 'PostNL-link voorbereiden…';
-        try {
-          const auth = await api('POST', '/auth/start');
-          if (!auth?.url) throw new Error('PostNL gaf geen aanmeldlink terug.');
-          startLogin.href = auth.url;
-          startLogin.textContent = 'Open PostNL';
-        } catch (error) {
-          startLogin.href = '#';
-          startLogin.textContent = 'PostNL-link opnieuw proberen';
-          throw error;
-        }
-      };
-      api('GET', '/auth/status').then(authStatus => {
-        showStatus(authStatus);
-        if (!authStatus?.authenticated) return prepareLoginLink();
-      }).catch(error => {
-        status.textContent = `Status kon niet worden opgehaald: ${error.message || error}`;
-        loginPanel.classList.remove('hidden');
-      }).finally(() => Homey.ready());
-      startLogin.onclick = event => {
-        if (!startLogin.href || startLogin.getAttribute('href') === '#') {
-          event.preventDefault();
-          prepareLoginLink().catch(alertError);
-          return;
-        }
-        completePanel.classList.remove('hidden');
-        setTimeout(() => callback.focus(), 100);
-      };
-      document.getElementById('completeLogin').onclick = async () => {
-        if (!callback.value.trim()) return Homey.alert('Plak eerst de callback-URL of autorisatiecode.');
-        if (Homey.showLoadingOverlay) Homey.showLoadingOverlay();
-        try {
-          const result = await api('POST', '/auth/complete', { callback: callback.value.trim() });
-          completePanel.classList.add('hidden');
-          showStatus(result);
-          Homey.alert('PostNL is gekoppeld. Je kunt nu Mijn PostNL toevoegen.');
-        } catch (error) { alertError(error); }
-        finally { if (Homey.hideLoadingOverlay) Homey.hideLoadingOverlay(); }
-      };
-      document.getElementById('sync').onclick = async () => {
-        if (Homey.showLoadingOverlay) Homey.showLoadingOverlay();
-        try {
-          await api('POST', '/sync');
-          showStatus(await api('GET', '/auth/status'));
-          Homey.alert('Synchronisatie voltooid.');
-        } catch (error) { alertError(error); }
-        finally { if (Homey.hideLoadingOverlay) Homey.hideLoadingOverlay(); }
-      };
-      document.getElementById('logout').onclick = () => Homey.confirm('Weet je zeker dat je het PostNL-account wilt ontkoppelen?', 'warning', async (error, yes) => {
-        if (error) return alertError(error);
-        if (!yes) return;
-        if (Homey.showLoadingOverlay) Homey.showLoadingOverlay();
-        try {
-          await api('POST', '/auth/logout');
-          callback.value = '';
-          completePanel.classList.add('hidden');
-          showStatus({ authenticated: false });
-          await prepareLoginLink();
-          Homey.alert('PostNL-account is ontkoppeld.');
-        } catch (logoutError) { alertError(logoutError); }
-        finally { if (Homey.hideLoadingOverlay) Homey.hideLoadingOverlay(); }
-      });
-    }
-  </script>
-</body>
-</html>
+    <p class="hint">Geen callback? Controleer of de PostNL Homey Login Helper is ingeschakeld. Start daarna hieronder een nieuwe aanmeldpoging; iedere poging heeft een eigen beveiligingscode en is 30 minuten geldig.</p>
+  </div>
+  <button id="restartLogin" class="homey-button-secondary-full">Nieuwe aanmeldpoging starten</button>
+</div>
+<div id="tokenHealth" class="panel hidden"><strong>Beveiligingsstatus</strong><div id="healthRows" class="kv" style="margin-top:10px"></div><p class="hint">Tokens zelf worden bewust nergens getoond. Alleen aanwezigheid en vervaldatum zijn zichtbaar.</p></div>
+<div id="connectedActions" class="actions hidden"><button id="sync" class="homey-button-primary-full">Nu synchroniseren</button><button id="logout" class="homey-button-danger-full">Account ontkoppelen</button></div>
+</fieldset>
+<script>
+function onHomeyReady(Homey){
+ const $=id=>document.getElementById(id), api=(m,p,b={})=>new Promise((r,j)=>Homey.api(m,p,b,(e,x)=>e?j(e):r(x))), alertError=e=>Homey.alert(e?.message||String(e));
+ const setProgress=n=>[1,2,3,4].forEach(i=>{$('s'+i).className='step'+(i<n?' done':i===n?' active':'')});
+ const fmt=t=>t?new Date(t).toLocaleString():'—';
+ function renderHealth(r){$('tokenHealth').classList.toggle('hidden',!r?.authenticated&&!r?.pendingLogin);$('healthRows').innerHTML=`<span>Access token</span><span class="ok">${r?.accessTokenStored?'Veilig opgeslagen':'Niet aanwezig'}</span><span>Refresh token</span><span class="ok">${r?.refreshTokenStored?'Veilig opgeslagen':'Niet aanwezig'}</span><span>Access token geldig tot</span><span>${fmt(r?.tokenExpiresAt)}</span><span>Aanmeldpoging geldig tot</span><span>${fmt(r?.pendingExpiresAt)}</span>`}
+ function showStatus(r){const connected=!!r?.authenticated;$('loginPanel').classList.toggle('hidden',connected);$('connectedActions').classList.toggle('hidden',!connected);renderHealth(r);if(!connected){$('status').textContent=r?.validationError?`Aanmelding niet geldig: ${r.validationError}`:'Niet verbonden met PostNL.';setProgress(r?.pendingLogin?2:1);return}const p=[`Verbonden${r.username?` als ${r.username}`:''}`];if(r.mailApiStatus==='available')p.push('Mijn PostNL actief');if(Number.isFinite(r.activePackageCount))p.push(`${r.activePackageCount} pakket(ten) onderweg`);if(r.updatedAt)p.push(`laatste update ${new Date(r.updatedAt).toLocaleString()}`);$('status').textContent=p.join(' • ');setProgress(4)}
+ async function prepare(open=false){$('startLogin').removeAttribute('href');$('startLogin').textContent='Aanmelding voorbereiden…';const a=await api('POST','/auth/start');if(!a?.url)throw new Error('Geen PostNL-aanmeldlink ontvangen.');$('startLogin').href=a.url;$('startLogin').textContent='Open PostNL';$('completePanel').classList.remove('hidden');setProgress(2);renderHealth({pendingLogin:true,pendingExpiresAt:a.expiresAt});if(open) window.open(a.url,'_blank')}
+ api('GET','/auth/status').then(async r=>{showStatus(r);if(!r?.authenticated&&!r?.pendingLogin)await prepare(false);else if(!r?.authenticated)$('completePanel').classList.remove('hidden')}).catch(e=>{$('status').textContent=`Statusfout: ${e.message||e}`;$('loginPanel').classList.remove('hidden')}).finally(()=>Homey.ready());
+ $('startLogin').onclick=e=>{if(!$('startLogin').href||$('startLogin').getAttribute('href')==='#'){e.preventDefault();prepare(false).catch(alertError)}else{setProgress(2);$('completePanel').classList.remove('hidden');setTimeout(()=>$('callback').focus(),200)}};
+ $('restartLogin').onclick=()=>prepare(false).catch(alertError);
+ $('callback').addEventListener('input',()=>{const v=$('callback').value.trim();setProgress(v?3:2);$('callbackCheck').textContent=v?(v.includes('code=')||v.length>20?'Callback ontvangen. Klaar om veilig te controleren.':'Waarde ontvangen; deze wordt bij koppelen gecontroleerd.'):'De callback en autorisatiecode worden nooit zichtbaar weergegeven of gelogd.'});
+ $('completeLogin').onclick=async()=>{const v=$('callback').value.trim();if(!v)return Homey.alert('Plak eerst de callback uit de Chrome Login Helper.');Homey.showLoadingOverlay?.();try{await api('POST','/auth/complete',{callback:v});$('callback').value='';showStatus(await api('GET','/auth/status'));Homey.alert('PostNL is veilig gekoppeld.')}catch(e){setProgress(3);alertError(e)}finally{Homey.hideLoadingOverlay?.()}};
+ $('sync').onclick=async()=>{Homey.showLoadingOverlay?.();try{await api('POST','/sync');showStatus(await api('GET','/auth/status'));Homey.alert('Synchronisatie voltooid.')}catch(e){alertError(e)}finally{Homey.hideLoadingOverlay?.()}};
+ $('logout').onclick=()=>Homey.confirm('Weet je zeker dat je het PostNL-account wilt ontkoppelen?','warning',async(e,yes)=>{if(e)return alertError(e);if(!yes)return;Homey.showLoadingOverlay?.();try{await api('POST','/auth/logout');$('callback').value='';showStatus({authenticated:false});await prepare(false);Homey.alert('PostNL-account is ontkoppeld.')}catch(x){alertError(x)}finally{Homey.hideLoadingOverlay?.()}})
+}
+</script></body></html>
