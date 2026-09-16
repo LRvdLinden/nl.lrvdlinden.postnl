@@ -2,3 +2,4 @@ node_modules-macos
 .homeybuild-macos
 __MACOSX
 *.zip
+tools

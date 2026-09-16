@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PostNL Homey Login Helper</title>
+  <link rel="stylesheet" href="callback.css">
+</head>
+<body>
+  <main>
+    <div class="logo" aria-hidden="true">✉</div>
+    <h1>PostNL-aanmelding ontvangen</h1>
+    <p>De juiste callback is onderschept. Kopieer hem en plak hem in de PostNL App Settings van Homey.</p>
+    <label for="callback">PostNL-callback</label>
+    <textarea id="callback" readonly spellcheck="false"></textarea>
+    <button id="copy" type="button">Callback kopiëren</button>
+    <p id="status" role="status"></p>
+    <p class="warning">De callback is eenmalig en tijdelijk geldig. Deel hem niet met anderen.</p>
+  </main>
+  <script src="callback.js"></script>
+</body>
+</html>
