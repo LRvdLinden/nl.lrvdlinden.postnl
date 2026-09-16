@@ -61,6 +61,7 @@ class PostNLApp extends Homey.App {
         packages: live.packages,
         updatedAt: new Date().toISOString(),
         account: live.account || null,
+        mailApiStatus: live.mailApiStatus || 'unknown',
         reason,
       };
       this.snapshot = snapshot;
@@ -116,6 +117,7 @@ class PostNLApp extends Homey.App {
       packages: (this.snapshot.packages || []).filter(item => !item.delivered),
       updatedAt: this.snapshot.updatedAt,
       authenticated: this.api.hasCredentials(),
+      mailApiStatus: this.snapshot.mailApiStatus || 'unknown',
     };
   }
 }

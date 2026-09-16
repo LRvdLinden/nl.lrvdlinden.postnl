@@ -41,5 +41,9 @@
   "0.1.10": {
     "en": "Fixed the missing App Settings API routes that caused Cannot GET and Cannot POST errors. PostNL OAuth can now be started and completed from App Settings, pairing uses the saved login, and the settings header has a centered PostNL logo and name.",
     "nl": "Ontbrekende App Settings API-routes opgelost die Cannot GET- en Cannot POST-fouten veroorzaakten. PostNL OAuth kan nu vanuit App-instellingen worden gestart en voltooid, pairing gebruikt de opgeslagen login en de instellingen hebben een gecentreerd PostNL-logo met naam."
+  },
+  "0.1.11": {
+    "en": "Kept My PostNL available when PostNL rejects the legacy My Mail endpoint, while parcel data continues to update. The widget header now uses the PostNL logo without a written brand label, and the app documentation explains the Chrome login helper.",
+    "nl": "Mijn PostNL blijft beschikbaar wanneer PostNL het verouderde Mijn Post-endpoint weigert, terwijl pakketgegevens blijven bijwerken. De widgetheader gebruikt nu het PostNL-logo zonder uitgeschreven merknaam en de appdocumentatie beschrijft de Chrome-loginhelper."
   }
 }

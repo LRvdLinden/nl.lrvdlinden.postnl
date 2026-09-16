@@ -27,7 +27,11 @@ class PostNLDevice extends Homey.Device {
       postnl_mail_count: letters.length,
       postnl_package_count: packages.length,
       postnl_next_delivery: nextDelivery,
-      postnl_status: error ? `Fout: ${error.message}` : (snapshot.updatedAt ? 'Verbonden' : 'Wachten op synchronisatie'),
+      postnl_status: error
+        ? `Fout: ${error.message}`
+        : snapshot.mailApiStatus === 'temporarily_unavailable'
+          ? 'Verbonden • Mijn Post tijdelijk niet beschikbaar'
+          : (snapshot.updatedAt ? 'Verbonden' : 'Wachten op synchronisatie'),
       postnl_last_update: updated,
     };
     for (const [capability, value] of Object.entries(values)) {
