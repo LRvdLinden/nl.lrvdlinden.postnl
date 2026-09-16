@@ -1,6 +1,6 @@
 {
   "id": "nl.lrvdlinden.postnl",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "compatibility": ">=12.3.0",
   "sdk": 3,
   "platforms": [
@@ -24,7 +24,7 @@
   },
   "copyright": "Léon van der Linden",
   "license": "GPL-3.0-or-later",
-  "homepage": "https://github.com/LRvdLinden/nl.lrvdlinden.postnl",
+  "homepage": "https://lrvdlinden.app",
   "support": "mailto:homey@vdlinden.xyz",
   "bugs": {
     "url": "https://github.com/LRvdLinden/nl.lrvdlinden.postnl/issues"
@@ -64,8 +64,33 @@
     "mijn-post": {
       "id": "mijn-post",
       "name": {
-        "en": "My PostNL",
-        "nl": "Mijn PostNL"
+        "en": "My Post",
+        "nl": "Mijn Post"
+      },
+      "height": 250,
+      "api": {
+        "getData": {
+          "method": "GET",
+          "path": "/"
+        },
+        "sync": {
+          "method": "POST",
+          "path": "/sync"
+        }
+      },
+      "devices": {
+        "type": "app",
+        "singular": false,
+        "filter": {
+          "capabilities": "postnl_mail_count"
+        }
+      }
+    },
+    "mijn-pakket": {
+      "id": "mijn-pakket",
+      "name": {
+        "en": "My Package",
+        "nl": "Mijn Pakket"
       },
       "height": 360,
       "api": {
@@ -78,25 +103,11 @@
           "path": "/sync"
         }
       },
-      "settings": [
-        {
-          "id": "maximumItems",
-          "type": "number",
-          "value": 5,
-          "min": 1,
-          "max": 5,
-          "step": 1,
-          "title": {
-            "en": "Items per category",
-            "nl": "Items per categorie"
-          }
-        }
-      ],
       "devices": {
         "type": "app",
         "singular": false,
         "filter": {
-          "capabilities": "postnl_mail_count"
+          "capabilities": "postnl_package_count"
         }
       }
     }
