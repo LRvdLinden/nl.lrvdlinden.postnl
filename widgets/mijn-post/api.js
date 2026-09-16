@@ -1,29 +1,27 @@
 'use strict';
 
 function timestamp(item) {
-  const value = item?.deliveryDate || item?.deliveryWindowFrom || item?.createdAt || item?.archivedAt || 0;
+  const value = item?.deliveryDate || item?.archivedAt || 0;
   const time = new Date(value).getTime();
   return Number.isFinite(time) ? time : 0;
 }
 
 module.exports = {
-  async getData({ homey, query }) {
+  async getData({ homey }) {
     const data = homey.app.getWidgetData();
-    const maximumItems = Math.max(1, Math.min(5, Number(query?.maximumItems || 5)));
     return {
-      ...data,
+      authenticated: data.authenticated,
+      mailApiStatus: data.mailApiStatus,
+      mailApiError: data.mailApiError,
       letters: [...(data.letters || [])]
         .sort((a, b) => timestamp(b) - timestamp(a))
-        .slice(0, maximumItems),
-      packages: [...(data.packages || [])]
-        .sort((a, b) => timestamp(b) - timestamp(a))
-        .slice(0, maximumItems),
+        .slice(0, 5),
       locale: homey.i18n.getLanguage(),
       timeZone: homey.clock.getTimezone(),
     };
   },
   async sync({ homey }) {
     await homey.app.sync({ reason: 'widget', force: true });
-    return homey.app.getWidgetData();
+    return { ok: true };
   },
 };
