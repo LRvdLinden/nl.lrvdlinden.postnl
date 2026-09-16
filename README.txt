@@ -17,8 +17,7 @@ Koppelen
 De Homey-app en browserhelper slaan je PostNL-wachtwoord niet op. Deel callbacks
 en tokens nooit met anderen.
 
-De app controleert dagelijks automatisch de actuele PostNL iOS-appversie,
-haalt iedere vijf minuten nieuwe gegevens op en controleert rond
+De app haalt iedere vijf minuten nieuwe gegevens op en controleert rond
 middernacht extra vaak op nieuwe Mijn PostNL-items. Briefgegevens en afbeeldingen
 worden maximaal 21 dagen lokaal in Homey bewaard.
 
