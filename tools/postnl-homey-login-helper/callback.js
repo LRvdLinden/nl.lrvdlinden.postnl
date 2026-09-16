@@ -11,6 +11,17 @@ try {
   value = '';
 }
 
+function maskCallback(raw) {
+  if (!raw) return '';
+  try {
+    const parsed = new URL(raw);
+    const code = parsed.searchParams.get('code') || '';
+    return code ? `postnl://login?code=${'•'.repeat(12)}&state=${'•'.repeat(8)}` : 'Beveiligde callback ontvangen';
+  } catch (_) {
+    return 'Beveiligde callback ontvangen';
+  }
+}
+
 async function initialise() {
   if (!value) {
     const stored = await chrome.storage.local.get(['lastCallback']);
@@ -24,9 +35,8 @@ async function initialise() {
     return;
   }
 
-  callback.value = value;
-  callback.focus();
-  callback.select();
+  callback.value = maskCallback(value);
+  status.textContent = 'Callback veilig ontvangen. De inhoud is verborgen.';
 }
 
 initialise().catch(() => {
@@ -37,12 +47,17 @@ initialise().catch(() => {
 
 copyButton.addEventListener('click', async () => {
   try {
-    await navigator.clipboard.writeText(callback.value);
+    await navigator.clipboard.writeText(value);
     status.textContent = 'Gekopieerd. Plak de callback nu in Homey.';
   } catch (_) {
-    callback.focus();
-    callback.select();
+    const helper = document.createElement('textarea');
+    helper.value = value;
+    helper.style.position = 'fixed';
+    helper.style.opacity = '0';
+    document.body.appendChild(helper);
+    helper.select();
     document.execCommand('copy');
+    helper.remove();
     status.textContent = 'Gekopieerd. Plak de callback nu in Homey.';
   }
 });
