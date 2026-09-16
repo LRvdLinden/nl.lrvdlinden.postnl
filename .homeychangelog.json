@@ -1,7 +1,7 @@
 {
   "0.1.0": {
-    "en": "First test version with PostNL OAuth, My Mail, parcel data, local mail archive, Flow cards and dark/light widget.",
-    "nl": "Eerste testversie met PostNL OAuth, Mijn Post, pakketgegevens, lokaal postarchief, Flow-kaarten en dark/light-widget."
+    "en": "First test version with PostNL OAuth, My PostNL, parcel data, local mail archive, Flow cards and dark/light widget.",
+    "nl": "Eerste testversie met PostNL OAuth, Mijn PostNL, pakketgegevens, lokaal postarchief, Flow-kaarten en dark/light-widget."
   },
   "0.1.1": {
     "en": "bugfix drivers"
@@ -43,11 +43,15 @@
     "nl": "Ontbrekende App Settings API-routes opgelost die Cannot GET- en Cannot POST-fouten veroorzaakten. PostNL OAuth kan nu vanuit App-instellingen worden gestart en voltooid, pairing gebruikt de opgeslagen login en de instellingen hebben een gecentreerd PostNL-logo met naam."
   },
   "0.1.11": {
-    "en": "Kept My PostNL available when PostNL rejects the legacy My Mail endpoint, while parcel data continues to update. The widget header now uses the PostNL logo without a written brand label, and the app documentation explains the Chrome login helper.",
-    "nl": "Mijn PostNL blijft beschikbaar wanneer PostNL het verouderde Mijn Post-endpoint weigert, terwijl pakketgegevens blijven bijwerken. De widgetheader gebruikt nu het PostNL-logo zonder uitgeschreven merknaam en de appdocumentatie beschrijft de Chrome-loginhelper."
+    "en": "Kept My PostNL available when PostNL rejects the legacy My PostNL endpoint, while parcel data continues to update. The widget header now uses the PostNL logo without a written brand label, and the app documentation explains the Chrome login helper.",
+    "nl": "Mijn PostNL blijft beschikbaar wanneer PostNL het verouderde Mijn PostNL-endpoint weigert, terwijl pakketgegevens blijven bijwerken. De widgetheader gebruikt nu het PostNL-logo zonder uitgeschreven merknaam en de appdocumentatie beschrijft de Chrome-loginhelper."
   },
   "0.1.12": {
     "en": "Fix PostNL OAuth refresh-token race condition by serializing token refreshes and safely reusing rotated credentials.",
     "nl": "Fix voor PostNL OAuth refresh-token race condition: tokenvernieuwing gebeurt nu één keer tegelijk en vernieuwde tokens worden veilig hergebruikt."
+  },
+  "0.1.13": {
+    "en": "Updated My PostNL to the current server-driven MyMail API with required Android app headers, restored mail images, kept parcel data via GraphQL, removed unnecessary API/app version fields from App Settings, and standardized My PostNL naming.",
+    "nl": "Mijn PostNL bijgewerkt naar de actuele server-driven MyMail-API met verplichte Android-appheaders, poststuk-afbeeldingen hersteld, pakketgegevens via GraphQL behouden, overbodige API/app-versievelden uit App-instellingen verwijderd en de naam Mijn PostNL overal gelijkgetrokken."
   }
 }
