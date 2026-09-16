@@ -1,6 +1,6 @@
 {
   "id": "nl.lrvdlinden.postnl",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "compatibility": ">=12.3.0",
   "sdk": 3,
   "platforms": [
@@ -35,12 +35,30 @@
   },
   "permissions": [],
   "api": {
-    "sync": { "method": "POST", "path": "/sync" },
-    "status": { "method": "GET", "path": "/status" },
-    "authStatus": { "method": "GET", "path": "/auth/status" },
-    "startAuth": { "method": "POST", "path": "/auth/start" },
-    "completeAuth": { "method": "POST", "path": "/auth/complete" },
-    "logout": { "method": "POST", "path": "/auth/logout" }
+    "sync": {
+      "method": "POST",
+      "path": "/sync"
+    },
+    "status": {
+      "method": "GET",
+      "path": "/status"
+    },
+    "authStatus": {
+      "method": "GET",
+      "path": "/auth/status"
+    },
+    "startAuth": {
+      "method": "POST",
+      "path": "/auth/start"
+    },
+    "completeAuth": {
+      "method": "POST",
+      "path": "/auth/complete"
+    },
+    "logout": {
+      "method": "POST",
+      "path": "/auth/logout"
+    }
   },
   "widgets": {
     "mijn-post": {
@@ -77,8 +95,14 @@
         }
       ],
       "api": {
-        "getData": { "method": "GET", "path": "/" },
-        "sync": { "method": "POST", "path": "/sync" }
+        "getData": {
+          "method": "GET",
+          "path": "/"
+        },
+        "sync": {
+          "method": "POST",
+          "path": "/sync"
+        }
       },
       "devices": {
         "type": "app",

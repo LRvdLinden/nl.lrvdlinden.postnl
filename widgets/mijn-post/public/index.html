@@ -11,11 +11,11 @@
     .brand { display:flex; align-items:center; min-width:0; }
     .brand-logo { display:block; width:38px; height:38px; object-fit:contain; }
     h1 { margin:0 0 0 auto; overflow:hidden; color:#858488; font-size:18px; font-weight:500; text-overflow:ellipsis; white-space:nowrap; }
-    #content { display:grid; place-items:center; min-height:0; padding:16px 24px 15px; overflow:auto; overscroll-behavior:contain; scrollbar-width:thin; }
-    #letters { display:grid; grid-auto-flow:column; grid-auto-columns:calc((100% - 20px)/3); gap:10px; align-items:stretch; width:100%; min-width:100%; height:100%; overflow:visible; }
+    #content { display:grid; place-items:center; min-height:0; padding:16px 24px 15px; }
+    #letters { display:grid; grid-template-columns:repeat(var(--count,3),minmax(0,1fr)); gap:10px; align-items:stretch; width:100%; height:100%; }
     .letter { display:grid; grid-template-rows:minmax(0,1fr) 26px; gap:8px; min-width:0; min-height:0; }
     .image-shell { display:grid; place-items:center; min-width:0; min-height:0; padding:7px; overflow:hidden; border-radius:6px; background:#e4e4e5; }
-    .image-shell img { display:block; width:100%; max-height:100%; object-fit:contain; background:#fff; box-shadow:0 1px 4px #0003; cursor:zoom-in; }
+    .image-shell img { display:block; width:100%; max-height:100%; object-fit:contain; background:#fff; box-shadow:0 1px 4px #0003; }
     .placeholder { display:grid; place-items:center; width:100%; height:100%; color:#a1a0a4; font-size:30px; }
     .date { justify-self:center; align-self:start; max-width:100%; overflow:hidden; padding:2px 12px 3px; border-radius:16px; background:#dadadd; color:#4d4c50; font-size:15px; line-height:20px; font-weight:750; text-overflow:ellipsis; white-space:nowrap; }
     .empty { max-width:280px; color:#77767b; text-align:center; }
@@ -25,17 +25,12 @@
     button.refresh { position:absolute; top:13px; right:104px; width:26px; height:26px; padding:0; border:0; border-radius:50%; background:transparent; color:#8c8b90; font-size:18px; cursor:pointer; opacity:0; transition:opacity .15s; }
     .card:hover button.refresh,button.refresh:focus-visible { opacity:1; }
     button.refresh.spinning { opacity:1; animation:spin .8s linear infinite; }
-    .lightbox { position:fixed; inset:0; z-index:20; display:grid; place-items:center; padding:24px; background:#000c; backdrop-filter:blur(5px); }
-    .lightbox.hidden { display:none; }
-    .lightbox img { display:block; max-width:100%; max-height:100%; object-fit:contain; border-radius:8px; background:#fff; box-shadow:0 12px 44px #0009; }
-    .lightbox-close { position:absolute; top:14px; right:16px; width:38px; height:38px; padding:0; border:0; border-radius:50%; background:#fff; color:#222; font-size:28px; line-height:36px; cursor:pointer; box-shadow:0 2px 12px #0006; }
     @keyframes spin { to { transform:rotate(360deg); } }
     @media(max-width:350px) {
       header { padding:0 16px; }
       #content { padding:13px 16px; }
       h1 { font-size:16px; }
       .date { padding-inline:8px; font-size:13px; }
-      #letters { grid-auto-columns:calc((100% - 10px)/2); }
     }
     @media(prefers-color-scheme:dark) {
       html,body { color:#f2f2f3; }
@@ -59,20 +54,13 @@
     </header>
     <section id="content"><div class="loading">Post ophalen…</div></section>
   </main>
-  <div id="lightbox" class="lightbox hidden" role="dialog" aria-modal="true" aria-label="Postafbeelding">
-    <button id="lightboxClose" class="lightbox-close" type="button" aria-label="Sluiten">×</button>
-    <img id="lightboxImage" alt="Vergrote postafbeelding">
-  </div>
   <script>
     const content = document.getElementById('content');
     const refresh = document.getElementById('refresh');
-    const lightbox = document.getElementById('lightbox');
-    const lightboxImage = document.getElementById('lightboxImage');
-    const lightboxClose = document.getElementById('lightboxClose');
     let settings = {};
     const words = {
-      nl: { title:'Mijn PostNL', loading:'Post ophalen…', empty:'Er wordt momenteel geen post verwacht.', unavailable:'Mijn PostNL is tijdelijk niet beschikbaar. Pakketgegevens blijven actief.', login:'Koppel eerst je PostNL-account.', error:'Post kon niet worden opgehaald.' },
-      en: { title:'My PostNL', loading:'Loading mail…', empty:'No mail is currently expected.', unavailable:'My PostNL is temporarily unavailable. Parcel data remains active.', login:'Connect your PostNL account first.', error:'Mail could not be loaded.' }
+      nl: { title:'Mijn PostNL', loading:'Post ophalen…', empty:'Er wordt momenteel geen post verwacht.', unavailable:'Mijn PostNL kon niet worden opgehaald. Pakketgegevens blijven actief.', login:'Koppel eerst je PostNL-account.', error:'Post kon niet worden opgehaald.' },
+      en: { title:'My PostNL', loading:'Loading mail…', empty:'No mail is currently expected.', unavailable:'My PostNL could not be loaded. Parcel data remains active.', login:'Connect your PostNL account first.', error:'Mail could not be loaded.' }
     };
     function localeText(locale) { return words[String(locale || '').toLowerCase().split('-')[0]] || words.en; }
     function dateLabel(value, locale, timeZone) {
@@ -85,17 +73,16 @@
       const t = localeText(lang);
       document.getElementById('title').textContent = t.title;
       if (!data.authenticated) { content.innerHTML = `<div class="empty"><span class="empty-icon">✉</span>${t.login}</div>`; return; }
-      if (!data.letters?.length && data.mailApiStatus === 'temporarily_unavailable') { content.innerHTML = `<div class="empty error">${t.unavailable}</div>`; return; }
+      if (!data.letters?.length && data.mailApiStatus === 'temporarily_unavailable') { content.innerHTML = `<div class="empty error">${t.unavailable}${data.mailApiError ? `<br><small>${String(data.mailApiError).replace(/[<>]/g,'')}</small>` : ''}</div>`; return; }
       if (!data.letters?.length) { content.innerHTML = `<div class="empty"><span class="empty-icon">✉</span>${t.empty}</div>`; return; }
       const letters = document.createElement('div');
       letters.id = 'letters';
+      letters.style.setProperty('--count', Math.min(data.letters.length, 6));
       for (const item of data.letters) {
         const article = document.createElement('article'); article.className = 'letter';
         const shell = document.createElement('div'); shell.className = 'image-shell';
         if (item.imageData || item.imageUrl) {
-          const img = document.createElement('img'); img.alt = `Post ${dateLabel(item.deliveryDate, lang, data.timeZone)}`; img.src = item.imageData || item.imageUrl;
-          img.onclick = () => { lightboxImage.src = img.src; lightboxImage.alt = img.alt; lightbox.classList.remove('hidden'); };
-          shell.appendChild(img);
+          const img = document.createElement('img'); img.alt = `Post ${dateLabel(item.deliveryDate, lang, data.timeZone)}`; img.src = item.imageData || item.imageUrl; shell.appendChild(img);
         } else { const placeholder = document.createElement('div'); placeholder.className='placeholder'; placeholder.textContent='✉'; shell.appendChild(placeholder); }
         const date = document.createElement('div'); date.className = 'date'; date.textContent = dateLabel(item.deliveryDate, lang, data.timeZone);
         article.append(shell,date); letters.appendChild(article);
@@ -117,10 +104,6 @@
         try { await Homey.api('POST','/sync',{}); await load(); } catch (error) { content.innerHTML = `<div class="empty error">${String(error.message || error)}</div>`; }
         finally { refresh.classList.remove('spinning'); }
       };
-      const closeLightbox = () => { lightbox.classList.add('hidden'); lightboxImage.removeAttribute('src'); };
-      lightboxClose.onclick = closeLightbox;
-      lightbox.onclick = event => { if (event.target === lightbox) closeLightbox(); };
-      document.addEventListener('keydown', event => { if (event.key === 'Escape') closeLightbox(); });
       await load();
       Homey.ready();
     }

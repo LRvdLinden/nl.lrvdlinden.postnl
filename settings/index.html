@@ -59,9 +59,17 @@
         const connected = Boolean(result?.authenticated);
         loginPanel.classList.toggle('hidden', connected);
         connectedActions.classList.toggle('hidden', !connected);
-        status.textContent = connected
-          ? `Verbonden${result.username ? ` als ${result.username}` : ''}${result.updatedAt ? ` • Laatste update ${new Date(result.updatedAt).toLocaleString()}` : ''}. Je kunt nu het PostNL-apparaat toevoegen.`
-          : 'Niet verbonden. Meld je hieronder eerst aan bij PostNL.';
+        if (!connected) {
+          status.textContent = 'Niet verbonden. Meld je hieronder eerst aan bij PostNL.';
+          return;
+        }
+        const parts = [`Verbonden${result.username ? ` als ${result.username}` : ''}`];
+        if (result.mailApiStatus === 'available') parts.push('Mijn PostNL actief');
+        else if (result.mailApiStatus === 'temporarily_unavailable') parts.push(`Mijn PostNL niet beschikbaar${result.mailApiError ? ` (${result.mailApiError})` : ''}`);
+        if (Number.isFinite(result.activePackageCount)) parts.push(`${result.activePackageCount} pakket(ten) onderweg`);
+        if (Number.isFinite(result.deliveredPackageCount)) parts.push(`${result.deliveredPackageCount} bezorgd pakket(ten) bekend`);
+        if (result.updatedAt) parts.push(`laatste update ${new Date(result.updatedAt).toLocaleString()}`);
+        status.textContent = parts.join(' • ');
       };
       const prepareLoginLink = async () => {
         startLogin.removeAttribute('href');
@@ -104,16 +112,28 @@
         } catch (error) { alertError(error); }
         finally { if (Homey.hideLoadingOverlay) Homey.hideLoadingOverlay(); }
       };
-      document.getElementById('sync').onclick = () => Homey.api('POST','/sync',{},error => Homey.alert(error ? error.message : 'Synchronisatie voltooid.'));
-      document.getElementById('logout').onclick = () => Homey.confirm('Weet je zeker dat je het PostNL-account wilt ontkoppelen?', async (_, yes) => {
+      document.getElementById('sync').onclick = async () => {
+        if (Homey.showLoadingOverlay) Homey.showLoadingOverlay();
+        try {
+          await api('POST', '/sync');
+          showStatus(await api('GET', '/auth/status'));
+          Homey.alert('Synchronisatie voltooid.');
+        } catch (error) { alertError(error); }
+        finally { if (Homey.hideLoadingOverlay) Homey.hideLoadingOverlay(); }
+      };
+      document.getElementById('logout').onclick = () => Homey.confirm('Weet je zeker dat je het PostNL-account wilt ontkoppelen?', 'warning', async (error, yes) => {
+        if (error) return alertError(error);
         if (!yes) return;
+        if (Homey.showLoadingOverlay) Homey.showLoadingOverlay();
         try {
           await api('POST', '/auth/logout');
           callback.value = '';
           completePanel.classList.add('hidden');
           showStatus({ authenticated: false });
           await prepareLoginLink();
-        } catch (error) { alertError(error); }
+          Homey.alert('PostNL-account is ontkoppeld.');
+        } catch (logoutError) { alertError(logoutError); }
+        finally { if (Homey.hideLoadingOverlay) Homey.hideLoadingOverlay(); }
       });
     }
   </script>

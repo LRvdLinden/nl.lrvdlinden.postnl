@@ -22,16 +22,21 @@ class PostNLDevice extends Homey.Device {
     const updated = snapshot.updatedAt
       ? new Intl.DateTimeFormat('nl-NL', { timeZone: this.homey.clock.getTimezone(), dateStyle: 'short', timeStyle: 'short' }).format(new Date(snapshot.updatedAt))
       : '—';
+    const connected = this.homey.app.api.hasCredentials();
     const values = {
       postnl_mail_expected: letters.length > 0,
       postnl_mail_count: letters.length,
       postnl_package_count: packages.length,
       postnl_next_delivery: nextDelivery,
-      postnl_status: error
-        ? `Fout: ${error.message}`
-        : snapshot.mailApiStatus === 'temporarily_unavailable'
-          ? 'Verbonden • Mijn PostNL tijdelijk niet beschikbaar'
-          : (snapshot.updatedAt ? 'Verbonden' : 'Wachten op synchronisatie'),
+      postnl_status: !connected
+        ? 'Niet verbonden'
+        : error
+          ? `Fout: ${error.message}`
+          : snapshot.mailApiStatus === 'temporarily_unavailable'
+            ? 'Verbonden • Mijn PostNL niet beschikbaar'
+            : snapshot.mailApiStatus === 'available'
+              ? 'Verbonden • Mijn PostNL actief'
+              : (snapshot.updatedAt ? 'Verbonden' : 'Wachten op synchronisatie'),
       postnl_last_update: updated,
     };
     for (const [capability, value] of Object.entries(values)) {

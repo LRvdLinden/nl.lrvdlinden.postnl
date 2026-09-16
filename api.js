@@ -18,10 +18,16 @@ module.exports = {
       homey.app.error('PostNL login validation failed', error);
       return { authenticated: false, username: null, updatedAt: null };
     }
+    const snapshot = homey.settings.get('snapshot') || {};
+    const packages = snapshot.packages || [];
     return {
       authenticated: true,
       username: profile?.username || null,
-      updatedAt: homey.settings.get('snapshot')?.updatedAt || null,
+      updatedAt: snapshot.updatedAt || null,
+      mailApiStatus: snapshot.mailApiStatus || 'unknown',
+      mailApiError: snapshot.mailApiError || null,
+      activePackageCount: packages.filter(item => !item.delivered).length,
+      deliveredPackageCount: packages.filter(item => item.delivered).length,
     };
   },
   async startAuth({ homey }) {
@@ -37,6 +43,10 @@ module.exports = {
   },
   async logout({ homey }) {
     await homey.app.api.logout();
+    const snapshot = { letters: [], packages: [], updatedAt: null, account: null, mailApiStatus: 'unknown', mailApiError: null, reason: 'logout' };
+    homey.app.snapshot = snapshot;
+    await homey.settings.set('snapshot', snapshot);
+    await homey.app._updateDevices(snapshot, null);
     return { authenticated: false };
   },
 };
