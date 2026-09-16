@@ -1,0 +1,13 @@
+{
+  "name": { "en": "My Package", "nl": "Mijn Pakket" },
+  "height": 360,
+  "api": {
+    "getData": { "method": "GET", "path": "/" },
+    "sync": { "method": "POST", "path": "/sync" }
+  },
+  "devices": {
+    "type": "app",
+    "singular": false,
+    "filter": { "capabilities": "postnl_package_count" }
+  }
+}
