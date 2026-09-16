@@ -1,6 +1,6 @@
 {
   "id": "nl.lrvdlinden.postnl",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "compatibility": ">=12.3.0",
   "sdk": 3,
   "platforms": [
@@ -67,33 +67,7 @@
         "en": "My PostNL",
         "nl": "Mijn PostNL"
       },
-      "height": 240,
-      "settings": [
-        {
-          "id": "maximumItems",
-          "type": "number",
-          "value": 3,
-          "min": 1,
-          "max": 6,
-          "step": 1,
-          "title": {
-            "en": "Maximum mail items",
-            "nl": "Maximaal aantal poststukken"
-          }
-        },
-        {
-          "id": "historyDays",
-          "type": "number",
-          "value": 1,
-          "min": 1,
-          "max": 14,
-          "step": 1,
-          "title": {
-            "en": "Number of days",
-            "nl": "Aantal dagen"
-          }
-        }
-      ],
+      "height": 360,
       "api": {
         "getData": {
           "method": "GET",
@@ -104,6 +78,20 @@
           "path": "/sync"
         }
       },
+      "settings": [
+        {
+          "id": "maximumItems",
+          "type": "number",
+          "value": 5,
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "title": {
+            "en": "Items per category",
+            "nl": "Items per categorie"
+          }
+        }
+      ],
       "devices": {
         "type": "app",
         "singular": false,

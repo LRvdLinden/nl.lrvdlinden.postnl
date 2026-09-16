@@ -181,8 +181,10 @@ class PostNLApp extends Homey.App {
 
   getWidgetData() {
     return {
-      letters: (this.snapshot.letters || []).slice(0, 12),
-      packages: (this.snapshot.packages || []).filter(item => !item.delivered),
+      letters: (this.snapshot.letters || []).slice(0, 20),
+      // Keep recent delivered parcels available to the widget as well;
+      // capabilities still count only active/in-transit parcels.
+      packages: (this.snapshot.packages || []).slice(0, 40),
       updatedAt: this.snapshot.updatedAt,
       authenticated: this.api.hasCredentials(),
       mailApiStatus: this.snapshot.mailApiStatus || 'unknown',

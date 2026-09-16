@@ -61,5 +61,9 @@
   "0.1.15": {
     "en": "Added rich Flow tokens for mail and parcels, a native mail-item image token and device camera image, sender details for parcels, and highlighted the new-mail and new-parcel trigger cards.",
     "nl": "Uitgebreide Flow-tokens toegevoegd voor post en pakketten, inclusief een native afbeeldingstoken en device-camera-afbeelding voor poststukken, afzendergegevens voor pakketten en uitgelichte kaarten voor nieuwe post en nieuwe pakketten."
+  },
+  "0.1.16": {
+    "en": "My PostNL widget now shows up to the 5 most recent mail items and 5 most recent parcels, including delivered parcel history, with a scrollable layout and expandable mail images.",
+    "nl": "De Mijn PostNL-widget toont nu maximaal de 5 meest recente poststukken én 5 meest recente pakketten, inclusief bezorgde pakketten, in een scrollbare indeling met vergrootbare poststuk-afbeeldingen."
   }
 }

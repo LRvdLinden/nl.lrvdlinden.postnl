@@ -5,107 +5,176 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
     * { box-sizing:border-box; }
-    html,body { width:100%; height:100%; margin:0; overflow:hidden; background:transparent; color:#232323; font:16px/1.25 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    html,body { width:100%; height:100%; margin:0; overflow:hidden; background:transparent; color:#232323; font:14px/1.3 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
     .card { display:grid; grid-template-rows:50px minmax(0,1fr); width:100%; height:100%; overflow:hidden; border-radius:17px; background:#f4f4f5; box-shadow:0 1px 1px #0000000d; }
-    header { display:flex; align-items:center; min-width:0; padding:0 24px; border-bottom:1px solid #dedee0; background:#fafafa; }
-    .brand { display:flex; align-items:center; min-width:0; }
+    header { display:flex; align-items:center; min-width:0; padding:0 20px; border-bottom:1px solid #dedee0; background:#fafafa; }
     .brand-logo { display:block; width:38px; height:38px; object-fit:contain; }
     h1 { margin:0 0 0 auto; overflow:hidden; color:#858488; font-size:18px; font-weight:500; text-overflow:ellipsis; white-space:nowrap; }
-    #content { display:grid; place-items:center; min-height:0; padding:16px 24px 15px; }
-    #letters { display:grid; grid-template-columns:repeat(var(--count,3),minmax(0,1fr)); gap:10px; align-items:stretch; width:100%; height:100%; }
-    .letter { display:grid; grid-template-rows:minmax(0,1fr) 26px; gap:8px; min-width:0; min-height:0; }
-    .image-shell { display:grid; place-items:center; min-width:0; min-height:0; padding:7px; overflow:hidden; border-radius:6px; background:#e4e4e5; }
-    .image-shell img { display:block; width:100%; max-height:100%; object-fit:contain; background:#fff; box-shadow:0 1px 4px #0003; }
-    .placeholder { display:grid; place-items:center; width:100%; height:100%; color:#a1a0a4; font-size:30px; }
-    .date { justify-self:center; align-self:start; max-width:100%; overflow:hidden; padding:2px 12px 3px; border-radius:16px; background:#dadadd; color:#4d4c50; font-size:15px; line-height:20px; font-weight:750; text-overflow:ellipsis; white-space:nowrap; }
-    .empty { max-width:280px; color:#77767b; text-align:center; }
-    .empty-icon { display:block; margin-bottom:9px; font-size:32px; }
-    .loading { color:#77767b; }
-    .error { color:#bd1c2b; }
-    button.refresh { position:absolute; top:13px; right:104px; width:26px; height:26px; padding:0; border:0; border-radius:50%; background:transparent; color:#8c8b90; font-size:18px; cursor:pointer; opacity:0; transition:opacity .15s; }
-    .card:hover button.refresh,button.refresh:focus-visible { opacity:1; }
-    button.refresh.spinning { opacity:1; animation:spin .8s linear infinite; }
+    button.refresh { width:30px; height:30px; margin-left:auto; padding:0; border:0; border-radius:50%; background:transparent; color:#8c8b90; font-size:19px; cursor:pointer; opacity:.85; }
+    button.refresh.spinning { animation:spin .8s linear infinite; }
     @keyframes spin { to { transform:rotate(360deg); } }
+    #content { min-height:0; overflow-y:auto; overscroll-behavior:contain; padding:12px 14px 16px; scrollbar-width:thin; }
+    .section + .section { margin-top:16px; }
+    .section-title { display:flex; align-items:center; justify-content:space-between; margin:0 2px 7px; color:#6f6e72; font-size:12px; font-weight:750; letter-spacing:.02em; text-transform:uppercase; }
+    .section-count { font-weight:600; opacity:.75; }
+    .list { display:grid; gap:7px; }
+    .item { display:grid; grid-template-columns:52px minmax(0,1fr); gap:10px; align-items:center; min-height:58px; padding:7px 9px; border:1px solid #e1e1e3; border-radius:11px; background:#fff; }
+    .item.clickable { cursor:pointer; }
+    .thumb { display:grid; place-items:center; width:52px; height:44px; overflow:hidden; border-radius:7px; background:#eeeeef; color:#999; }
+    .thumb img { display:block; width:100%; height:100%; object-fit:cover; }
+    .thumb.mail img { object-fit:contain; background:#fff; }
+    .icon { font-size:24px; line-height:1; }
+    .meta { min-width:0; }
+    .primary { overflow:hidden; color:#2b2b2d; font-weight:700; text-overflow:ellipsis; white-space:nowrap; }
+    .secondary { margin-top:2px; overflow:hidden; color:#747378; font-size:12px; text-overflow:ellipsis; white-space:nowrap; }
+    .tertiary { margin-top:2px; overflow:hidden; color:#949398; font-size:11px; text-overflow:ellipsis; white-space:nowrap; }
+    .badge { display:inline-block; margin-left:5px; padding:1px 6px; border-radius:10px; background:#ededee; color:#69686d; font-size:10px; font-weight:750; vertical-align:1px; }
+    .empty { padding:14px 10px; border-radius:10px; background:#ececee; color:#77767b; text-align:center; }
+    .loading { display:grid; place-items:center; min-height:100%; color:#77767b; }
+    .error { color:#bd1c2b; }
+    .notice { margin-bottom:10px; padding:8px 10px; border-radius:9px; background:#fff4e5; color:#855a16; font-size:12px; }
+    .modal { position:fixed; inset:0; z-index:10; display:none; place-items:center; padding:18px; background:#000b; }
+    .modal.open { display:grid; }
+    .modal-inner { position:relative; display:grid; place-items:center; width:100%; height:100%; }
+    .modal img { display:block; max-width:100%; max-height:100%; border-radius:10px; background:#fff; box-shadow:0 12px 40px #0008; object-fit:contain; }
+    .modal-close { position:absolute; top:0; right:0; width:34px; height:34px; border:0; border-radius:50%; background:#1c1c1ed9; color:#fff; font-size:22px; cursor:pointer; }
     @media(max-width:350px) {
-      header { padding:0 16px; }
-      #content { padding:13px 16px; }
+      header { padding:0 14px; }
       h1 { font-size:16px; }
-      .date { padding-inline:8px; font-size:13px; }
+      #content { padding-inline:10px; }
+      .item { grid-template-columns:46px minmax(0,1fr); }
+      .thumb { width:46px; }
     }
     @media(prefers-color-scheme:dark) {
       html,body { color:#f2f2f3; }
       .card { background:#2d2d2f; box-shadow:none; }
       header { border-color:#39393b; background:#2a2a2c; }
-      h1 { color:#a7a5aa; }
-      .image-shell { background:#1d1d1f; }
-      .date { color:#f2f1f3; background:#555458; }
-      .empty,.loading { color:#aaa8ad; }
-      .placeholder { color:#656469; }
+      h1 { color:#aaa8ad; }
       button.refresh { color:#aaa8ad; }
+      .section-title { color:#aaa8ad; }
+      .item { border-color:#424244; background:#343436; }
+      .thumb { background:#242426; }
+      .primary { color:#f2f2f3; }
+      .secondary { color:#b2b1b5; }
+      .tertiary { color:#919095; }
+      .badge { background:#4a4a4d; color:#dedde0; }
+      .empty { background:#373739; color:#aaa8ad; }
+      .loading { color:#aaa8ad; }
+      .notice { background:#49371f; color:#f0c47e; }
     }
   </style>
 </head>
 <body>
   <main class="card">
     <header>
-      <div class="brand"><img class="brand-logo" src="postnl-logo.png" alt="PostNL"></div>
+      <img class="brand-logo" src="postnl-logo.png" alt="PostNL">
       <button id="refresh" class="refresh" type="button" title="Synchroniseren" aria-label="Synchroniseren">↻</button>
       <h1 id="title">Mijn PostNL</h1>
     </header>
-    <section id="content"><div class="loading">Post ophalen…</div></section>
+    <section id="content"><div class="loading">PostNL ophalen…</div></section>
   </main>
+  <div id="modal" class="modal" role="dialog" aria-modal="true" aria-label="Poststuk afbeelding">
+    <div class="modal-inner">
+      <button id="modalClose" class="modal-close" type="button" aria-label="Sluiten">×</button>
+      <img id="modalImage" alt="Poststuk">
+    </div>
+  </div>
   <script>
     const content = document.getElementById('content');
     const refresh = document.getElementById('refresh');
+    const modal = document.getElementById('modal');
+    const modalImage = document.getElementById('modalImage');
+    const modalClose = document.getElementById('modalClose');
     let settings = {};
     const words = {
-      nl: { title:'Mijn PostNL', loading:'Post ophalen…', empty:'Er wordt momenteel geen post verwacht.', unavailable:'Mijn PostNL kon niet worden opgehaald. Pakketgegevens blijven actief.', login:'Koppel eerst je PostNL-account.', error:'Post kon niet worden opgehaald.' },
-      en: { title:'My PostNL', loading:'Loading mail…', empty:'No mail is currently expected.', unavailable:'My PostNL could not be loaded. Parcel data remains active.', login:'Connect your PostNL account first.', error:'Mail could not be loaded.' }
+      nl: {
+        title:'Mijn PostNL', loading:'PostNL ophalen…', mail:'Poststukken', parcels:'Pakketten',
+        noMail:'Geen recente poststukken.', noParcels:'Geen recente pakketten.',
+        unavailable:'Mijn PostNL is tijdelijk niet beschikbaar. Recente opgeslagen poststukken worden hieronder getoond.',
+        login:'Koppel eerst je PostNL-account.', error:'PostNL kon niet worden opgehaald.',
+        delivered:'Bezorgd', underway:'Onderweg', outgoing:'Uitgaand', incoming:'Inkomend', unknownSender:'Onbekende afzender'
+      },
+      en: {
+        title:'My PostNL', loading:'Loading PostNL…', mail:'Mail items', parcels:'Parcels',
+        noMail:'No recent mail items.', noParcels:'No recent parcels.',
+        unavailable:'My PostNL is temporarily unavailable. Recently stored mail items are shown below.',
+        login:'Connect your PostNL account first.', error:'PostNL could not be loaded.',
+        delivered:'Delivered', underway:'In transit', outgoing:'Outgoing', incoming:'Incoming', unknownSender:'Unknown sender'
+      }
     };
-    function localeText(locale) { return words[String(locale || '').toLowerCase().split('-')[0]] || words.en; }
-    function dateLabel(value, locale, timeZone) {
+    function langOf(locale) { return String(locale || 'nl').toLowerCase().split('-')[0] === 'nl' ? 'nl' : 'en'; }
+    function esc(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function formatDate(value, lang, timeZone) {
       const date = new Date(value);
       if (Number.isNaN(date.getTime())) return '—';
-      return new Intl.DateTimeFormat(locale === 'nl' ? 'nl-NL' : 'en-GB', { day:'numeric', month:'long', timeZone }).format(date);
+      return new Intl.DateTimeFormat(lang === 'nl' ? 'nl-NL' : 'en-GB', { day:'numeric', month:'short', year:'numeric', timeZone }).format(date);
     }
+    function mailItem(item, lang, t, timeZone) {
+      const article = document.createElement('article'); article.className = 'item';
+      const thumb = document.createElement('div'); thumb.className = 'thumb mail';
+      const src = item.imageData || item.imageUrl || '';
+      if (src) {
+        const img = document.createElement('img'); img.src = src; img.alt = `${t.mail} ${formatDate(item.deliveryDate, lang, timeZone)}`; thumb.appendChild(img);
+        article.classList.add('clickable');
+        article.addEventListener('click', () => openImage(src, img.alt));
+      } else { const icon = document.createElement('span'); icon.className='icon'; icon.textContent='✉'; thumb.appendChild(icon); }
+      const meta = document.createElement('div'); meta.className='meta';
+      const primary = document.createElement('div'); primary.className='primary'; primary.textContent = item.sender || item.title || t.unknownSender;
+      const secondary = document.createElement('div'); secondary.className='secondary'; secondary.textContent = formatDate(item.deliveryDate || item.archivedAt, lang, timeZone);
+      meta.append(primary, secondary); article.append(thumb, meta); return article;
+    }
+    function parcelItem(item, lang, t, timeZone) {
+      const article = document.createElement('article'); article.className='item';
+      const thumb = document.createElement('div'); thumb.className='thumb';
+      const icon = document.createElement('span'); icon.className='icon'; icon.textContent='▱'; thumb.appendChild(icon);
+      const meta = document.createElement('div'); meta.className='meta';
+      const primary = document.createElement('div'); primary.className='primary'; primary.textContent = item.sender || item.title || item.barcode || 'PostNL';
+      const status = item.delivered ? t.delivered : t.underway;
+      const direction = item.direction === 'outgoing' ? t.outgoing : t.incoming;
+      const secondary = document.createElement('div'); secondary.className='secondary';
+      secondary.innerHTML = `${esc(status)} <span class="badge">${esc(direction)}</span>`;
+      const dateValue = item.deliveryDate || item.deliveryWindowFrom || item.createdAt;
+      const detail = item.deliveryWindow || formatDate(dateValue, lang, timeZone);
+      const tertiary = document.createElement('div'); tertiary.className='tertiary'; tertiary.textContent = detail || item.status || '';
+      meta.append(primary, secondary, tertiary); article.append(thumb, meta);
+      if (item.detailsUrl) { article.classList.add('clickable'); article.addEventListener('click', () => window.open(item.detailsUrl, '_blank', 'noopener,noreferrer')); }
+      return article;
+    }
+    function section(title, items, emptyText, builder, count) {
+      const wrapper = document.createElement('section'); wrapper.className='section';
+      const heading = document.createElement('div'); heading.className='section-title';
+      heading.innerHTML = `<span>${esc(title)}</span><span class="section-count">${count}</span>`;
+      wrapper.appendChild(heading);
+      if (!items.length) { const empty=document.createElement('div'); empty.className='empty'; empty.textContent=emptyText; wrapper.appendChild(empty); return wrapper; }
+      const list=document.createElement('div'); list.className='list'; items.forEach(item => list.appendChild(builder(item))); wrapper.appendChild(list); return wrapper;
+    }
+    function openImage(src, alt) { modalImage.src=src; modalImage.alt=alt || 'Poststuk'; modal.classList.add('open'); }
+    function closeImage() { modal.classList.remove('open'); modalImage.removeAttribute('src'); }
+    modalClose.onclick = closeImage;
+    modal.addEventListener('click', e => { if (e.target === modal || e.target === modal.querySelector('.modal-inner')) closeImage(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeImage(); });
     function render(data) {
-      const lang = String(data.locale || 'nl').split('-')[0];
-      const t = localeText(lang);
-      document.getElementById('title').textContent = t.title;
-      if (!data.authenticated) { content.innerHTML = `<div class="empty"><span class="empty-icon">✉</span>${t.login}</div>`; return; }
-      if (!data.letters?.length && data.mailApiStatus === 'temporarily_unavailable') { content.innerHTML = `<div class="empty error">${t.unavailable}${data.mailApiError ? `<br><small>${String(data.mailApiError).replace(/[<>]/g,'')}</small>` : ''}</div>`; return; }
-      if (!data.letters?.length) { content.innerHTML = `<div class="empty"><span class="empty-icon">✉</span>${t.empty}</div>`; return; }
-      const letters = document.createElement('div');
-      letters.id = 'letters';
-      letters.style.setProperty('--count', Math.min(data.letters.length, 6));
-      for (const item of data.letters) {
-        const article = document.createElement('article'); article.className = 'letter';
-        const shell = document.createElement('div'); shell.className = 'image-shell';
-        if (item.imageData || item.imageUrl) {
-          const img = document.createElement('img'); img.alt = `Post ${dateLabel(item.deliveryDate, lang, data.timeZone)}`; img.src = item.imageData || item.imageUrl; shell.appendChild(img);
-        } else { const placeholder = document.createElement('div'); placeholder.className='placeholder'; placeholder.textContent='✉'; shell.appendChild(placeholder); }
-        const date = document.createElement('div'); date.className = 'date'; date.textContent = dateLabel(item.deliveryDate, lang, data.timeZone);
-        article.append(shell,date); letters.appendChild(article);
+      const lang=langOf(data.locale), t=words[lang];
+      document.getElementById('title').textContent=t.title;
+      if (!data.authenticated) { content.innerHTML=`<div class="empty">${esc(t.login)}</div>`; return; }
+      content.replaceChildren();
+      if (data.mailApiStatus === 'temporarily_unavailable') {
+        const notice=document.createElement('div'); notice.className='notice'; notice.textContent=t.unavailable; content.appendChild(notice);
       }
-      content.replaceChildren(letters);
+      const letters=(data.letters || []), packages=(data.packages || []);
+      content.appendChild(section(t.mail, letters, t.noMail, item => mailItem(item,lang,t,data.timeZone), letters.length));
+      content.appendChild(section(t.parcels, packages, t.noParcels, item => parcelItem(item,lang,t,data.timeZone), packages.length));
     }
     async function load() {
-      const t = localeText('nl'); content.innerHTML = `<div class="loading">${t.loading}</div>`;
-      try {
-        const query = { maximumItems: settings.maximumItems || 3, historyDays: settings.historyDays || 1 };
-        render(await Homey.api('GET','/',query));
-      } catch (error) { content.innerHTML = `<div class="empty error">${t.error}<br><small>${String(error.message || error)}</small></div>`; }
+      content.innerHTML=`<div class="loading">${words.nl.loading}</div>`;
+      try { render(await Homey.api('GET','/',{ maximumItems: settings.maximumItems || 5 })); }
+      catch (error) { content.innerHTML=`<div class="empty error">${esc(error.message || error)}</div>`; }
     }
     async function onHomeyReady(Homey) {
-      settings = Homey.getSettings() || {};
-      Homey.on('settings', value => { settings = value || {}; load(); });
-      refresh.onclick = async () => {
-        refresh.classList.add('spinning');
-        try { await Homey.api('POST','/sync',{}); await load(); } catch (error) { content.innerHTML = `<div class="empty error">${String(error.message || error)}</div>`; }
-        finally { refresh.classList.remove('spinning'); }
-      };
-      await load();
-      Homey.ready();
+      settings=Homey.getSettings() || {};
+      Homey.on('settings', value => { settings=value || {}; load(); });
+      refresh.onclick=async()=>{ refresh.classList.add('spinning'); try { await Homey.api('POST','/sync',{}); await load(); } catch(error) { content.innerHTML=`<div class="empty error">${esc(error.message || error)}</div>`; } finally { refresh.classList.remove('spinning'); } };
+      await load(); Homey.ready();
     }
   </script>
 </body>
