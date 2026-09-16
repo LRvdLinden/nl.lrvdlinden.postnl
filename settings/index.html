@@ -43,19 +43,6 @@
       <button id="logout" class="homey-button-danger-full">Account ontkoppelen</button>
     </div>
   </fieldset>
-  <fieldset class="homey-form-fieldset">
-    <legend class="homey-form-legend">Geavanceerd</legend>
-    <div class="homey-form-group">
-      <label class="homey-form-label" for="apiVersion">Mobiele API-versie</label>
-      <input id="apiVersion" class="homey-form-input" value="4.18">
-    </div>
-    <div class="homey-form-group">
-      <label class="homey-form-label" for="iosVersion">PostNL iOS-appversie</label>
-      <input id="iosVersion" class="homey-form-input" value="7.1.0">
-    </div>
-    <button id="save" class="homey-button-secondary-full">Instellingen opslaan</button>
-    <p class="homey-form-description">Wijzig deze waarden alleen wanneer PostNL een nieuwe minimale mobiele versie afdwingt.</p>
-  </fieldset>
   <script>
     function onHomeyReady(Homey) {
       const status = document.getElementById('status');
@@ -66,12 +53,6 @@
       const callback = document.getElementById('callback');
       const api = (method, path, body = {}) => new Promise((resolve, reject) => {
         Homey.api(method, path, body, (error, result) => error ? reject(error) : resolve(result));
-      });
-      const getSetting = name => new Promise((resolve, reject) => {
-        Homey.get(name, (error, value) => error ? reject(error) : resolve(value));
-      });
-      const setSetting = (name, value) => new Promise((resolve, reject) => {
-        Homey.set(name, value, error => error ? reject(error) : resolve());
       });
       const alertError = error => Homey.alert(error?.message || String(error));
       const showStatus = result => {
@@ -96,16 +77,9 @@
           throw error;
         }
       };
-      Promise.all([
-        api('GET', '/auth/status'), getSetting('api_version'), getSetting('ios_version')
-      ]).then(([authStatus,apiVersion,iosVersion]) => {
+      api('GET', '/auth/status').then(authStatus => {
         showStatus(authStatus);
-        if (!authStatus?.authenticated) return prepareLoginLink().then(() => [apiVersion, iosVersion]);
-        return [apiVersion, iosVersion];
-      }).then(versions => {
-        const [apiVersion, iosVersion] = versions;
-        document.getElementById('apiVersion').value = apiVersion || '4.18';
-        document.getElementById('iosVersion').value = iosVersion || '7.1.0';
+        if (!authStatus?.authenticated) return prepareLoginLink();
       }).catch(error => {
         status.textContent = `Status kon niet worden opgehaald: ${error.message || error}`;
         loginPanel.classList.remove('hidden');
@@ -129,13 +103,6 @@
           Homey.alert('PostNL is gekoppeld. Je kunt nu Mijn PostNL toevoegen.');
         } catch (error) { alertError(error); }
         finally { if (Homey.hideLoadingOverlay) Homey.hideLoadingOverlay(); }
-      };
-      document.getElementById('save').onclick = async () => {
-        try {
-          await setSetting('api_version', document.getElementById('apiVersion').value.trim());
-          await setSetting('ios_version', document.getElementById('iosVersion').value.trim());
-          Homey.alert('Instellingen opgeslagen.');
-        } catch (error) { alertError(error); }
       };
       document.getElementById('sync').onclick = () => Homey.api('POST','/sync',{},error => Homey.alert(error ? error.message : 'Synchronisatie voltooid.'));
       document.getElementById('logout').onclick = () => Homey.confirm('Weet je zeker dat je het PostNL-account wilt ontkoppelen?', async (_, yes) => {
