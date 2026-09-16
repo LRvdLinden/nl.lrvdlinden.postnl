@@ -69,5 +69,8 @@
   "0.1.17": {
     "en": "Split the dashboard into My Post and My Package widgets. My Post now uses a horizontal swipe/scroll gallery with date badges and expandable mail scans. My Package shows the five latest parcels with clear Incoming, In transit and Delivered phases. Updated developer website and connection documentation.",
     "nl": "Dashboard opgesplitst in de widgets Mijn Post en Mijn Pakket. Mijn Post gebruikt nu een horizontaal swipe-/scrolloverzicht met datumbadges en vergrootbare postscans. Mijn Pakket toont de vijf laatste pakketten met duidelijke fasen Inkomend, Onderweg en Bezorgd. Developerwebsite en koppelhandleiding bijgewerkt."
+  },
+  "0.2.0": {
+    "en": "First beta release"
   }
 }
