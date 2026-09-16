@@ -34,3 +34,4 @@ De app synchroniseert standaard iedere 5 minuten en controleert rond middernacht
 Let op
 PostNL biedt geen openbare consumenten-API voor deze functies. Deze app gebruikt dezelfde niet-openbare interfaces als de mobiele PostNL-diensten. Wanneer PostNL die interfaces wijzigt, kan een onderdeel tijdelijk niet beschikbaar zijn. Pakketgegevens en Mijn Post worden waar mogelijk onafhankelijk van elkaar verwerkt, zodat een probleem met Mijn Post niet automatisch het volledige device uitschakelt.
 
+
