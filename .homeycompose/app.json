@@ -1,6 +1,6 @@
 {
   "id": "nl.lrvdlinden.postnl",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "compatibility": ">=12.3.0",
   "sdk": 3,
   "platforms": [
@@ -60,7 +60,7 @@
           "step": 1,
           "title": {
             "en": "Maximum mail items",
-            "nl": "Maximaal aantal poststukkken"
+            "nl": "Maximaal aantal poststukken"
           }
         },
         {
@@ -77,14 +77,8 @@
         }
       ],
       "api": {
-        "getData": {
-          "method": "GET",
-          "path": "/"
-        },
-        "sync": {
-          "method": "POST",
-          "path": "/sync"
-        }
+        "getData": { "method": "GET", "path": "/" },
+        "sync": { "method": "POST", "path": "/sync" }
       },
       "devices": {
         "type": "app",
