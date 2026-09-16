@@ -72,5 +72,9 @@
   },
   "0.2.0": {
     "en": "First beta release"
+  },
+  "0.2.1": {
+    "en": "Expanded and hardened PostNL sign-in with a guided login wizard, callback validation, hidden credentials, safe token-health diagnostics, longer login window and more resilient token refresh handling.",
+    "nl": "PostNL-aanmelding uitgebreid en robuuster gemaakt met een begeleide loginwizard, callbackvalidatie, volledig verborgen inloggegevens, veilige tokenstatus-diagnostiek, langere aanmeldtijd en robuustere tokenvernieuwing."
   }
 }
