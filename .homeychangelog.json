@@ -74,7 +74,7 @@
     "en": "First beta release"
   },
   "0.2.1": {
-    "en": "Expanded and hardened PostNL sign-in with a guided login wizard, callback validation, hidden credentials, safe token-health diagnostics, longer login window and more resilient token refresh handling.",
-    "nl": "PostNL-aanmelding uitgebreid en robuuster gemaakt met een begeleide loginwizard, callbackvalidatie, volledig verborgen inloggegevens, veilige tokenstatus-diagnostiek, langere aanmeldtijd en robuustere tokenvernieuwing."
+    "en": "Improved privacy-safe diagnostics for PostNL authentication and synchronization. Logs now report only token/callback presence as booleans, never credential values. Reduced unauthenticated sync log noise and hardened the outline driver icon for iOS PNG rendering without filling the icon.",
+    "nl": "Privacyveilige diagnostiek voor PostNL-authenticatie en synchronisatie uitgebreid. Logs melden tokens/callbacks alleen als aanwezig true/false en tonen nooit inlogwaarden. Niet-gekoppelde automatische synchronisatie geeft geen foutspam meer en het outline-drivericoon is robuuster gemaakt voor iOS-PNG-weergave zonder het icoon te vullen."
   }
 }
