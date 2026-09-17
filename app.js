@@ -17,7 +17,7 @@ class PostNLApp extends Homey.App {
     if (this.api.hasCredentials()) {
       this.homey.setTimeout(() => this.sync({ reason: 'startup' }).catch(this.error), 10 * 1000);
     }
-    this.log(`PostNL ${Homey.manifest.version} initialized`);
+    this.log(`[PostNLApp] PostNL ${Homey.manifest.version} initialized`, JSON.stringify(this.api.getAuthDiagnostics()));
   }
 
   async onUninit() {
@@ -53,10 +53,13 @@ class PostNLApp extends Homey.App {
 
   async _sync({ reason }) {
     if (!this.api.hasCredentials()) {
-      // Normal state before the user has linked PostNL. Do not pollute diagnostics.
-      if (reason !== 'interval' && reason !== 'midnight') this.log(`PostNL sync skipped (${reason}): account is not linked`);
-      return { ...this.snapshot, authenticated: false, skipped: true, reason };
+      if (!['interval', 'startup', 'midnight'].includes(reason)) {
+        this.log('[PostNLApp] sync_skipped_not_authenticated', JSON.stringify({ reason, ...this.api.getAuthDiagnostics() }));
+        throw new Error(this.homey.__('errors.not_authenticated'));
+      }
+      return this.snapshot;
     }
+    this.log('[PostNLApp] sync_started', JSON.stringify({ reason, ...this.api.getAuthDiagnostics() }));
     const previous = this.snapshot || { letters: [], packages: [] };
     try {
       const live = await this.api.fetchAll();
@@ -71,12 +74,13 @@ class PostNLApp extends Homey.App {
         reason,
       };
       this.snapshot = snapshot;
+      this.log('[PostNLApp] sync_completed', JSON.stringify({ reason, letters: letters.length, packages: live.packages.length, mailApiStatus: snapshot.mailApiStatus, ...this.api.getAuthDiagnostics() }));
       await this.homey.settings.set('snapshot', snapshot);
       await this._triggerChanges(previous, snapshot);
       await this._updateDevices(snapshot, null);
       return snapshot;
     } catch (error) {
-      this.error('PostNL sync failed', error);
+      this.error('[PostNLApp] sync_failed', JSON.stringify({ reason, ...this.api.safeErrorInfo(error), ...this.api.getAuthDiagnostics() }));
       const authError = error.statusCode === 401 || error.code === 'AUTH_EXPIRED';
       await this._updateDevices(previous, error);
       const devices = this.homey.drivers.getDriver('account').getDevices();
@@ -150,7 +154,7 @@ class PostNLApp extends Homey.App {
       if (newLetters.length) {
         const newest = newLetters[0];
         const image = await this.getLetterImage(newest).catch(error => {
-          this.error('Could not create Homey image token', error);
+          this.error('[PostNLApp] image_token_failed', JSON.stringify(this.api.safeErrorInfo(error)));
           return null;
         });
         const tokens = {
