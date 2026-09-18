@@ -44,7 +44,7 @@
       en:{title:'My Post',loading:'Loading mail…',empty:'No mail is currently expected.',login:'Connect your PostNL account first.',unavailable:'My Post is temporarily unavailable.'}
     };
     function langOf(v){return String(v||'nl').toLowerCase().split('-')[0]==='nl'?'nl':'en'}
-    function dateLabel(value,lang,timeZone){const d=new Date(value);if(Number.isNaN(d.getTime()))return '—';return new Intl.DateTimeFormat(lang==='nl'?'nl-NL':'en-GB',{day:'numeric',month:'long',timeZone}).format(d)}
+    function dateLabel(value,lang,timeZone){const d=new Date(value);if(Number.isNaN(d.getTime()))return '—';const parts=new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'numeric',timeZone}).formatToParts(d);const day=parts.find(p=>p.type==='day')?.value||String(d.getDate());const month=Number(parts.find(p=>p.type==='month')?.value||d.getMonth()+1)-1;const months=lang==='nl'?['jan','feb','mrt','apr','mei','jun','jul','aug','sept','okt','nov','dec']:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return `${day} ${months[month]||''}`.trim()}
     function openImage(src,alt){if(!src)return;modalImage.src=src;modalImage.alt=alt||'Poststuk';modal.classList.add('open')}
     function closeImage(){modal.classList.remove('open');modalImage.removeAttribute('src')}
     document.getElementById('close').onclick=closeImage;modal.onclick=e=>{if(e.target===modal)closeImage()};document.addEventListener('keydown',e=>{if(e.key==='Escape')closeImage()});
