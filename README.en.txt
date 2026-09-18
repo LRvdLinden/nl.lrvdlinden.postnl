@@ -1,11 +1,9 @@
-PostNL for Homey
-
 PostNL for Homey brings your expected mail items and PostNL parcels into Homey. It provides live device information, Dashboard widgets and extensive Flow cards for automations.
 
 What can the app do?
 • See whether mail is expected and how many mail items are known.
 • View scans/images of mail items when PostNL makes them available.
-• Use the My Post widget: up to 5 recent mail items in a horizontal swipe/scroll gallery. Tap a scan to enlarge it.
+• Use the My Post widget: up to 10 recent mail items in a horizontal swipe/scroll gallery. Tap a scan to enlarge it.
 • Use the My Package widget: up to 5 recent parcels, including delivered shipments, with a clear Incoming, In transit or Delivered phase.
 • View parcel details such as sender, barcode, delivery date/window and tracking URL when PostNL provides them.
 • Use Flow triggers for new mail, new parcels, parcel status changes, synchronization failures and expired logins.
@@ -33,4 +31,3 @@ The app synchronizes every 5 minutes by default and checks more frequently aroun
 
 Please note
 PostNL does not provide a public consumer API for these features. This app uses the same non-public interfaces used by PostNL mobile services. If PostNL changes those interfaces, a feature can temporarily become unavailable. Parcel data and My Post are handled independently where possible, so a My Post issue does not automatically disable the complete device.
-
