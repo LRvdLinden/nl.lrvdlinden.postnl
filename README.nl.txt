@@ -1,11 +1,9 @@
-PostNL voor Homey
-
 Met PostNL voor Homey haal je jouw verwachte poststukken en PostNL-pakketten naar Homey. Je krijgt actuele apparaatstatussen, Dashboard-widgets en uitgebreide Flow-kaarten voor automatiseringen.
 
 Wat kan de app?
 • Bekijk of er post wordt verwacht en hoeveel poststukken bekend zijn.
 • Bekijk scans/afbeeldingen van poststukken zodra PostNL deze beschikbaar stelt.
-• Gebruik de widget Mijn Post: maximaal 5 recente poststukken in een horizontaal swipe-/scrolloverzicht. Tik op een scan om deze groot te bekijken.
+• Gebruik de widget Mijn Post: maximaal 10 recente poststukken in een horizontaal swipe-/scrolloverzicht. Tik op een scan om deze groot te bekijken.
 • Gebruik de widget Mijn Pakket: maximaal 5 recente pakketten, inclusief bezorgde zendingen, met een duidelijke status Inkomend, Onderweg of Bezorgd.
 • Bekijk pakketdetails zoals afzender, barcode, bezorgdatum/-venster en trackinglink wanneer PostNL die gegevens levert.
 • Gebruik Flow-triggers voor nieuwe post, nieuwe pakketten, pakketstatuswijzigingen, synchronisatiefouten en verlopen aanmeldingen.
@@ -33,5 +31,4 @@ De app synchroniseert standaard iedere 5 minuten en controleert rond middernacht
 
 Let op
 PostNL biedt geen openbare consumenten-API voor deze functies. Deze app gebruikt dezelfde niet-openbare interfaces als de mobiele PostNL-diensten. Wanneer PostNL die interfaces wijzigt, kan een onderdeel tijdelijk niet beschikbaar zijn. Pakketgegevens en Mijn Post worden waar mogelijk onafhankelijk van elkaar verwerkt, zodat een probleem met Mijn Post niet automatisch het volledige device uitschakelt.
-
 
