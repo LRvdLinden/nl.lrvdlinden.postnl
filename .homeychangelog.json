@@ -76,5 +76,12 @@
   "0.2.1": {
     "en": "Improved privacy-safe diagnostics for PostNL authentication and synchronization. Logs now report only token/callback presence as booleans, never credential values. Reduced unauthenticated sync log noise and hardened the outline driver icon for iOS PNG rendering without filling the icon.",
     "nl": "Privacyveilige diagnostiek voor PostNL-authenticatie en synchronisatie uitgebreid. Logs melden tokens/callbacks alleen als aanwezig true/false en tonen nooit inlogwaarden. Niet-gekoppelde automatische synchronisatie geeft geen foutspam meer en het outline-drivericoon is robuuster gemaakt voor iOS-PNG-weergave zonder het icoon te vullen."
+  },
+  "1.0.0": {
+    "en": "First Release. My Post now shows up to 10 recent mail items, uses localized abbreviated month names, and the widget preview images were updated to comply with Homey guidelines without embedded text.",
+    "nl": "First Release. Mijn Post toont nu maximaal 10 recente poststukken, gebruikt lokaal afgekorte maandnamen en de widget-voorbeeldafbeeldingen zijn aangepast aan de Homey-richtlijnen zonder ingesloten tekst."
+  },
+  "1.0.1": {
+    "en": "change store description"
   }
 }
