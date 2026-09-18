@@ -15,7 +15,7 @@ module.exports = {
       mailApiError: data.mailApiError,
       letters: [...(data.letters || [])]
         .sort((a, b) => timestamp(b) - timestamp(a))
-        .slice(0, 5),
+        .slice(0, 10),
       locale: homey.i18n.getLanguage(),
       timeZone: homey.clock.getTimezone(),
     };
