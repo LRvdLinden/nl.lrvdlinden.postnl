@@ -1,6 +1,6 @@
 {
   "name": "nl.lrvdlinden.postnl",
-  "version": "0.2.1",
+  "version": "1.0.0",
   "private": true,
   "main": "app.js",
   "engines": {
