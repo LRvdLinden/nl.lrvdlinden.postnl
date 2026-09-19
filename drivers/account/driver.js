@@ -3,6 +3,26 @@
 const Homey = require('homey');
 
 class PostNLDriver extends Homey.Driver {
+  async onInit() {
+    this.homey.flow.getConditionCard('mail_expected').registerRunListener(async args => {
+      const device = args?.device;
+      return Boolean(device && device.getCapabilityValue('postnl_mail_expected'));
+    });
+
+    this.homey.flow.getConditionCard('packages_underway').registerRunListener(async args => {
+      const device = args?.device;
+      return Boolean(device && Number(device.getCapabilityValue('postnl_package_count') || 0) > 0);
+    });
+
+    this.homey.flow.getActionCard('sync_now').registerRunListener(async args => {
+      if (!args?.device) throw new Error('Geen PostNL-apparaat geselecteerd.');
+      await this.homey.app.sync({ reason: 'flow', force: true });
+      return true;
+    });
+
+    this.log('PostNL device Flow cards registered');
+  }
+
   async onPair(session) {
     session.setHandler('is_authenticated', async () => {
       if (!this.homey.app.api.hasCredentials()) return { authenticated: false };
