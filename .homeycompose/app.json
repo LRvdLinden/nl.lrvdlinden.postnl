@@ -1,117 +1,32 @@
 {
   "id": "nl.lrvdlinden.postnl",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "compatibility": ">=12.3.0",
   "sdk": 3,
-  "platforms": [
-    "local"
-  ],
-  "name": {
-    "en": "PostNL",
-    "nl": "PostNL"
-  },
-  "description": {
-    "en": "See incoming mail and PostNL parcels in Homey, with widgets and Flow cards.",
-    "nl": "Bekijk verwachte post en PostNL-pakketten in Homey, met widgets en Flow-kaarten."
-  },
-  "category": [
-    "internet"
-  ],
+  "platforms": ["local"],
+  "name": {"en":"PostNL","nl":"PostNL"},
+  "description": {"en":"See incoming mail and PostNL parcels in Homey, with widgets and Flow cards.","nl":"Bekijk verwachte post en PostNL-pakketten in Homey, met widgets en Flow-kaarten."},
+  "category": ["internet"],
   "brandColor": "#FB6200",
-  "author": {
-    "name": "Léon van der Linden",
-    "email": "homey@vdlinden.xyz"
-  },
+  "author": {"name":"Léon van der Linden","email":"homey@vdlinden.xyz"},
   "copyright": "Léon van der Linden",
   "license": "GPL-3.0-or-later",
   "homepage": "https://lrvdlinden.app",
   "support": "https://community.homey.app/t/app-pro-postnl-for-homey/159674",
-  "bugs": {
-    "url": "https://community.homey.app/t/app-pro-postnl-for-homey/159674"
-  },
-  "images": {
-    "small": "/assets/images/small.png",
-    "large": "/assets/images/large.png",
-    "xlarge": "/assets/images/xlarge.png"
-  },
+  "bugs": {"url":"https://community.homey.app/t/app-pro-postnl-for-homey/159674"},
+  "images": {"small":"/assets/images/small.png","large":"/assets/images/large.png","xlarge":"/assets/images/xlarge.png"},
   "permissions": [],
   "api": {
-    "sync": {
-      "method": "POST",
-      "path": "/sync"
-    },
-    "status": {
-      "method": "GET",
-      "path": "/status"
-    },
-    "authStatus": {
-      "method": "GET",
-      "path": "/auth/status"
-    },
-    "startAuth": {
-      "method": "POST",
-      "path": "/auth/start"
-    },
-    "completeAuth": {
-      "method": "POST",
-      "path": "/auth/complete"
-    },
-    "logout": {
-      "method": "POST",
-      "path": "/auth/logout"
-    }
+    "sync":{"method":"POST","path":"/sync"},
+    "status":{"method":"GET","path":"/status"},
+    "authStatus":{"method":"GET","path":"/auth/status"},
+    "startAuth":{"method":"POST","path":"/auth/start"},
+    "completeAuth":{"method":"POST","path":"/auth/complete"},
+    "logout":{"method":"POST","path":"/auth/logout"}
   },
   "widgets": {
-    "mijn-post": {
-      "id": "mijn-post",
-      "name": {
-        "en": "My Post",
-        "nl": "Mijn Post"
-      },
-      "height": 250,
-      "api": {
-        "getData": {
-          "method": "GET",
-          "path": "/"
-        },
-        "sync": {
-          "method": "POST",
-          "path": "/sync"
-        }
-      },
-      "devices": {
-        "type": "app",
-        "singular": false,
-        "filter": {
-          "capabilities": "postnl_mail_count"
-        }
-      }
-    },
-    "mijn-pakket": {
-      "id": "mijn-pakket",
-      "name": {
-        "en": "My Package",
-        "nl": "Mijn Pakket"
-      },
-      "height": 360,
-      "api": {
-        "getData": {
-          "method": "GET",
-          "path": "/"
-        },
-        "sync": {
-          "method": "POST",
-          "path": "/sync"
-        }
-      },
-      "devices": {
-        "type": "app",
-        "singular": false,
-        "filter": {
-          "capabilities": "postnl_package_count"
-        }
-      }
-    }
+    "mijn-post":{"id":"mijn-post","name":{"en":"My Post","nl":"Mijn Post"},"height":250,"api":{"getData":{"method":"GET","path":"/"},"sync":{"method":"POST","path":"/sync"}},"devices":{"type":"app","singular":false,"filter":{"capabilities":"postnl_mail_count"}}},
+    "mijn-pakket":{"id":"mijn-pakket","name":{"en":"My Package","nl":"Mijn Pakket"},"height":360,"api":{"getData":{"method":"GET","path":"/"},"sync":{"method":"POST","path":"/sync"}},"devices":{"type":"app","singular":false,"filter":{"capabilities":"postnl_package_count"}}}
   },
-  "homeyCommunityTopicId": 159674
+  "homeyCommunityTopicId":159674
 }
