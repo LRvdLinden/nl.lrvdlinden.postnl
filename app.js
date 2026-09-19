@@ -10,7 +10,6 @@ class PostNLApp extends Homey.App {
     this.syncing = null;
     this._letterImageCache = new Map();
 
-    this._registerFlows();
     this._interval = this.homey.setInterval(() => this.sync({ reason: 'interval' }).catch(this.error), 5 * 60 * 1000);
     this._midnightInterval = this.homey.setInterval(() => this._midnightCheck(), 60 * 1000);
 
@@ -23,15 +22,6 @@ class PostNLApp extends Homey.App {
   async onUninit() {
     if (this._interval) this.homey.clearInterval(this._interval);
     if (this._midnightInterval) this.homey.clearInterval(this._midnightInterval);
-  }
-
-  _registerFlows() {
-    this.homey.flow.getActionCard('sync_now').registerRunListener(async () => {
-      await this.sync({ reason: 'flow', force: true });
-      return true;
-    });
-    this.homey.flow.getConditionCard('mail_expected').registerRunListener(async () => this.snapshot.letters.length > 0);
-    this.homey.flow.getConditionCard('packages_underway').registerRunListener(async () => this.snapshot.packages.some(p => !p.delivered));
   }
 
   async _midnightCheck() {
@@ -85,8 +75,8 @@ class PostNLApp extends Homey.App {
       await this._updateDevices(previous, error);
       const devices = this.homey.drivers.getDriver('account').getDevices();
       for (const device of devices) {
-        if (authError) await this.homey.flow.getTriggerCard('login_expired').trigger(device).catch(this.error);
-        await this.homey.flow.getTriggerCard('sync_failed').trigger(device, { error: error.message }).catch(this.error);
+        if (authError) await device.triggerLoginExpired().catch(this.error);
+        await device.triggerSyncFailed(error.message).catch(this.error);
       }
       throw error;
     }
@@ -112,7 +102,6 @@ class PostNLApp extends Homey.App {
     });
     this._letterImageCache.set(cacheKey, image);
 
-    // Keep the cache bounded. PostNL itself only retains a short MyMail history.
     if (this._letterImageCache.size > 25) {
       const first = this._letterImageCache.keys().next().value;
       this._letterImageCache.delete(first);
@@ -120,65 +109,12 @@ class PostNLApp extends Homey.App {
     return image;
   }
 
-  _packageTokens(parcel) {
-    return {
-      id: parcel.id || '',
-      sender: parcel.sender || '',
-      receiver: parcel.receiver || '',
-      title: parcel.title || parcel.sender || parcel.barcode || 'PostNL',
-      barcode: parcel.barcode || '',
-      status: parcel.status || '',
-      delivery_date: parcel.deliveryDate ? this.api.formatDate(parcel.deliveryDate) : '',
-      delivery_window: parcel.deliveryWindow || '',
-      delivery_window_from: parcel.deliveryWindowFrom || '',
-      delivery_window_to: parcel.deliveryWindowTo || '',
-      delivery_window_type: parcel.deliveryWindowType || '',
-      details_url: parcel.detailsUrl || '',
-      shipment_type: parcel.shipmentType || '',
-      delivery_address_type: parcel.deliveryAddressType || '',
-      direction: parcel.direction || '',
-      created_at: parcel.createdAt || '',
-      delivered: Boolean(parcel.delivered),
-      shared_from: parcel.sourceDisplayName || '',
-      source_account_id: parcel.sourceAccountId || '',
-    };
-  }
-
   async _triggerChanges(previous, current) {
     const devices = this.homey.drivers.getDriver('account').getDevices();
-    const oldLetterIds = new Set((previous.letters || []).map(item => item.id));
-    const newLetters = current.letters.filter(item => !oldLetterIds.has(item.id));
-    const oldPackages = new Map((previous.packages || []).map(item => [item.id, item]));
-
     for (const device of devices) {
-      if (newLetters.length) {
-        const newest = newLetters[0];
-        const image = await this.getLetterImage(newest).catch(error => {
-          this.error('[PostNLApp] image_token_failed', JSON.stringify(this.api.safeErrorInfo(error)));
-          return null;
-        });
-        const tokens = {
-          count: newLetters.length,
-          id: newest.id || '',
-          title: newest.title || '',
-          sender: newest.sender || '',
-          date: this.api.formatDate(newest.deliveryDate),
-          unread: Boolean(newest.unread),
-          image_available: Boolean(image),
-        };
-        if (image) tokens.image = image;
-        await this.homey.flow.getTriggerCard('new_mail').trigger(device, tokens).catch(this.error);
-      }
-
-      for (const parcel of current.packages) {
-        const old = oldPackages.get(parcel.id);
-        const tokens = this._packageTokens(parcel);
-        if (!old) {
-          await this.homey.flow.getTriggerCard('new_package').trigger(device, tokens).catch(this.error);
-        } else if (`${old.status}|${old.deliveryWindow}|${old.deliveryDate}` !== `${parcel.status}|${parcel.deliveryWindow}|${parcel.deliveryDate}`) {
-          await this.homey.flow.getTriggerCard('package_status_changed').trigger(device, { ...tokens, old_status: old?.status || '' }).catch(this.error);
-        }
-      }
+      await device.handleSnapshotChanges(previous, current).catch(error => {
+        this.error('[PostNLApp] device_flow_dispatch_failed', JSON.stringify(this.api.safeErrorInfo(error)));
+      });
     }
   }
 
@@ -190,8 +126,6 @@ class PostNLApp extends Homey.App {
   getWidgetData() {
     return {
       letters: (this.snapshot.letters || []).slice(0, 20),
-      // Keep recent delivered parcels available to the widget as well;
-      // capabilities still count only active/in-transit parcels.
       packages: (this.snapshot.packages || []).slice(0, 40),
       updatedAt: this.snapshot.updatedAt,
       authenticated: this.api.hasCredentials(),
