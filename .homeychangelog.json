@@ -83,5 +83,9 @@
   },
   "1.0.1": {
     "en": "change store description"
+  },
+  "1.0.2": {
+    "en": "Fixed all device Flow cards and Flow tokens. Triggers and their token values are now built and fired per selected PostNL device from device.js, while conditions and the sync action remain device-dependent.",
+    "nl": "Alle device-Flow-kaarten en Flow-tokens hersteld. Triggers en hun tokenwaarden worden nu per geselecteerd PostNL-device in device.js opgebouwd en afgevuurd; condities en de synchronisatie-actie blijven eveneens device-afhankelijk."
   }
 }
