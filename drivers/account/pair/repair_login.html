@@ -4,93 +4,162 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    body{padding:0 4px 24px}
-    .logo{display:flex;justify-content:center;margin:12px 0 20px}
-    .logo img{width:92px;height:92px}
-    .steps{padding-left:22px;line-height:1.5}
-    .callback{min-height:90px;resize:vertical}
-    .auth-url{font-family:monospace;font-size:12px;word-break:break-all}
-    .buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 18px}
-    .hint{opacity:.68;font-size:12px;line-height:1.45}
+    body { padding: 0 4px 24px; }
+    .logo { display:flex; justify-content:center; margin:12px 0 20px; }
+    .logo img { width:92px; height:92px; }
+    .steps { padding-left:22px; line-height:1.5; margin-bottom:20px; }
+    .actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0 22px; }
+    .callback { min-height:92px; resize:vertical; }
+    .hint { opacity:.68; font-size:12px; line-height:1.45; margin-top:12px; }
+    .status { min-height:18px; font-size:12px; margin-top:6px; opacity:.72; }
+    @media (max-width: 420px) { .actions { grid-template-columns:1fr; } }
   </style>
 </head>
 <body>
   <div class="logo"><img src="../../../assets/icon.svg" alt="PostNL"></div>
   <h1 class="homey-title" id="title">PostNL opnieuw koppelen</h1>
   <p class="homey-subtitle" id="subtitle">Vernieuw de koppeling voor dit PostNL-apparaat.</p>
+
   <ol class="steps">
-    <li id="s1">Kopieer of open de PostNL-aanmeld-URL hieronder.</li>
-    <li id="s2">Meld je aan en kopieer de callback met de Chrome Login Helper.</li>
-    <li id="s3">Plak de callback hieronder.</li>
+    <li id="step1">Kopieer of open de PostNL-aanmeld-URL.</li>
+    <li id="step2">Log in bij PostNL en kopieer de callback met de Chrome Login Helper.</li>
+    <li id="step3">Plak de callback-URL en rond de koppeling af.</li>
   </ol>
+
   <div class="homey-form-group">
     <label class="homey-form-label" id="authLabel" for="authUrl">PostNL aanmeld-URL</label>
-    <textarea id="authUrl" class="homey-form-input auth-url" rows="4" readonly spellcheck="false"></textarea>
+    <input id="authUrl" class="homey-form-input" type="text" readonly autocomplete="off" spellcheck="false">
+    <div id="authStatus" class="status"></div>
   </div>
-  <div class="buttons">
+
+  <div class="actions">
     <button id="copyUrl" class="homey-button-secondary-full" type="button" disabled>URL kopiëren</button>
     <button id="openUrl" class="homey-button-primary-full" type="button" disabled>Open PostNL</button>
   </div>
+
   <div class="homey-form-group">
-    <label class="homey-form-label" for="callback">Callback-URL</label>
+    <label class="homey-form-label" id="callbackLabel" for="callback">Callback-URL</label>
     <textarea id="callback" class="homey-form-input callback" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="postnl://login?code=…"></textarea>
   </div>
-  <button id="complete" class="homey-button-primary-full">Opnieuw koppelen</button>
-  <p class="hint" id="hint">De callback en tokens worden nooit zichtbaar opgeslagen in logs.</p>
+
+  <button id="complete" class="homey-button-primary-full" type="button">Opnieuw koppelen</button>
+  <p class="hint" id="hint">De callback, autorisatiecode en tokens worden nooit zichtbaar in logs opgeslagen.</p>
+
 <script>
-const nl=(Homey.__('pair.language_marker')||'nl')==='nl';
-let postnlAuthUrl='';
-if(!nl){
-  title.textContent='Reconnect PostNL';
-  subtitle.textContent='Renew the connection for this PostNL device.';
-  s1.textContent='Copy or open the PostNL sign-in URL below.';
-  s2.textContent='Sign in and copy the callback with the Chrome Login Helper.';
-  s3.textContent='Paste the callback below.';
-  authLabel.textContent='PostNL sign-in URL';
-  copyUrl.textContent='Copy URL';
-  openUrl.textContent='Open PostNL';
-  complete.textContent='Reconnect account';
-  hint.textContent='The callback and tokens are never exposed in logs.';
+const isNl = (Homey.__('pair.language_marker') || 'nl') === 'nl';
+let postnlAuthUrl = '';
+
+const $ = id => document.getElementById(id);
+const title = $('title');
+const subtitle = $('subtitle');
+const step1 = $('step1');
+const step2 = $('step2');
+const step3 = $('step3');
+const authLabel = $('authLabel');
+const callbackLabel = $('callbackLabel');
+const authUrl = $('authUrl');
+const authStatus = $('authStatus');
+const copyUrl = $('copyUrl');
+const openUrl = $('openUrl');
+const callback = $('callback');
+const complete = $('complete');
+const hint = $('hint');
+
+if (!isNl) {
+  title.textContent = 'Reconnect PostNL';
+  subtitle.textContent = 'Renew the connection for this PostNL device.';
+  step1.textContent = 'Copy or open the PostNL sign-in URL.';
+  step2.textContent = 'Sign in to PostNL and copy the callback with the Chrome Login Helper.';
+  step3.textContent = 'Paste the callback URL and finish connecting.';
+  authLabel.textContent = 'PostNL sign-in URL';
+  callbackLabel.textContent = 'Callback URL';
+  copyUrl.textContent = 'Copy URL';
+  openUrl.textContent = 'Open PostNL';
+  complete.textContent = 'Reconnect account';
+  hint.textContent = 'The callback, authorization code and tokens are never exposed in logs.';
 }
-async function prepare(){
-  copyUrl.disabled=true;openUrl.disabled=true;
-  authUrl.value=nl?'PostNL-link voorbereiden…':'Preparing PostNL link…';
-  try{
-    const r=await Homey.emit('start_auth');
-    if(!r||!r.url||!String(r.url).startsWith('https://login.postnl.nl/')) throw new Error(nl?'Ongeldige PostNL-aanmeld-URL ontvangen.':'Invalid PostNL sign-in URL received.');
-    postnlAuthUrl=String(r.url);
-    authUrl.value=postnlAuthUrl;
-    copyUrl.disabled=false;openUrl.disabled=false;
-  }catch(e){authUrl.value='';Homey.alert(e.message||String(e));}
+
+function setPrepared(url) {
+  postnlAuthUrl = String(url || '');
+  authUrl.value = postnlAuthUrl;
+  const valid = postnlAuthUrl.startsWith('https://login.postnl.nl/');
+  copyUrl.disabled = !valid;
+  openUrl.disabled = !valid;
+  authStatus.textContent = valid
+    ? (isNl ? 'Aanmeld-URL gereed.' : 'Sign-in URL ready.')
+    : '';
 }
-async function copyText(value){
-  if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(value);return;}
-  authUrl.focus();authUrl.select();
-  const ok=document.execCommand('copy');
-  authUrl.setSelectionRange(0,0);
-  if(!ok) throw new Error(nl?'Kopiëren is niet gelukt. Selecteer de URL handmatig.':'Copy failed. Select the URL manually.');
+
+async function prepareAuth() {
+  setPrepared('');
+  authUrl.placeholder = isNl ? 'PostNL-aanmeld-URL wordt voorbereid…' : 'Preparing PostNL sign-in URL…';
+  try {
+    const result = await Homey.emit('start_auth');
+    if (!result || !result.url || !String(result.url).startsWith('https://login.postnl.nl/')) {
+      throw new Error(isNl ? 'Er is geen geldige PostNL-aanmeld-URL ontvangen.' : 'No valid PostNL sign-in URL was received.');
+    }
+    setPrepared(result.url);
+  } catch (error) {
+    authUrl.placeholder = '';
+    authStatus.textContent = isNl ? 'Kon de aanmeld-URL niet voorbereiden.' : 'Could not prepare the sign-in URL.';
+    Homey.alert(error.message || String(error));
+  }
 }
-copyUrl.addEventListener('click',async()=>{
-  if(!postnlAuthUrl)return;
-  try{
-    await copyText(postnlAuthUrl);
-    const original=copyUrl.textContent;
-    copyUrl.textContent=nl?'Gekopieerd ✓':'Copied ✓';
-    setTimeout(()=>{copyUrl.textContent=original;},1500);
-  }catch(e){Homey.alert(e.message||String(e));}
+
+async function copyUrlToClipboard() {
+  if (!postnlAuthUrl) return;
+  try {
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      await navigator.clipboard.writeText(postnlAuthUrl);
+    } else {
+      authUrl.focus();
+      authUrl.select();
+      authUrl.setSelectionRange(0, postnlAuthUrl.length);
+      if (!document.execCommand('copy')) throw new Error('copy_failed');
+      authUrl.setSelectionRange(0, 0);
+    }
+    authStatus.textContent = isNl ? 'URL gekopieerd.' : 'URL copied.';
+  } catch (error) {
+    authUrl.focus();
+    authUrl.select();
+    Homey.alert(isNl ? 'Automatisch kopiëren lukt niet. De URL is geselecteerd zodat je hem handmatig kunt kopiëren.' : 'Automatic copying failed. The URL has been selected so you can copy it manually.');
+  }
+}
+
+function openPostNL() {
+  if (!postnlAuthUrl) return;
+  if (typeof Homey.openURL === 'function') {
+    Homey.openURL(postnlAuthUrl);
+    return;
+  }
+  const link = document.createElement('a');
+  link.href = postnlAuthUrl;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
+copyUrl.addEventListener('click', copyUrlToClipboard);
+openUrl.addEventListener('click', openPostNL);
+complete.addEventListener('click', async () => {
+  const value = callback.value.trim();
+  if (!value) {
+    Homey.alert(isNl ? 'Plak eerst de callback-URL.' : 'Paste the callback URL first.');
+    callback.focus();
+    return;
+  }
+  complete.disabled = true;
+  try {
+    await Homey.emit('complete_auth', value); Homey.done();
+  } catch (error) {
+    Homey.alert(error.message || String(error));
+    complete.disabled = false;
+  }
 });
-openUrl.addEventListener('click',()=>{
-  if(!postnlAuthUrl)return;
-  if(typeof Homey.openURL==='function') Homey.openURL(postnlAuthUrl);
-  else window.open(postnlAuthUrl,'_blank','noopener,noreferrer');
-});
-complete.addEventListener('click',async()=>{
-  const value=callback.value.trim();
-  if(!value)return Homey.alert(nl?'Plak eerst de callback-URL.':'Paste the callback URL first.');
-  try{complete.disabled=true;await Homey.emit('complete_auth',value);Homey.done();}
-  catch(e){Homey.alert(e.message||String(e));complete.disabled=false;}
-});
-prepare();
+
+prepareAuth();
 </script>
 </body>
 </html>
