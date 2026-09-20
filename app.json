@@ -710,5 +710,41 @@
       "insights": false,
       "icon": "/assets/status.svg"
     }
+  },
+  "tags": {
+    "en": [
+      "postnl",
+      "post",
+      "mail",
+      "mail delivery",
+      "letters",
+      "parcels",
+      "packages",
+      "package tracking",
+      "delivery",
+      "shipment",
+      "tracking",
+      "postal service",
+      "my post",
+      "my package",
+      "automation"
+    ],
+    "nl": [
+      "postnl",
+      "post",
+      "brieven",
+      "poststukken",
+      "pakketten",
+      "pakket",
+      "pakket volgen",
+      "bezorging",
+      "zending",
+      "tracking",
+      "postbezorging",
+      "mijn post",
+      "mijn pakket",
+      "automatisering",
+      "bezorgen"
+    ]
   }
 }
