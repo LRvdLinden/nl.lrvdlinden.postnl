@@ -1,19 +1,96 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<style>body{padding:0 4px 24px}.logo{display:flex;justify-content:center;margin:12px 0 20px}.logo img{width:92px;height:92px}.steps{padding-left:22px;line-height:1.5}.callback{min-height:90px;resize:vertical}.hint{opacity:.68;font-size:12px;line-height:1.45}.link{display:block;text-align:center;text-decoration:none;box-sizing:border-box;margin-bottom:14px}</style></head>
-<body><div class="logo"><img src="../../../assets/icon.svg" alt="PostNL"></div>
-<h1 class="homey-title" id="title">PostNL account koppelen</h1>
-<p class="homey-subtitle" id="subtitle">Koppel dit apparaat aan één PostNL-account.</p>
-<ol class="steps"><li id="s1">Open PostNL en meld je aan.</li><li id="s2">Kopieer de callback met de Chrome Login Helper.</li><li id="s3">Plak de callback hieronder.</li></ol>
-<a id="open" class="homey-button-primary-full link" href="#" target="_blank" rel="noopener noreferrer">PostNL-link voorbereiden…</a>
-<div class="homey-form-group"><label class="homey-form-label" for="callback">Callback-URL</label><textarea id="callback" class="homey-form-input callback" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="postnl://login?code=…"></textarea></div>
-<button id="complete" class="homey-button-primary-full">Account koppelen</button>
-<p class="hint" id="hint">De callback en tokens worden nooit zichtbaar opgeslagen in logs.</p>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body{padding:0 4px 24px}
+    .logo{display:flex;justify-content:center;margin:12px 0 20px}
+    .logo img{width:92px;height:92px}
+    .steps{padding-left:22px;line-height:1.5}
+    .callback{min-height:90px;resize:vertical}
+    .auth-url{font-family:monospace;font-size:12px;word-break:break-all}
+    .buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 18px}
+    .hint{opacity:.68;font-size:12px;line-height:1.45}
+  </style>
+</head>
+<body>
+  <div class="logo"><img src="../../../assets/icon.svg" alt="PostNL"></div>
+  <h1 class="homey-title" id="title">PostNL account koppelen</h1>
+  <p class="homey-subtitle" id="subtitle">Koppel dit apparaat aan één PostNL-account.</p>
+  <ol class="steps">
+    <li id="s1">Kopieer of open de PostNL-aanmeld-URL hieronder.</li>
+    <li id="s2">Meld je aan en kopieer de callback met de Chrome Login Helper.</li>
+    <li id="s3">Plak de callback hieronder.</li>
+  </ol>
+  <div class="homey-form-group">
+    <label class="homey-form-label" id="authLabel" for="authUrl">PostNL aanmeld-URL</label>
+    <textarea id="authUrl" class="homey-form-input auth-url" rows="4" readonly spellcheck="false"></textarea>
+  </div>
+  <div class="buttons">
+    <button id="copyUrl" class="homey-button-secondary-full" type="button" disabled>URL kopiëren</button>
+    <button id="openUrl" class="homey-button-primary-full" type="button" disabled>Open PostNL</button>
+  </div>
+  <div class="homey-form-group">
+    <label class="homey-form-label" for="callback">Callback-URL</label>
+    <textarea id="callback" class="homey-form-input callback" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="postnl://login?code=…"></textarea>
+  </div>
+  <button id="complete" class="homey-button-primary-full">Account koppelen</button>
+  <p class="hint" id="hint">De callback en tokens worden nooit zichtbaar opgeslagen in logs.</p>
 <script>
 const nl=(Homey.__('pair.language_marker')||'nl')==='nl';
-if(!nl){title.textContent='Connect PostNL account';subtitle.textContent='Connect this device to one PostNL account.';s1.textContent='Open PostNL and sign in.';s2.textContent='Copy the callback with the Chrome Login Helper.';s3.textContent='Paste the callback below.';complete.textContent='Connect account';hint.textContent='The callback and tokens are never exposed in logs.';}
-async function prepare(){open.removeAttribute('href');open.textContent=nl?'PostNL-link voorbereiden…':'Preparing PostNL link…';try{const r=await Homey.emit('start_auth');open.href=r.url;open.textContent='Open PostNL';}catch(e){Homey.alert(e.message||String(e));}}
-open.addEventListener('click',e=>{if(!open.href||open.getAttribute('href')==='#'){e.preventDefault();prepare();}});
-complete.addEventListener('click',async()=>{const value=callback.value.trim();if(!value)return Homey.alert(nl?'Plak eerst de callback-URL.':'Paste the callback URL first.');try{complete.disabled=true;const r=await Homey.emit('complete_auth',value);await Homey.createDevice(r.device);Homey.done();}catch(e){Homey.alert(e.message||String(e));complete.disabled=false;}});
+let postnlAuthUrl='';
+if(!nl){
+  title.textContent='Connect PostNL account';
+  subtitle.textContent='Connect this device to one PostNL account.';
+  s1.textContent='Copy or open the PostNL sign-in URL below.';
+  s2.textContent='Sign in and copy the callback with the Chrome Login Helper.';
+  s3.textContent='Paste the callback below.';
+  authLabel.textContent='PostNL sign-in URL';
+  copyUrl.textContent='Copy URL';
+  openUrl.textContent='Open PostNL';
+  complete.textContent='Connect account';
+  hint.textContent='The callback and tokens are never exposed in logs.';
+}
+async function prepare(){
+  copyUrl.disabled=true;openUrl.disabled=true;
+  authUrl.value=nl?'PostNL-link voorbereiden…':'Preparing PostNL link…';
+  try{
+    const r=await Homey.emit('start_auth');
+    if(!r||!r.url||!String(r.url).startsWith('https://login.postnl.nl/')) throw new Error(nl?'Ongeldige PostNL-aanmeld-URL ontvangen.':'Invalid PostNL sign-in URL received.');
+    postnlAuthUrl=String(r.url);
+    authUrl.value=postnlAuthUrl;
+    copyUrl.disabled=false;openUrl.disabled=false;
+  }catch(e){authUrl.value='';Homey.alert(e.message||String(e));}
+}
+async function copyText(value){
+  if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(value);return;}
+  authUrl.focus();authUrl.select();
+  const ok=document.execCommand('copy');
+  authUrl.setSelectionRange(0,0);
+  if(!ok) throw new Error(nl?'Kopiëren is niet gelukt. Selecteer de URL handmatig.':'Copy failed. Select the URL manually.');
+}
+copyUrl.addEventListener('click',async()=>{
+  if(!postnlAuthUrl)return;
+  try{
+    await copyText(postnlAuthUrl);
+    const original=copyUrl.textContent;
+    copyUrl.textContent=nl?'Gekopieerd ✓':'Copied ✓';
+    setTimeout(()=>{copyUrl.textContent=original;},1500);
+  }catch(e){Homey.alert(e.message||String(e));}
+});
+openUrl.addEventListener('click',()=>{
+  if(!postnlAuthUrl)return;
+  if(typeof Homey.openURL==='function') Homey.openURL(postnlAuthUrl);
+  else window.open(postnlAuthUrl,'_blank','noopener,noreferrer');
+});
+complete.addEventListener('click',async()=>{
+  const value=callback.value.trim();
+  if(!value)return Homey.alert(nl?'Plak eerst de callback-URL.':'Paste the callback URL first.');
+  try{complete.disabled=true;const r=await Homey.emit('complete_auth',value);await Homey.createDevice(r.device);Homey.done();}
+  catch(e){Homey.alert(e.message||String(e));complete.disabled=false;}
+});
 prepare();
-</script></body></html>
+</script>
+</body>
+</html>
