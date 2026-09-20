@@ -87,5 +87,9 @@
   "1.0.2": {
     "en": "Fixed all device Flow cards and Flow tokens. Triggers and their token values are now built and fired per selected PostNL device from device.js, while conditions and the sync action remain device-dependent.",
     "nl": "Alle device-Flow-kaarten en Flow-tokens hersteld. Triggers en hun tokenwaarden worden nu per geselecteerd PostNL-device in device.js opgebouwd en afgevuurd; condities en de synchronisatie-actie blijven eveneens device-afhankelijk."
+  },
+  "1.1.0": {
+    "en": "Moved PostNL authentication from App Settings to per-device pairing and repair. Multiple PostNL accounts are now supported, with separate credentials, snapshots, widgets, capabilities, Flow cards and tokens per device. Added a one-time localized Timeline notification when an account needs to be reconnected.",
+    "nl": "PostNL-authenticatie verplaatst van App-instellingen naar pairing en reparatie per device. Meerdere PostNL-accounts worden nu ondersteund, met per device eigen credentials, snapshot, widgets, capabilities, Flow-kaarten en tokens. Daarnaast wordt één gelokaliseerde Timeline-melding geplaatst wanneer een account opnieuw gekoppeld moet worden."
   }
 }
