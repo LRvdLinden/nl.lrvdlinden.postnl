@@ -1,33 +1,26 @@
-PostNL for Homey brings your expected mail items and PostNL parcels into Homey. It provides live device information, Dashboard widgets and extensive Flow cards for automations.
+PostNL for Homey
 
-What can the app do?
-• See whether mail is expected and how many mail items are known.
-• View scans/images of mail items when PostNL makes them available.
-• Use the My Post widget: up to 10 recent mail items in a horizontal swipe/scroll gallery. Tap a scan to enlarge it.
-• Use the My Package widget: up to 5 recent parcels, including delivered shipments, with a clear Incoming, In transit or Delivered phase.
-• View parcel details such as sender, barcode, delivery date/window and tracking URL when PostNL provides them.
-• Use Flow triggers for new mail, new parcels, parcel status changes, synchronization failures and expired logins.
-• Flow cards expose extensive tags/tokens. New mail can also provide a native Homey image token.
-• The PostNL device exposes the latest mail scan as a Homey camera image when an image is available.
+View expected mail items and PostNL parcels directly in Homey. Every My PostNL device is connected to its own PostNL account, so multiple accounts can be used side by side with separate widgets, capabilities, Flow cards and Flow tokens.
 
-Connecting PostNL
-Authentication is handled from the app settings. The PostNL Homey Login Helper for Google Chrome is required. Download the helper from the official Homey Community topic:
-https://community.homey.app/t/app-pro-postnl-for-homey/159674
+Features
+- My Post widget with the 10 most recent mail items and horizontally scrollable scans.
+- My Package widget with the 5 most recent parcels and Incoming, In transit or Delivered status.
+- Device-dependent Flow triggers, conditions, actions and tokens.
+- Local archive of mail scans for up to 21 days.
+- Automatic synchronization every 5 minutes plus additional checks around midnight.
+- Privacy-safe diagnostics: tokens, callbacks and authorization codes are never shown in logs.
+- Timeline notification when an account's credentials expire and reconnection is required.
 
-1. Download the PostNL Homey Login Helper from the Community topic and extract the ZIP.
-2. Open chrome://extensions in Chrome.
-3. Enable Developer mode and choose Load unpacked.
-4. Select the extracted PostNL Homey Login Helper folder.
-5. In Homey, open More → Apps → PostNL → Settings.
-6. Choose Open PostNL and sign in to PostNL.
-7. The Chrome helper captures the postnl://login callback. Choose Copy callback.
-8. Paste the callback into the PostNL app settings in Homey and complete authentication.
-9. Then add the My PostNL device.
+Connect a PostNL account
+1. Download the PostNL Homey Login Helper from this app's Homey Community topic.
+2. Install the helper as a Chrome extension as described in the topic.
+3. In Homey, go to Add Device → PostNL → My PostNL.
+4. Choose Open PostNL and sign in to the PostNL account you want to connect to this device.
+5. The helper captures the postnl://login callback. Copy the callback.
+6. Paste the callback in Homey's pairing screen and choose Connect account.
+7. Repeat these steps to add another PostNL account as a separate device.
 
-The browser helper only captures the OAuth callback and does not store your PostNL password. The callback is temporary and single-use; do not share it with anyone.
+Reconnect an account
+If PostNL revokes or expires the credentials, only the affected device is impacted. Homey creates one Timeline notification asking you to reconnect that account. Use Repair on the affected My PostNL device and complete the PostNL sign-in again. Other PostNL devices continue to work.
 
-Synchronization and storage
-The app synchronizes every 5 minutes by default and checks more frequently around midnight for new My Post items. Mail item data and available images are stored locally in Homey so recent mail can remain visible. Parcel data is retained for the widget so recently delivered parcels can also be shown.
-
-Please note
-PostNL does not provide a public consumer API for these features. This app uses the same non-public interfaces used by PostNL mobile services. If PostNL changes those interfaces, a feature can temporarily become unavailable. Parcel data and My Post are handled independently where possible, so a My Post issue does not automatically disable the complete device.
+The app uses PostNL's personal, non-public interfaces. Changes to PostNL's mobile app or sign-in procedure can therefore require an app update.
