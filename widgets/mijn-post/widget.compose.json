@@ -1,13 +1,24 @@
 {
-  "name": { "en": "My Post", "nl": "Mijn Post" },
+  "name": {
+    "en": "My Post",
+    "nl": "Mijn Post"
+  },
   "height": 250,
   "api": {
-    "getData": { "method": "GET", "path": "/" },
-    "sync": { "method": "POST", "path": "/sync" }
+    "getData": {
+      "method": "GET",
+      "path": "/"
+    },
+    "sync": {
+      "method": "POST",
+      "path": "/sync"
+    }
   },
   "devices": {
     "type": "app",
-    "singular": false,
-    "filter": { "capabilities": "postnl_mail_count" }
+    "singular": true,
+    "filter": {
+      "capabilities": "postnl_mail_count"
+    }
   }
 }
