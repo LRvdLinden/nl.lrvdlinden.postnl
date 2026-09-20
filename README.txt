@@ -1,34 +1,26 @@
-Met PostNL voor Homey haal je jouw verwachte poststukken en PostNL-pakketten naar Homey. Je krijgt actuele apparaatstatussen, Dashboard-widgets en uitgebreide Flow-kaarten voor automatiseringen.
+PostNL voor Homey
 
-Wat kan de app?
-• Bekijk of er post wordt verwacht en hoeveel poststukken bekend zijn.
-• Bekijk scans/afbeeldingen van poststukken zodra PostNL deze beschikbaar stelt.
-• Gebruik de widget Mijn Post: maximaal 10 recente poststukken in een horizontaal swipe-/scrolloverzicht. Tik op een scan om deze groot te bekijken.
-• Gebruik de widget Mijn Pakket: maximaal 5 recente pakketten, inclusief bezorgde zendingen, met een duidelijke status Inkomend, Onderweg of Bezorgd.
-• Bekijk pakketdetails zoals afzender, barcode, bezorgdatum/-venster en trackinglink wanneer PostNL die gegevens levert.
-• Gebruik Flow-triggers voor nieuwe post, nieuwe pakketten, pakketstatuswijzigingen, synchronisatiefouten en verlopen aanmeldingen.
-• Flow-kaarten bevatten uitgebreide tags/tokens. Nieuwe post kan daarnaast een Homey-afbeeldingstoken bevatten.
-• Het PostNL-device publiceert de laatste postscan ook als Homey camera-afbeelding wanneer een afbeelding beschikbaar is.
+Bekijk je verwachte poststukken en PostNL-pakketten rechtstreeks in Homey. Elk Mijn PostNL-apparaat is gekoppeld aan één eigen PostNL-account. Daardoor kun je meerdere PostNL-accounts naast elkaar gebruiken, met per account eigen widgets, capabilities, Flow-kaarten en Flow-tokens.
 
-PostNL koppelen
-De PostNL-aanmelding verloopt via App-instellingen. Hiervoor is de PostNL Homey Login Helper voor Google Chrome nodig. De helper is te downloaden via het officiële Homey Community-topic:
-https://community.homey.app/t/app-pro-postnl-for-homey/159674
+Mogelijkheden
+- Mijn Post-widget met de 10 meest recente poststukken en horizontaal scrollbare scans.
+- Mijn Pakket-widget met de 5 meest recente pakketten en status Inkomend, Onderweg of Bezorgd.
+- Device-afhankelijke Flow-triggers, conditions, actions en tokens.
+- Lokale opslag van poststukscans (maximaal 21 dagen).
+- Automatische synchronisatie iedere 5 minuten en extra controles rond middernacht.
+- Privacyveilige diagnostiek: tokens, callbacks en autorisatiecodes worden nooit in logs getoond.
+- Timeline-melding wanneer de credentials van een account verlopen en opnieuw koppelen nodig is.
 
-1. Download de PostNL Homey Login Helper via het Community-topic en pak de ZIP uit.
-2. Open in Chrome chrome://extensions.
-3. Schakel Ontwikkelaarsmodus in en kies Uitgepakte extensie laden.
-4. Selecteer de uitgepakte map van de PostNL Homey Login Helper.
-5. Ga in Homey naar Meer → Apps → PostNL → Instellingen.
-6. Kies Open PostNL en meld je aan bij PostNL.
-7. De Chrome-helper vangt de postnl://login-callback op. Kies Callback kopiëren.
-8. Plak de callback in de PostNL App-instellingen van Homey en voltooi de aanmelding.
-9. Voeg daarna het apparaat Mijn PostNL toe.
+PostNL-account koppelen
+1. Download de PostNL Homey Login Helper via het Homey Community-topic van deze app.
+2. Installeer de helper als Chrome-extensie zoals beschreven in het topic.
+3. Ga in Homey naar Apparaat toevoegen → PostNL → Mijn PostNL.
+4. Kies Open PostNL en meld je aan bij het PostNL-account dat je aan dit device wilt koppelen.
+5. De helper vangt de postnl://login callback op. Kopieer de callback.
+6. Plak de callback in het koppelvenster van Homey en kies Account koppelen.
+7. Herhaal deze stappen om een tweede of volgend PostNL-account als apart device toe te voegen.
 
-De browserhelper onderschept alleen de OAuth-callback en slaat je PostNL-wachtwoord niet op. De callback is tijdelijk en eenmalig geldig; deel deze niet met anderen.
+Opnieuw koppelen
+Als PostNL de credentials intrekt of laat verlopen, wordt alleen het betreffende device geraakt. Homey plaatst één Timeline-melding met het verzoek dat account opnieuw te koppelen. Gebruik Repareren bij dat Mijn PostNL-device en doorloop opnieuw de PostNL-login. Andere PostNL-devices blijven gewoon functioneren.
 
-Synchronisatie en opslag
-De app synchroniseert standaard iedere 5 minuten en controleert rond middernacht extra op nieuwe Mijn Post-items. Poststukgegevens en beschikbare afbeeldingen worden lokaal in Homey bewaard zodat recente post zichtbaar kan blijven. Pakketgegevens blijven beschikbaar voor de widget zodat ook recent bezorgde pakketten kunnen worden getoond.
-
-Let op
-PostNL biedt geen openbare consumenten-API voor deze functies. Deze app gebruikt dezelfde niet-openbare interfaces als de mobiele PostNL-diensten. Wanneer PostNL die interfaces wijzigt, kan een onderdeel tijdelijk niet beschikbaar zijn. Pakketgegevens en Mijn Post worden waar mogelijk onafhankelijk van elkaar verwerkt, zodat een probleem met Mijn Post niet automatisch het volledige device uitschakelt.
-
+De app gebruikt PostNL's persoonlijke, niet-publieke interfaces. Een wijziging in de PostNL-app of aanmeldprocedure kan daarom een app-update vereisen.
