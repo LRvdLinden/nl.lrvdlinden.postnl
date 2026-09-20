@@ -1,50 +1,63 @@
 'use strict';
 
 const Homey = require('homey');
+const crypto = require('crypto');
+const PostNLApi = require('../../lib/postnl-api');
 
 class PostNLDriver extends Homey.Driver {
   async onInit() {
-    this.homey.flow.getConditionCard('mail_expected').registerRunListener(async args => {
-      const device = args?.device;
-      return Boolean(device && device.getCapabilityValue('postnl_mail_expected'));
-    });
-
-    this.homey.flow.getConditionCard('packages_underway').registerRunListener(async args => {
-      const device = args?.device;
-      return Boolean(device && Number(device.getCapabilityValue('postnl_package_count') || 0) > 0);
-    });
-
-    this.homey.flow.getActionCard('sync_now').registerRunListener(async args => {
-      if (!args?.device) throw new Error('Geen PostNL-apparaat geselecteerd.');
-      await this.homey.app.sync({ reason: 'flow', force: true });
+    this.homey.flow.getConditionCard('mail_expected').registerRunListener(async ({ device }) => Boolean(device && device.isMailExpected()));
+    this.homey.flow.getConditionCard('packages_underway').registerRunListener(async ({ device }) => Boolean(device && device.hasPackagesUnderway()));
+    this.homey.flow.getActionCard('sync_now').registerRunListener(async ({ device }) => {
+      if (!device) throw new Error('No PostNL device selected.');
+      await device.sync({ reason: 'flow', force: true });
       return true;
     });
+  }
 
-    this.log('PostNL device Flow cards registered');
+  _createMemoryStorage() {
+    const values = new Map();
+    return { get: key => values.get(key), set: async (key, value) => values.set(key, value), unset: async key => values.delete(key) };
+  }
+
+  _createPairApi() {
+    return new PostNLApi({ homey: this.homey, log: (...args) => this.log('[PairAuth]', ...args), storage: this._createMemoryStorage() });
+  }
+
+  _accountDevice(profile, api) {
+    const username = String(profile?.username || '').trim();
+    if (!username) throw new Error('PostNL did not return an account identifier.');
+    const stable = crypto.createHash('sha256').update(username.toLowerCase()).digest('hex').slice(0, 24);
+    return {
+      name: this.homey.i18n.getLanguage() === 'nl' ? 'Mijn PostNL' : 'My PostNL',
+      data: { id: `postnl-${stable}` },
+      store: {
+        username,
+        auth: api.exportAuth(),
+        snapshot: { letters: [], packages: [], updatedAt: null, account: profile || null, mailApiStatus: 'unknown', mailApiError: null },
+        authExpiredNotified: false,
+      },
+    };
   }
 
   async onPair(session) {
-    session.setHandler('is_authenticated', async () => {
-      if (!this.homey.app.api.hasCredentials()) return { authenticated: false };
-      try {
-        await this.homey.app.api.fetchProfile();
-        return { authenticated: true };
-      } catch (error) {
-        this.error('PostNL login validation failed', error);
-        return { authenticated: false };
-      }
+    const api = this._createPairApi();
+    session.setHandler('start_auth', async () => api.createAuthorization());
+    session.setHandler('complete_auth', async callback => {
+      await api.completeAuthorization(callback);
+      const profile = await api.fetchProfile();
+      return { authenticated: true, username: profile?.username || '', device: this._accountDevice(profile, api) };
     });
-    session.setHandler('list_devices', async () => {
-      if (!this.homey.app.api.hasCredentials()) {
-        throw new Error('Log eerst in bij PostNL via Meer → Apps → PostNL → Instellingen.');
-      }
-      const profile = await this.homey.app.api.fetchProfile();
-      const username = profile?.username || '';
-      return [{
-        name: this.homey.__('device.name'),
-        data: { id: username || 'postnl-account' },
-        store: { username },
-      }];
+  }
+
+  async onRepair(session, device) {
+    const api = this._createPairApi();
+    session.setHandler('start_auth', async () => api.createAuthorization());
+    session.setHandler('complete_auth', async callback => {
+      await api.completeAuthorization(callback);
+      const profile = await api.fetchProfile();
+      await device.updateCredentials(api.exportAuth(), profile);
+      return { authenticated: true, username: profile?.username || '' };
     });
   }
 }
