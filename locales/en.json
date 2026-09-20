@@ -1,5 +1,13 @@
 {
-  "errors": { "not_authenticated": "PostNL is not connected." },
-  "device": { "name": "My PostNL" },
-  "pair": { "title": "Add My PostNL", "subtitle": "Sign in through App Settings first, then add My PostNL." }
+  "errors": {
+    "not_authenticated": "PostNL is not connected."
+  },
+  "device": {
+    "name": "My PostNL"
+  },
+  "pair": {
+    "title": "Add My PostNL",
+    "subtitle": "Connect each device to one PostNL account.",
+    "language_marker": "en"
+  }
 }
