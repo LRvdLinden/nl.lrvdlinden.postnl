@@ -1,5 +1,13 @@
 {
-  "errors": { "not_authenticated": "PostNL is niet gekoppeld." },
-  "device": { "name": "Mijn PostNL" },
-  "pair": { "title": "Mijn PostNL toevoegen", "subtitle": "Meld je eerst aan via App-instellingen en voeg daarna Mijn PostNL toe." }
+  "errors": {
+    "not_authenticated": "PostNL is niet gekoppeld."
+  },
+  "device": {
+    "name": "Mijn PostNL"
+  },
+  "pair": {
+    "title": "Mijn PostNL toevoegen",
+    "subtitle": "Koppel ieder apparaat aan één PostNL-account.",
+    "language_marker": "nl"
+  }
 }
