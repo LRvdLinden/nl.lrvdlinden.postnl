@@ -95,5 +95,9 @@
   "1.1.1": {
     "en": "Fixed PostNL Flow time tokens being displayed two hours late in Homey. Delivery-window start/end and created-at tokens are now formatted once using Homey’s configured timezone, preventing an extra CET/CEST conversion.",
     "nl": "Probleem opgelost waarbij PostNL Flow-tijdtokes twee uur te laat werden weergegeven in Homey. De begin-/eindtijd van het bezorgvenster en aangemaakt-op tokens worden nu één keer met de ingestelde Homey-tijdzone geformatteerd, zodat geen extra CET/CEST-conversie meer plaatsvindt."
+  },
+  "1.1.2": {
+    "en": "Expanded Homey App Store search tags in English and Dutch with PostNL, mail, letters, parcels, packages, delivery, shipment, tracking and related terms.",
+    "nl": "Homey App Store-zoektags uitgebreid in het Nederlands en Engels met PostNL, post, brief, brieven, poststuk, poststukken, pakket, pakketten, bezorging, zending, tracking en gerelateerde termen."
   }
 }
