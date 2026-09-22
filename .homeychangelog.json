@@ -91,5 +91,9 @@
   "1.1.0": {
     "en": "Moved PostNL authentication from App Settings to per-device pairing and repair. Multiple PostNL accounts are now supported, with separate credentials, snapshots, widgets, capabilities, Flow cards and tokens per device. Added a one-time localized Timeline notification when an account needs to be reconnected.",
     "nl": "PostNL-authenticatie verplaatst van App-instellingen naar pairing en reparatie per device. Meerdere PostNL-accounts worden nu ondersteund, met per device eigen credentials, snapshot, widgets, capabilities, Flow-kaarten en tokens. Daarnaast wordt één gelokaliseerde Timeline-melding geplaatst wanneer een account opnieuw gekoppeld moet worden."
+  },
+  "1.1.1": {
+    "en": "Fixed PostNL Flow time tokens being displayed two hours late in Homey. Delivery-window start/end and created-at tokens are now formatted once using Homey’s configured timezone, preventing an extra CET/CEST conversion.",
+    "nl": "Probleem opgelost waarbij PostNL Flow-tijdtokes twee uur te laat werden weergegeven in Homey. De begin-/eindtijd van het bezorgvenster en aangemaakt-op tokens worden nu één keer met de ingestelde Homey-tijdzone geformatteerd, zodat geen extra CET/CEST-conversie meer plaatsvindt."
   }
 }
