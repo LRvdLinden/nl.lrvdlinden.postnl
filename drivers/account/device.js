@@ -116,9 +116,11 @@ class PostNLDevice extends Homey.Device {
       id: parcel.id || '', sender: parcel.sender || '', receiver: parcel.receiver || '',
       title: parcel.title || parcel.sender || parcel.barcode || 'PostNL', barcode: parcel.barcode || '', status: parcel.status || '',
       delivery_date: parcel.deliveryDate ? this.api.formatDate(parcel.deliveryDate) : '', delivery_window: parcel.deliveryWindow || '',
-      delivery_window_from: parcel.deliveryWindowFrom || '', delivery_window_to: parcel.deliveryWindowTo || '',
+      delivery_window_from: parcel.deliveryWindowFrom ? this.api.formatTime(parcel.deliveryWindowFrom) : '',
+      delivery_window_to: parcel.deliveryWindowTo ? this.api.formatTime(parcel.deliveryWindowTo) : '',
       delivery_window_type: parcel.deliveryWindowType || '', details_url: parcel.detailsUrl || '', shipment_type: parcel.shipmentType || '',
-      delivery_address_type: parcel.deliveryAddressType || '', direction: parcel.direction || '', created_at: parcel.createdAt || '',
+      delivery_address_type: parcel.deliveryAddressType || '', direction: parcel.direction || '',
+      created_at: parcel.createdAt ? this.api.formatDateTime(parcel.createdAt) : '',
       delivered: Boolean(parcel.delivered), shared_from: parcel.sourceDisplayName || '', source_account_id: parcel.sourceAccountId || '',
     };
   }
