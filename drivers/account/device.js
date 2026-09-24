@@ -14,7 +14,7 @@ class PostNLDevice extends Homey.Device {
       unset: key => this.unsetStoreValue(key),
     };
     this.api = new PostNLApi({ homey: this.homey, log: (...args) => this.log(...args), storage: this._storage });
-    this.snapshot = this.getStoreValue('snapshot') || { letters: [], packages: [], updatedAt: null };
+    this.snapshot = this.getStoreValue('snapshot') || { letters: [], liveLetters: [], packages: [], updatedAt: null };
 
     this._flowTriggerNewMail = this.homey.flow.getDeviceTriggerCard('new_mail');
     this._flowTriggerNewPackage = this.homey.flow.getDeviceTriggerCard('new_package');
@@ -60,12 +60,17 @@ class PostNLDevice extends Homey.Device {
       return this.snapshot;
     }
 
-    const previous = this.snapshot || { letters: [], packages: [] };
+    const previous = this.snapshot || { letters: [], liveLetters: [], packages: [] };
     try {
       const live = await this.api.fetchAll();
       const letters = await this.api.archiveLetters(live.letters, previous.letters || []);
+      const archivedById = new Map(letters.map(item => [item.id, item]));
+      // Keep a hydrated copy of only the items currently returned by PostNL.
+      // Capabilities, device image and mail Flow tokens must never use archive-only items.
+      const liveLetters = (live.letters || []).map(item => archivedById.get(item.id) || item);
       const current = {
         letters,
+        liveLetters,
         packages: live.packages,
         updatedAt: new Date().toISOString(),
         account: live.account || null,
@@ -171,10 +176,30 @@ class PostNLDevice extends Homey.Device {
     return image;
   }
 
+  _localDateKey(value = new Date()) {
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: this.homey.clock.getTimezone(), year: 'numeric', month: '2-digit', day: '2-digit',
+    }).formatToParts(date);
+    const get = type => parts.find(part => part.type === type)?.value || '';
+    return `${get('year')}-${get('month')}-${get('day')}`;
+  }
+
   async applySnapshot(snapshot = {}, error = null) {
-    const letters = snapshot.letters || [];
+    // Only current PostNL mail drives device capabilities. The archive is widget-only.
+    // Old snapshots do not have liveLetters; in that case wait for the first fresh sync
+    // instead of exposing archived mail as current mail again.
+    const letters = Array.isArray(snapshot.liveLetters) ? snapshot.liveLetters : [];
     const packages = (snapshot.packages || []).filter(item => !item.delivered);
-    const dates = [...letters.map(item => item.deliveryDate), ...packages.map(item => item.deliveryDate)].filter(Boolean).sort();
+    const todayKey = this._localDateKey();
+    const currentMail = letters.filter(item => {
+      const key = this._localDateKey(item.deliveryDate);
+      return key && key >= todayKey;
+    });
+    const mailDates = currentMail.map(item => item.deliveryDate).filter(Boolean);
+    const packageDates = packages.map(item => item.deliveryDate).filter(Boolean).filter(value => this._localDateKey(value) >= todayKey);
+    const dates = [...mailDates, ...packageDates].sort((a, b) => new Date(a) - new Date(b));
     const nextDelivery = dates[0] ? this.api.formatDate(dates[0]) : '—';
     const updated = snapshot.updatedAt
       ? new Intl.DateTimeFormat(this.homey.i18n.getLanguage() === 'nl' ? 'nl-NL' : 'en-GB', { timeZone: this.homey.clock.getTimezone(), dateStyle: 'short', timeStyle: 'short' }).format(new Date(snapshot.updatedAt))
@@ -182,7 +207,7 @@ class PostNLDevice extends Homey.Device {
     const connected = this.api.hasCredentials();
     const lang = this.homey.i18n.getLanguage();
     const values = {
-      postnl_mail_expected: letters.length > 0,
+      postnl_mail_expected: currentMail.length > 0,
       postnl_mail_count: letters.length,
       postnl_package_count: packages.length,
       postnl_next_delivery: nextDelivery,
@@ -195,7 +220,9 @@ class PostNLDevice extends Homey.Device {
     };
     for (const [capability, value] of Object.entries(values)) if (this.hasCapability(capability)) await this.setCapabilityValue(capability, value).catch(this.error);
 
-    const latestWithImage = letters.find(item => item?.imageData);
+    const latestWithImage = [...letters]
+      .sort((a, b) => new Date(b.deliveryDate || 0) - new Date(a.deliveryDate || 0))
+      .find(item => item?.imageData);
     if (latestWithImage && latestWithImage.id !== this._latestMailImageId) {
       const image = await this.getLetterImage(latestWithImage).catch(() => null);
       if (image) {
@@ -212,7 +239,10 @@ class PostNLDevice extends Homey.Device {
 
   getWidgetData() {
     return {
-      authenticated: this.api.hasCredentials(), letters: (this.snapshot.letters || []).slice(0, 20), packages: (this.snapshot.packages || []).slice(0, 40),
+      authenticated: this.api.hasCredentials(),
+      // Widget deliberately receives the 21-day archive. Its API sorts newest first.
+      letters: (this.snapshot.letters || []).slice(0, 60),
+      packages: (this.snapshot.packages || []).slice(0, 40),
       updatedAt: this.snapshot.updatedAt || null, mailApiStatus: this.snapshot.mailApiStatus || 'unknown', mailApiError: this.snapshot.mailApiError || null,
     };
   }
