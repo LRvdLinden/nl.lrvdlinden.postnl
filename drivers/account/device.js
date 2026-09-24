@@ -141,11 +141,18 @@ class PostNLDevice extends Homey.Device {
   }
 
   async handleSnapshotChanges(previous = {}, current = {}) {
-    const oldLetterIds = new Set((previous.letters || []).map(item => item.id));
-    const newLetters = (current.letters || []).filter(item => !oldLetterIds.has(item.id));
+    // For upgrades from <=1.1.2, fall back to the old archive list once. This avoids
+    // firing false "new mail" triggers for items that were already known before liveLetters existed.
+    const previousLiveLetters = Array.isArray(previous.liveLetters) ? previous.liveLetters : (previous.letters || []);
+    const currentLiveLetters = current.liveLetters || [];
+    const oldLetterIds = new Set(previousLiveLetters.map(item => item.id));
+    const newLetters = currentLiveLetters.filter(item => !oldLetterIds.has(item.id));
     const oldPackages = new Map((previous.packages || []).map(item => [item.id, item]));
 
-    if (newLetters.length) await this.triggerNewMail(await this._mailTokens(newLetters[0], newLetters.length));
+    if (newLetters.length) {
+      const newest = [...newLetters].sort((a, b) => new Date(b.deliveryDate || 0) - new Date(a.deliveryDate || 0))[0];
+      await this.triggerNewMail(await this._mailTokens(newest, newLetters.length));
+    }
     for (const parcel of current.packages || []) {
       const old = oldPackages.get(parcel.id);
       const tokens = this._packageTokens(parcel);
