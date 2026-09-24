@@ -1,6 +1,8 @@
 'use strict';
 
 const Homey = require('homey');
+const fs = require('fs');
+const path = require('path');
 const PostNLApi = require('../../lib/postnl-api');
 
 class PostNLDevice extends Homey.Device {
@@ -191,6 +193,26 @@ class PostNLDevice extends Homey.Device {
     return image;
   }
 
+  async getNoMailPlaceholderImage() {
+    const language = this.homey.i18n.getLanguage() === 'nl' ? 'nl' : 'en';
+    const cacheKey = `no-mail-placeholder:${language}`;
+    if (this._letterImageCache.has(cacheKey)) return this._letterImageCache.get(cacheKey);
+
+    const filePath = path.join(__dirname, '..', '..', 'assets', `no-mail-${language}.png`);
+    const buffer = await fs.promises.readFile(filePath);
+    if (!buffer?.length) throw new Error('PostNL fallback image is empty');
+
+    const image = await this.homey.images.createImage();
+    image.setStream(async stream => {
+      stream.contentType = 'image/png';
+      stream.filename = `postnl-no-mail-${language}.png`;
+      stream.end(buffer);
+      return stream;
+    });
+    this._letterImageCache.set(cacheKey, image);
+    return image;
+  }
+
   _localDateKey(value = new Date()) {
     const date = value instanceof Date ? value : new Date(value);
     if (Number.isNaN(date.getTime())) return '';
@@ -235,15 +257,25 @@ class PostNLDevice extends Homey.Device {
     };
     for (const [capability, value] of Object.entries(values)) if (this.hasCapability(capability)) await this.setCapabilityValue(capability, value).catch(this.error);
 
+    const imageTitle = lang === 'nl' ? 'Laatste poststuk' : 'Latest mail item';
     const latestWithImage = [...currentMail]
       .sort((a, b) => new Date(b.deliveryDate || 0) - new Date(a.deliveryDate || 0))
       .find(item => item?.imageData);
-    if (!latestWithImage) this._latestMailImageId = null;
     if (latestWithImage && latestWithImage.id !== this._latestMailImageId) {
       const image = await this.getLetterImage(latestWithImage).catch(() => null);
       if (image) {
-        await this.setCameraImage('latest_mail_item', lang === 'nl' ? 'Laatste poststuk' : 'Latest mail item', image);
+        await this.setCameraImage('latest_mail_item', imageTitle, image);
         this._latestMailImageId = latestWithImage.id;
+      }
+    }
+    if (!latestWithImage) {
+      const placeholderId = `__no_mail__:${lang}`;
+      if (this._latestMailImageId !== placeholderId) {
+        const image = await this.getNoMailPlaceholderImage().catch(() => null);
+        if (image) {
+          await this.setCameraImage('latest_mail_item', imageTitle, image);
+          this._latestMailImageId = placeholderId;
+        }
       }
     }
     if (error) await this.setUnavailable(error.message).catch(this.error);
