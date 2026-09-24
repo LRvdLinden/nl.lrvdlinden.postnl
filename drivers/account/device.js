@@ -144,8 +144,16 @@ class PostNLDevice extends Homey.Device {
     // For upgrades from <=1.1.2, fall back to the old archive list once. This avoids
     // firing false "new mail" triggers for items that were already known before liveLetters existed.
     const previousLiveLetters = Array.isArray(previous.liveLetters) ? previous.liveLetters : (previous.letters || []);
-    const currentLiveLetters = current.liveLetters || [];
-    const oldLetterIds = new Set(previousLiveLetters.map(item => item.id));
+    const todayKey = this._localDateKey();
+    const currentLiveLetters = (current.liveLetters || []).filter(item => {
+      const key = this._localDateKey(item.deliveryDate);
+      return key && key >= todayKey;
+    });
+    const previousCurrentLetters = previousLiveLetters.filter(item => {
+      const key = this._localDateKey(item.deliveryDate);
+      return key && key >= todayKey;
+    });
+    const oldLetterIds = new Set(previousCurrentLetters.map(item => item.id));
     const newLetters = currentLiveLetters.filter(item => !oldLetterIds.has(item.id));
     const oldPackages = new Map((previous.packages || []).map(item => [item.id, item]));
 
@@ -215,7 +223,7 @@ class PostNLDevice extends Homey.Device {
     const lang = this.homey.i18n.getLanguage();
     const values = {
       postnl_mail_expected: currentMail.length > 0,
-      postnl_mail_count: letters.length,
+      postnl_mail_count: currentMail.length,
       postnl_package_count: packages.length,
       postnl_next_delivery: nextDelivery,
       postnl_status: !connected ? (lang === 'nl' ? 'Niet verbonden' : 'Not connected')
@@ -227,9 +235,10 @@ class PostNLDevice extends Homey.Device {
     };
     for (const [capability, value] of Object.entries(values)) if (this.hasCapability(capability)) await this.setCapabilityValue(capability, value).catch(this.error);
 
-    const latestWithImage = [...letters]
+    const latestWithImage = [...currentMail]
       .sort((a, b) => new Date(b.deliveryDate || 0) - new Date(a.deliveryDate || 0))
       .find(item => item?.imageData);
+    if (!latestWithImage) this._latestMailImageId = null;
     if (latestWithImage && latestWithImage.id !== this._latestMailImageId) {
       const image = await this.getLetterImage(latestWithImage).catch(() => null);
       if (image) {
