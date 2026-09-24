@@ -101,7 +101,7 @@
     "nl": "Homey App Store-zoektags uitgebreid en poststatus verbeterd: device-capabilities, device-afbeelding en post-Flow-tokens gebruiken nu alleen de actuele live PostNL-lijst, terwijl de Mijn Post-widget het 21-dagenarchief behoudt met het nieuwste poststuk vooraan."
   },
   "1.1.3": {
-    "en": "Fixed historical mail leaking into current device state. Mail expected, mail item count, next delivery, device image and mail Flow triggers/tokens now only use mail for today or later. The My Post widget still keeps the 21-day archive with the newest item first.",
-    "nl": "Probleem opgelost waarbij historische post nog in de actuele device-status terechtkwam. Post verwacht, aantal poststukken, volgende bezorging, device-afbeelding en post-Flow-triggers/tokens gebruiken nu alleen post van vandaag of later. De Mijn Post-widget behoudt het 21-dagenarchief met het nieuwste poststuk vooraan."
+    "en": "Fixed historical mail leaking into current device state. Mail expected, mail item count, next delivery, device image and mail Flow triggers/tokens now only use mail for today or later. The My Post widget still keeps the 21-day archive with the newest item first. When no current mail is on the way, the device image now uses a localized PNG fallback image.",
+    "nl": "Probleem opgelost waarbij historische post nog in de actuele device-status terechtkwam. Post verwacht, aantal poststukken, volgende bezorging, device-afbeelding en post-Flow-triggers/tokens gebruiken nu alleen post van vandaag of later. De Mijn Post-widget behoudt het 21-dagenarchief met het nieuwste poststuk vooraan. Wanneer er geen actuele post onderweg is, gebruikt de device-afbeelding nu een gelokaliseerde PNG-fallback."
   }
 }
