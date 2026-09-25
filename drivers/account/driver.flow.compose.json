@@ -239,6 +239,169 @@
       ]
     },
     {
+      "id": "delivery_window_known",
+      "highlight": true,
+      "title": {
+        "en": "A delivery window became available",
+        "nl": "Er is een bezorgvenster bekend"
+      },
+      "args": [],
+      "tokens": [
+        {
+          "name": "id",
+          "type": "string",
+          "title": {
+            "en": "Shipment ID",
+            "nl": "Zending-ID"
+          }
+        },
+        {
+          "name": "sender",
+          "type": "string",
+          "title": {
+            "en": "Sender",
+            "nl": "Afzender"
+          }
+        },
+        {
+          "name": "receiver",
+          "type": "string",
+          "title": {
+            "en": "Receiver",
+            "nl": "Ontvanger"
+          }
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "title": {
+            "en": "Parcel",
+            "nl": "Pakket"
+          }
+        },
+        {
+          "name": "barcode",
+          "type": "string",
+          "title": {
+            "en": "Barcode",
+            "nl": "Barcode"
+          }
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "title": {
+            "en": "Status",
+            "nl": "Status"
+          }
+        },
+        {
+          "name": "delivery_date",
+          "type": "string",
+          "title": {
+            "en": "Delivery date",
+            "nl": "Bezorgdatum"
+          }
+        },
+        {
+          "name": "delivery_window",
+          "type": "string",
+          "title": {
+            "en": "Delivery window",
+            "nl": "Bezorgvenster"
+          }
+        },
+        {
+          "name": "delivery_window_from",
+          "type": "string",
+          "title": {
+            "en": "Delivery window from",
+            "nl": "Bezorgvenster vanaf"
+          }
+        },
+        {
+          "name": "delivery_window_to",
+          "type": "string",
+          "title": {
+            "en": "Delivery window to",
+            "nl": "Bezorgvenster tot"
+          }
+        },
+        {
+          "name": "delivery_window_type",
+          "type": "string",
+          "title": {
+            "en": "Delivery window type",
+            "nl": "Type bezorgvenster"
+          }
+        },
+        {
+          "name": "details_url",
+          "type": "string",
+          "title": {
+            "en": "Tracking URL",
+            "nl": "Tracking-URL"
+          }
+        },
+        {
+          "name": "shipment_type",
+          "type": "string",
+          "title": {
+            "en": "Shipment type",
+            "nl": "Zendingstype"
+          }
+        },
+        {
+          "name": "delivery_address_type",
+          "type": "string",
+          "title": {
+            "en": "Delivery address type",
+            "nl": "Type bezorgadres"
+          }
+        },
+        {
+          "name": "direction",
+          "type": "string",
+          "title": {
+            "en": "Direction",
+            "nl": "Richting"
+          }
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "title": {
+            "en": "Created at",
+            "nl": "Aangemaakt op"
+          }
+        },
+        {
+          "name": "delivered",
+          "type": "boolean",
+          "title": {
+            "en": "Delivered",
+            "nl": "Bezorgd"
+          }
+        },
+        {
+          "name": "shared_from",
+          "type": "string",
+          "title": {
+            "en": "Shared from",
+            "nl": "Gedeeld via"
+          }
+        },
+        {
+          "name": "source_account_id",
+          "type": "string",
+          "title": {
+            "en": "Source account ID",
+            "nl": "Bronaccount-ID"
+          }
+        }
+      ]
+    },
+    {
       "id": "package_status_changed",
       "title": {
         "en": "A parcel status changed",
@@ -449,6 +612,14 @@
       "title": {
         "en": "Parcels are underway",
         "nl": "Er zijn pakketten onderweg"
+      },
+      "args": []
+    },
+    {
+      "id": "delivery_window_known",
+      "title": {
+        "en": "A delivery window is known",
+        "nl": "Er is een bezorgvenster bekend"
       },
       "args": []
     }
