@@ -1,0 +1,11 @@
+{
+  "type": "string",
+  "title": {
+    "en": "Delivery date",
+    "nl": "Bezorgdatum"
+  },
+  "getable": true,
+  "setable": false,
+  "insights": false,
+  "icon": "/assets/calendar.svg"
+}
