@@ -103,5 +103,9 @@
   "1.1.3": {
     "en": "Fixed historical mail leaking into current device state. Mail expected, mail item count, next delivery, device image and mail Flow triggers/tokens now only use mail for today or later. The My Post widget still keeps the 21-day archive with the newest item first. When no current mail is on the way, the device image now uses a localized PNG fallback image.",
     "nl": "Probleem opgelost waarbij historische post nog in de actuele device-status terechtkwam. Post verwacht, aantal poststukken, volgende bezorging, device-afbeelding en post-Flow-triggers/tokens gebruiken nu alleen post van vandaag of later. De Mijn Post-widget behoudt het 21-dagenarchief met het nieuwste poststuk vooraan. Wanneer er geen actuele post onderweg is, gebruikt de device-afbeelding nu een gelokaliseerde PNG-fallback."
+  },
+  "1.1.5": {
+    "en": "Aligned PostNL parcel capabilities, Flow tokens and the package widget with the MyParcel implementation. Added delivery date/window capabilities, localized parcel statuses, improved parcel row timing and a PostNL-orange detail popup. Added a device trigger when a delivery window becomes available and a reversible condition for whether a delivery window is known.",
+    "nl": "PostNL-pakketcapabilities, Flow-tokens en de pakketwidget gelijkgetrokken met de MyParcel-implementatie. Bezorgdatum/bezorgvenster-capabilities, gelokaliseerde pakketstatussen, betere datum/tijdinformatie op pakketregels en een PostNL-oranje detailpopup toegevoegd. Ook een device-trigger toegevoegd zodra een bezorgvenster bekend wordt en een omkeerbare conditie voor of een bezorgvenster bekend is."
   }
 }
