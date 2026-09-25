@@ -9,6 +9,8 @@
     "postnl_mail_count",
     "postnl_package_count",
     "postnl_next_delivery",
+    "postnl_delivery_date",
+    "postnl_delivery_window",
     "postnl_status",
     "postnl_last_update"
   ],
