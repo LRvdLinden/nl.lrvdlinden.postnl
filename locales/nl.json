@@ -9,5 +9,22 @@
     "title": "Mijn PostNL toevoegen",
     "subtitle": "Koppel ieder apparaat aan één PostNL-account.",
     "language_marker": "nl"
+  },
+  "package_status": {
+    "delivered": "Bezorgd",
+    "transit": "Onderweg",
+    "out": "Onderweg voor bezorging",
+    "announced": "Aangemeld",
+    "accepted": "Ontvangen door vervoerder",
+    "picked": "Opgehaald",
+    "ready": "Klaar om op te halen",
+    "attempt": "Bezorgpoging gedaan",
+    "delayed": "Vertraagd",
+    "cancelled": "Geannuleerd",
+    "returned": "Retour",
+    "returning": "Retour onderweg",
+    "customs": "Douaneafhandeling",
+    "exception": "Probleem met bezorging",
+    "unknown": "Status onbekend"
   }
 }
