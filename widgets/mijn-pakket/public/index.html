@@ -1,26 +1,144 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <style>
-    *{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:transparent;color:#232323;font:14px/1.28 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .card{display:grid;grid-template-rows:52px minmax(0,1fr);width:100%;height:100%;overflow:hidden;border-radius:17px;background:#f4f4f5;box-shadow:0 1px 1px #0000000d}
-    header{display:flex;align-items:center;padding:0 18px;border-bottom:1px solid #dedee0;background:#fafafa}.app-icon{display:block;width:36px;height:36px;object-fit:contain}h1{margin:0 0 0 auto;color:#77767b;font-size:18px;font-weight:600;white-space:nowrap}
-    #content{min-height:0;overflow-y:auto;padding:10px 12px 14px;scrollbar-width:thin}.list{display:grid;gap:8px}.parcel{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:10px;align-items:center;min-height:54px;padding:8px 10px;border:1px solid #e0e0e2;border-radius:11px;background:#fff}.parcel.clickable{cursor:pointer}.pkg-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:9px;background:#f3f3f4}.pkg-icon img{width:24px;height:24px}.meta{min-width:0}.sender{overflow:hidden;font-weight:750;text-overflow:ellipsis;white-space:nowrap}.status{margin-top:2px;overflow:hidden;color:#747378;font-size:12px;text-overflow:ellipsis;white-space:nowrap}.detail{margin-top:2px;overflow:hidden;color:#97969b;font-size:11px;text-overflow:ellipsis;white-space:nowrap}.phase{padding:4px 8px;border-radius:999px;background:#ececef;color:#66656a;font-size:10px;font-weight:800;white-space:nowrap}.phase.transit{background:#fff0e6;color:#b54b00}.phase.delivered{background:#e8f5ea;color:#2c7338}.state{display:grid;place-items:center;min-height:100%;padding:20px;color:#77767b;text-align:center}
-    @media(prefers-color-scheme:dark){html,body{color:#f3f3f4}.card{background:#2d2d2f;box-shadow:none}header{border-color:#3b3b3d;background:#29292b}h1{color:#aaa9ad}.parcel{border-color:#424244;background:#343436}.pkg-icon{background:#252527}.status{color:#b5b4b8}.detail{color:#96959a}.phase{background:#4a4a4d;color:#e2e1e4}.phase.transit{background:#58341d;color:#ffc99f}.phase.delivered{background:#27472d;color:#bce7c4}.state{color:#aaa9ad}}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{color-scheme:light dark;--brand:#FB6200;--brand-soft:#fff0e6;--card:#f4f4f5;--header:#fafafa;--border:#dedee0;--row:#fff;--carrier:#fff4ec;--primary:#232323;--secondary:#747378;--muted:#97969b;--title:#77767b;--pill:#fff0e6;--pill-text:#9a3f00;--dialog:#fff;--stat:#fff6f0;--backdrop:#5a2a0d70}
+*{box-sizing:border-box}
+html,body{width:100%;height:100%;margin:0;overflow:hidden;background:transparent;color:var(--primary);font:14px/1.28 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button{font:inherit}
+.card{display:grid;grid-template-rows:52px minmax(0,1fr);height:100%;border-radius:17px;overflow:hidden;background:var(--card);color:var(--primary)}
+header{display:flex;align-items:center;padding:0 18px;border-bottom:1px solid var(--border);background:var(--header)}
+.app{width:36px;height:36px;object-fit:contain}
+h1{margin:0 0 0 auto;color:#77767b;font-size:18px;font-weight:600;white-space:nowrap}
+#c{overflow-y:auto;padding:10px 12px;color:var(--primary)}
+.list{display:grid;gap:8px}
+.p{display:grid;width:100%;grid-template-columns:54px minmax(0,1fr) minmax(70px,120px);gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--border);border-radius:11px;background:var(--row);color:var(--primary);text-align:start;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
+.p:active{transform:scale(.992)}
+.p:focus-visible{outline:3px solid color-mix(in srgb,var(--brand) 45%,transparent);outline-offset:1px}
+.carrier{display:grid;place-items:center;width:54px;height:42px;border-radius:9px;background:var(--carrier)}
+.carrier img{display:block;max-width:44px;max-height:30px;object-fit:contain}
+.meta{min-width:0;color:var(--primary)}
+.sender{color:var(--primary);font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.carriername,.detail{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--secondary);font-size:12px}
+.detail{font-size:11px;color:var(--muted)}
+.badge{display:block;max-width:120px;padding:5px 8px;border-radius:999px;background:var(--pill);color:var(--pill-text);font-size:10px;font-weight:800;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.state{display:grid;place-items:center;height:100%;padding:20px;text-align:center;color:var(--title)}
+.modal{position:fixed;inset:0;z-index:9999;display:none;place-items:center;padding:18px;background:#000c;pointer-events:auto}
+.modal.open{display:grid}
+.dialog{position:relative;width:min(350px,100%);max-height:calc(100vh - 28px);overflow:auto;border-radius:24px;background:var(--dialog);color:var(--primary);box-shadow:0 18px 50px #071e164f;text-align:start}
+.close{position:absolute;top:10px;inset-inline-end:10px;z-index:2;display:grid;place-items:center;width:34px;height:34px;border:0;border-radius:50%;background:#ffffffde;color:#26332e;font-size:22px;line-height:1;cursor:pointer;box-shadow:0 1px 6px #0001}
+.popup-hero{display:flex;align-items:center;gap:14px;padding:19px 54px 16px 18px;background:linear-gradient(140deg,#ffe4d0,#fff9f5)}
+.popup-logo{display:grid;place-items:center;flex:0 0 auto;width:72px;height:64px;border-radius:18px;background:#fff;box-shadow:0 0 0 4px #ffffffa8,0 4px 14px #7a2f001c}
+.popup-logo img{display:block;max-width:58px;max-height:40px;object-fit:contain}
+.identity{min-width:0}
+.popup-name{display:block;font-size:20px;line-height:1.15;overflow-wrap:anywhere}
+.carrier-chip{display:inline-block;margin-top:7px;padding:3px 9px;border-radius:20px;background:#fff;color:var(--brand);font-size:11px;font-weight:750}
+.popup-status{padding:14px 18px 10px}
+.status-label{display:block;margin-bottom:4px;color:var(--brand);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.03em}
+.status-value{margin:0;font-size:17px;font-weight:800;overflow-wrap:anywhere}
+.tracking-sub{margin:5px 0 0;color:var(--secondary);font-size:12px;overflow-wrap:anywhere}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 18px 10px}
+.stat{min-width:0;padding:9px 11px;border-radius:13px;background:var(--stat)}
+.stat span,.detail-label{display:block;color:var(--secondary);font-size:10px}
+.stat strong{display:block;margin-top:3px;font-size:15px;overflow-wrap:anywhere}
+.detail-list{display:grid;gap:0;padding:0 18px 8px}
+.detail-row{display:grid;grid-template-columns:minmax(92px,38%) minmax(0,1fr);gap:10px;padding:8px 0;border-top:1px solid var(--border)}
+.detail-value{min-width:0;color:var(--primary);font-size:12px;font-weight:650;overflow-wrap:anywhere;text-align:end}
+@media(prefers-color-scheme:dark){
+ :root{--card:#202022;--header:#29292b;--border:#424244;--row:#343436;--carrier:#3a2a20;--primary:#f4f4f5;--secondary:#c4c3c7;--muted:#aaa9ad;--title:#d3d2d5;--pill:#5a341d;--pill-text:#ffd2b3;--dialog:#292b2a;--stat:#3a302a;--backdrop:#1f0e0799;--brand-soft:#4a2b1a}
+ h1{color:#aaa9ad}
+ .popup-hero{background:linear-gradient(140deg,#5a321b,#342a25)}
+ .popup-logo{background:#f7f7f7;box-shadow:0 0 0 4px #694028}
+ .carrier-chip{background:#51321f;color:#ffbf91}
+ .status-label{color:#ffad73}
+ .close{background:#4a3b33;color:#fff}
+}
+</style>
 </head>
 <body>
-  <main class="card"><header><img class="app-icon" src="icon.svg" alt="PostNL"><h1 id="title">Mijn Pakket</h1></header><section id="content"><div class="state">Pakketten ophalen…</div></section></main>
-  <script>
-    const content=document.getElementById('content'),title=document.getElementById('title');
-    const words={nl:{title:'Mijn Pakket',loading:'Pakketten ophalen…',empty:'Geen recente pakketten.',login:'Koppel eerst je PostNL-account.',incoming:'Inkomend',transit:'Onderweg',delivered:'Bezorgd'},en:{title:'My Package',loading:'Loading packages…',empty:'No recent packages.',login:'Connect your PostNL account first.',incoming:'Incoming',transit:'In transit',delivered:'Delivered'}};
-    function langOf(v){return String(v||'nl').toLowerCase().split('-')[0]==='nl'?'nl':'en'}
-    function dateLabel(v,lang,tz){const d=new Date(v);if(Number.isNaN(d.getTime()))return '';return new Intl.DateTimeFormat(lang==='nl'?'nl-NL':'en-GB',{day:'numeric',month:'short',timeZone:tz}).format(d)}
-    function phaseOf(item){const s=String(item.status||'').toLowerCase();if(item.delivered||/(bezorgd|delivered)/.test(s))return 2;if(item.deliveryWindow||item.deliveryWindowFrom||/(onderweg|transit|gesorteerd|bezorger|out for delivery|transport|route|sorting)/.test(s))return 1;return 0}
-    function render(data){const lang=langOf(data.locale),t=words[lang];title.textContent=t.title;if(!data.authenticated){content.innerHTML=`<div class="state">${t.login}</div>`;return}const packages=data.packages||[];if(!packages.length){content.innerHTML=`<div class="state">${t.empty}</div>`;return}const list=document.createElement('div');list.className='list';for(const item of packages){const phase=phaseOf(item),labels=[t.incoming,t.transit,t.delivered];const row=document.createElement('article');row.className='parcel'+(item.detailsUrl?' clickable':'');const icon=document.createElement('div');icon.className='pkg-icon';icon.innerHTML='<img src="package.svg" alt="">';const meta=document.createElement('div');meta.className='meta';const sender=document.createElement('div');sender.className='sender';sender.textContent=item.sender||item.title||item.barcode||'PostNL';const status=document.createElement('div');status.className='status';const rawStatus=String(item.status||'');const generic=/^pakket is (inkomend|onderweg|bezorgd)$/i.test(rawStatus);status.textContent=rawStatus&&!generic?rawStatus:labels[phase];const detail=document.createElement('div');detail.className='detail';detail.textContent=item.deliveryWindow||dateLabel(item.deliveryDate||item.deliveryWindowFrom||item.createdAt,lang,data.timeZone)||item.barcode||'';meta.append(sender,status,detail);const badge=document.createElement('div');badge.className='phase'+(phase===1?' transit':phase===2?' delivered':'');badge.textContent=labels[phase];row.append(icon,meta,badge);if(item.detailsUrl)row.onclick=()=>window.open(item.detailsUrl,'_blank','noopener,noreferrer');list.appendChild(row)}content.replaceChildren(list)}
-    async function load(){content.innerHTML=`<div class="state">${words.nl.loading}</div>`;try{render(await Homey.api('GET','/?deviceId='+encodeURIComponent((Homey.getDeviceIds()||[])[0]||''),{}))}catch(e){content.innerHTML=`<div class="state">${String(e.message||e)}</div>`}}
-    async function onHomeyReady(Homey){await load();Homey.ready()}
-  </script>
+<main class="card">
+<header><img class="app" src="icon.svg"><h1 id="title">My Package</h1></header>
+<section id="c"><div class="state">Loading…</div></section>
+</main>
+<div id="modal" class="modal" role="dialog" aria-modal="true"><section id="dialog" class="dialog"><button id="close" class="close" type="button" aria-label="Close">×</button><div id="dialogContent"></div></section></div>
+<script>
+const i18n={
+ en:{title:'My Package',empty:'No packages found.',select:'Select a PostNL device for this widget.',details:'Package details',status:'Status',sender:'Sender',tracking:'Tracking number',deliveryDate:'Delivery date',deliveryWindow:'Delivery window',updated:'Last update',account:'Account',receiver:'Receiver',service:'Service',deliveryPoint:'Delivery point',weight:'Weight',product:'Product',partner:'Partner',lastEvent:'Last event',from:'From',to:'To',accessPoint:'Access point',shipmentType:'Shipment type',direction:'Direction',close:'Close'},
+ nl:{title:'Mijn Pakket',empty:'Geen pakketten gevonden.',select:'Selecteer een PostNL-device voor deze widget.',details:'Pakketdetails',status:'Status',sender:'Afzender',tracking:'Trackingnummer',deliveryDate:'Bezorgdatum',deliveryWindow:'Bezorgvenster',updated:'Laatste update',account:'Account',receiver:'Ontvanger',service:'Service',deliveryPoint:'Bezorgpunt',weight:'Gewicht',product:'Product',partner:'Partner',lastEvent:'Laatste gebeurtenis',from:'Van',to:'Naar',accessPoint:'Afhaalpunt',shipmentType:'Type zending',direction:'Richting',close:'Sluiten'},
+ de:{title:'MyParcel Pakete',empty:'Keine Pakete gefunden.',select:'Wähle ein oder mehrere Paketgeräte für dieses Widget.',details:'Paketdetails',status:'Status',sender:'Absender',tracking:'Sendungsnummer',deliveryDate:'Zustelldatum',deliveryWindow:'Zustellzeitfenster',updated:'Letzte Aktualisierung',account:'Konto',receiver:'Empfänger',service:'Service',deliveryPoint:'Zustellort',weight:'Gewicht',product:'Produkt',partner:'Partner',lastEvent:'Letztes Ereignis',from:'Von',to:'Nach',accessPoint:'Abholpunkt',shipmentType:'Sendungsart',direction:'Richtung',close:'Schließen'},
+ fr:{title:'Colis MyParcel',empty:'Aucun colis trouvé.',select:'Sélectionnez un ou plusieurs appareils de colis pour ce widget.',details:'Détails du colis',status:'Statut',sender:'Expéditeur',tracking:'Numéro de suivi',deliveryDate:'Date de livraison',deliveryWindow:'Créneau de livraison',updated:'Dernière mise à jour',account:'Compte',receiver:'Destinataire',service:'Service',deliveryPoint:'Point de livraison',weight:'Poids',product:'Produit',partner:'Partenaire',lastEvent:'Dernier événement',from:'De',to:'Vers',accessPoint:'Point relais',shipmentType:'Type d’envoi',direction:'Direction',close:'Fermer'},
+ it:{title:'Pacchi MyParcel',empty:'Nessun pacco trovato.',select:'Seleziona uno o più dispositivi pacchi per questo widget.',details:'Dettagli pacco',status:'Stato',sender:'Mittente',tracking:'Numero di tracciamento',deliveryDate:'Data di consegna',deliveryWindow:'Finestra di consegna',updated:'Ultimo aggiornamento',account:'Account',receiver:'Destinatario',service:'Servizio',deliveryPoint:'Punto di consegna',weight:'Peso',product:'Prodotto',partner:'Partner',lastEvent:'Ultimo evento',from:'Da',to:'A',accessPoint:'Punto di ritiro',shipmentType:'Tipo di spedizione',direction:'Direzione',close:'Chiudi'},
+ sv:{title:'MyParcel-paket',empty:'Inga paket hittades.',select:'Välj en eller flera paketenheter för widgeten.',details:'Paketdetaljer',status:'Status',sender:'Avsändare',tracking:'Spårningsnummer',deliveryDate:'Leveransdatum',deliveryWindow:'Leveransfönster',updated:'Senaste uppdatering',account:'Konto',receiver:'Mottagare',service:'Tjänst',deliveryPoint:'Leveranspunkt',weight:'Vikt',product:'Produkt',partner:'Partner',lastEvent:'Senaste händelse',from:'Från',to:'Till',accessPoint:'Utlämningsställe',shipmentType:'Försändelsetyp',direction:'Riktning',close:'Stäng'},
+ no:{title:'MyParcel-pakker',empty:'Ingen pakker funnet.',select:'Velg én eller flere pakkeenheter for widgeten.',details:'Pakkedetaljer',status:'Status',sender:'Avsender',tracking:'Sporingsnummer',deliveryDate:'Leveringsdato',deliveryWindow:'Leveringsvindu',updated:'Sist oppdatert',account:'Konto',receiver:'Mottaker',service:'Tjeneste',deliveryPoint:'Leveringspunkt',weight:'Vekt',product:'Produkt',partner:'Partner',lastEvent:'Siste hendelse',from:'Fra',to:'Til',accessPoint:'Hentested',shipmentType:'Forsendelsestype',direction:'Retning',close:'Lukk'},
+ es:{title:'Paquetes MyParcel',empty:'No se encontraron paquetes.',select:'Selecciona uno o más dispositivos de paquetes para este widget.',details:'Detalles del paquete',status:'Estado',sender:'Remitente',tracking:'Número de seguimiento',deliveryDate:'Fecha de entrega',deliveryWindow:'Franja de entrega',updated:'Última actualización',account:'Cuenta',receiver:'Destinatario',service:'Servicio',deliveryPoint:'Punto de entrega',weight:'Peso',product:'Producto',partner:'Socio',lastEvent:'Último evento',from:'Desde',to:'Hasta',accessPoint:'Punto de recogida',shipmentType:'Tipo de envío',direction:'Dirección',close:'Cerrar'},
+ da:{title:'MyParcel-pakker',empty:'Ingen pakker fundet.',select:'Vælg en eller flere pakkeenheder til denne widget.',details:'Pakkedetaljer',status:'Status',sender:'Afsender',tracking:'Sporingsnummer',deliveryDate:'Leveringsdato',deliveryWindow:'Leveringsvindue',updated:'Seneste opdatering',account:'Konto',receiver:'Modtager',service:'Service',deliveryPoint:'Leveringssted',weight:'Vægt',product:'Produkt',partner:'Partner',lastEvent:'Seneste hændelse',from:'Fra',to:'Til',accessPoint:'Afhentningssted',shipmentType:'Forsendelsestype',direction:'Retning',close:'Luk'},
+ ru:{title:'Посылки MyParcel',empty:'Посылки не найдены.',select:'Выберите одно или несколько устройств доставки для этого виджета.',details:'Детали посылки',status:'Статус',sender:'Отправитель',tracking:'Номер отслеживания',deliveryDate:'Дата доставки',deliveryWindow:'Интервал доставки',updated:'Последнее обновление',account:'Аккаунт',receiver:'Получатель',service:'Сервис',deliveryPoint:'Пункт доставки',weight:'Вес',product:'Продукт',partner:'Партнёр',lastEvent:'Последнее событие',from:'Откуда',to:'Куда',accessPoint:'Пункт выдачи',shipmentType:'Тип отправления',direction:'Направление',close:'Закрыть'},
+ pl:{title:'Paczki MyParcel',empty:'Nie znaleziono paczek.',select:'Wybierz jedno lub więcej urządzeń paczkowych dla tego widżetu.',details:'Szczegóły paczki',status:'Status',sender:'Nadawca',tracking:'Numer śledzenia',deliveryDate:'Data dostawy',deliveryWindow:'Okno dostawy',updated:'Ostatnia aktualizacja',account:'Konto',receiver:'Odbiorca',service:'Usługa',deliveryPoint:'Punkt dostawy',weight:'Waga',product:'Produkt',partner:'Partner',lastEvent:'Ostatnie zdarzenie',from:'Od',to:'Do',accessPoint:'Punkt odbioru',shipmentType:'Typ przesyłki',direction:'Kierunek',close:'Zamknij'},
+ ko:{title:'MyParcel 택배',empty:'택배가 없습니다.',select:'이 위젯에 사용할 하나 이상의 택배 기기를 선택하세요.',details:'택배 상세 정보',status:'상태',sender:'발송인',tracking:'운송장 번호',deliveryDate:'배송 날짜',deliveryWindow:'배송 시간대',updated:'마지막 업데이트',account:'계정',receiver:'수령인',service:'서비스',deliveryPoint:'배송 지점',weight:'무게',product:'상품',partner:'파트너',lastEvent:'마지막 이벤트',from:'출발지',to:'도착지',accessPoint:'수령 지점',shipmentType:'배송 유형',direction:'방향',close:'닫기'},
+ ar:{title:'طرود MyParcel',empty:'لم يتم العثور على طرود.',select:'اختر جهاز طرود واحدًا أو أكثر لهذه الأداة.',details:'تفاصيل الطرد',status:'الحالة',sender:'المرسل',tracking:'رقم التتبع',deliveryDate:'تاريخ التسليم',deliveryWindow:'نافذة التسليم',updated:'آخر تحديث',account:'الحساب',receiver:'المستلم',service:'الخدمة',deliveryPoint:'نقطة التسليم',weight:'الوزن',product:'المنتج',partner:'الشريك',lastEvent:'آخر حدث',from:'من',to:'إلى',accessPoint:'نقطة الاستلام',shipmentType:'نوع الشحنة',direction:'الاتجاه',close:'إغلاق'}
+};
+function L(v){v=String(v||'en').split('-')[0];return i18n[v]?v:'en'}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function dateDMY(value,timeZone){
+ const raw=String(value||'').trim(); if(!raw)return'';
+ let m=raw.match(/^(\d{4})-(\d{2})-(\d{2})(?:$|[T\s])/); if(m&&raw.length<=10)return `${m[3]}-${m[2]}-${m[1]}`;
+ m=raw.match(/^(\d{2})[-/.](\d{2})[-/.](\d{4})$/); if(m)return `${m[1]}-${m[2]}-${m[3]}`;
+ const d=new Date(raw); if(Number.isNaN(d.getTime()))return raw;
+ try{const parts=new Intl.DateTimeFormat('en-GB',{timeZone,day:'2-digit',month:'2-digit',year:'numeric'}).formatToParts(d);const get=t=>parts.find(p=>p.type===t)?.value||'';return `${get('day')}-${get('month')}-${get('year')}`;}catch(_){return raw;}
+}
+function dateDM(value,timeZone){
+ const raw=String(value||'').trim();if(!raw)return'';
+ let m=raw.match(/^(\d{4})-(\d{2})-(\d{2})(?:$|[T\s])/);if(m&&raw.length<=10)return `${m[3]}-${m[2]}`;
+ const d=new Date(raw);if(Number.isNaN(d.getTime())){m=raw.match(/(\d{2})[-/.](\d{2})(?:[-/.]\d{4})?/);return m?`${m[1]}-${m[2]}`:'';}
+ try{const parts=new Intl.DateTimeFormat('en-GB',{timeZone,day:'2-digit',month:'2-digit'}).formatToParts(d);const get=t=>parts.find(p=>p.type===t)?.value||'';return `${get('day')}-${get('month')}`;}catch(_){return'';}
+}
+function timeHM(value,timeZone){
+ const raw=String(value||'').trim();if(!raw)return'';
+ const hasZone=/(?:Z|[+-]\d{2}:?\d{2})$/i.test(raw);
+ if(hasZone){const d=new Date(raw);if(!Number.isNaN(d.getTime()))try{return new Intl.DateTimeFormat('en-GB',{timeZone,hour:'2-digit',minute:'2-digit',hour12:false}).format(d)}catch(_){}}
+ const m=raw.match(/(?:T|\s)(\d{2}:\d{2})(?::\d{2})?/i)||raw.match(/^(\d{2}:\d{2})(?::\d{2})?$/);return m?m[1]:'';
+}
+function dateTime(value,locale,timeZone){if(!value)return'';const d=new Date(value);if(Number.isNaN(d.getTime()))return String(value);try{return new Intl.DateTimeFormat(locale,{timeZone,dateStyle:'short',timeStyle:'short'}).format(d)}catch(_){return String(value)}}
+function text(v){return String(v??'').trim()}
+function onHomeyReady(Homey){
+ const c=document.getElementById('c'),title=document.getElementById('title'),modal=document.getElementById('modal'),dialog=document.getElementById('dialog'),dialogContent=document.getElementById('dialogContent'),closeButton=document.getElementById('close');
+ let cfg={locale:'en',timeZone:'UTC'},labels=i18n.en,packages=[];
+ const el=(tag,cls,value)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(value!==undefined)n.textContent=value;return n};
+ function showDetailRow(list,label,value){value=text(value);if(!value)return;const row=el('div','detail-row');row.append(el('span','detail-label',label),el('strong','detail-value',value));list.append(row)}
+ function stat(label,value){value=text(value);if(!value)return null;const n=el('div','stat');n.append(el('span','',label),el('strong','',value));return n}
+ function closePopup(){modal.classList.remove('open');dialogContent.replaceChildren()}
+ function openPopup(p){
+  try{Homey.hapticFeedback?.()}catch(_){}
+  closeButton.setAttribute('aria-label',labels.close);
+  const hero=el('div','popup-hero'),logo=el('div','popup-logo'),img=document.createElement('img');img.src=p.carrierLogo||'icon.svg';img.alt=text(p.carrier);logo.append(img);hero.append(logo);
+  const identity=el('div','identity'),name=text(p.sender||p.title||p.tracking||p.carrier||labels.details);identity.append(el('strong','popup-name',name),el('span','carrier-chip',text(p.carrier)));hero.append(identity);
+  const status=el('div','popup-status');status.append(el('span','status-label',labels.status),el('p','status-value',text(p.status)||'—'));if(p.tracking)status.append(el('p','tracking-sub',`${labels.tracking}: ${p.tracking}`));
+  const stats=el('div','stats');const dd=dateDMY(p.deliveryDate||p.deliveryWindowFrom||p.eventAt||p.updatedAt,cfg.timeZone),dw=text(p.deliveryWindow);const sd=stat(labels.deliveryDate,dd),sw=stat(labels.deliveryWindow,dw);if(sd)stats.append(sd);if(sw)stats.append(sw);
+  const list=el('div','detail-list');showDetailRow(list,labels.sender,p.sender);showDetailRow(list,labels.receiver,p.receiver);showDetailRow(list,labels.account,p.account);showDetailRow(list,labels.service,p.service);showDetailRow(list,labels.deliveryPoint,p.deliveryPoint);showDetailRow(list,labels.accessPoint,p.accessPoint);showDetailRow(list,labels.product,p.product);showDetailRow(list,labels.weight,p.weight);showDetailRow(list,labels.partner,p.partner);showDetailRow(list,labels.shipmentType,p.shipmentType);showDetailRow(list,labels.direction,p.direction);showDetailRow(list,labels.from,p.shipFrom);showDetailRow(list,labels.to,p.shipTo);showDetailRow(list,labels.lastEvent,p.lastEvent||p.status);showDetailRow(list,labels.updated,dateTime(p.updatedAt,cfg.locale,cfg.timeZone));
+  dialogContent.replaceChildren(hero,status);if(stats.children.length)dialogContent.append(stats);if(list.children.length)dialogContent.append(list);dialog.scrollTop=0;modal.classList.add('open');
+ }
+ function rowSummary(p){
+  const window=text(p.deliveryWindow);
+  const deliveryDay=dateDMY(p.deliveryDate||p.deliveryWindowFrom||p.updatedAt,cfg.timeZone);
+  const eventValue=p.lastEventAt||p.eventAt||(p.delivered?p.deliveryDate:'')||p.updatedAt||p.createdAt||p.deliveryDate;
+  const eventDay=dateDMY(eventValue||p.deliveryDate,cfg.timeZone)||deliveryDay;
+  const eventTime=timeHM(eventValue,cfg.timeZone);
+  if(!p.delivered&&window&&window!=='-')return [deliveryDay,window].filter(Boolean).join(' · ');
+  const event=[eventDay,eventTime].filter(Boolean).join(' · ');
+  return event||[deliveryDay,window&&window!=='-'?window:''].filter(Boolean).join(' · ')||text(p.tracking);
+ }
+ function render(){
+  if(!packages.length){c.innerHTML='<div class="state">'+esc(labels.empty)+'</div>';return}
+  const list=el('div','list');
+  for(const p of packages){const row=el('article','p');row.tabIndex=0;row.setAttribute('role','button');row.setAttribute('aria-label',`${text(p.sender||p.title||p.tracking||p.carrier)} – ${text(p.status)}`);const carrier=el('div','carrier'),img=document.createElement('img');img.src=p.carrierLogo||'icon.svg';img.alt=text(p.carrier);carrier.append(img);const meta=el('div','meta');const sender=el('div','sender',text(p.sender||p.title||p.tracking||p.carrier));const cname=el('div','carriername',text(p.carrier));const detail=el('div','detail',rowSummary(p));meta.append(sender,cname,detail);const badge=el('div','badge',text(p.status)||'—');badge.title=text(p.status);row.append(carrier,meta,badge);row.addEventListener('click',()=>openPopup(p));row.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openPopup(p)}});list.append(row)}
+  c.replaceChildren(list);
+ }
+ (async()=>{try{const deviceIds=Homey.getDeviceIds();const path='/?deviceIds='+encodeURIComponent(deviceIds.join(','));const x=await Homey.api('GET',path,{});cfg.locale=L(x.locale);cfg.timeZone=x.timeZone||'UTC';labels=i18n[cfg.locale]||i18n.en;document.documentElement.dir=cfg.locale==='ar'?'rtl':'ltr';title.textContent=labels.title;if(!deviceIds.length||!x.selectedDeviceCount){c.innerHTML='<div class="state">'+esc(labels.select)+'</div>';return}packages=Array.isArray(x.packages)?x.packages:[];render()}catch(e){c.innerHTML='<div class="state">'+esc(e.message||e)+'</div>'}})();
+ closeButton.onclick=closePopup;modal.onclick=e=>{if(e.target===modal)closePopup()};document.addEventListener('keydown',e=>{if(e.key==='Escape')closePopup()});
+ Homey.ready();
+}
+</script>
 </body>
 </html>
