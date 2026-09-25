@@ -9,5 +9,22 @@
     "title": "Add My PostNL",
     "subtitle": "Connect each device to one PostNL account.",
     "language_marker": "en"
+  },
+  "package_status": {
+    "delivered": "Delivered",
+    "transit": "In transit",
+    "out": "Out for delivery",
+    "announced": "Announced",
+    "accepted": "Accepted by carrier",
+    "picked": "Picked up",
+    "ready": "Ready for pickup",
+    "attempt": "Delivery attempted",
+    "delayed": "Delayed",
+    "cancelled": "Cancelled",
+    "returned": "Returned",
+    "returning": "Returning",
+    "customs": "Customs processing",
+    "exception": "Delivery issue",
+    "unknown": "Unknown status"
   }
 }
