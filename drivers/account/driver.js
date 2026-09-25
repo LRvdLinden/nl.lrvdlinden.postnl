@@ -8,6 +8,7 @@ class PostNLDriver extends Homey.Driver {
   async onInit() {
     this.homey.flow.getConditionCard('mail_expected').registerRunListener(async ({ device }) => Boolean(device && device.isMailExpected()));
     this.homey.flow.getConditionCard('packages_underway').registerRunListener(async ({ device }) => Boolean(device && device.hasPackagesUnderway()));
+    this.homey.flow.getConditionCard('delivery_window_known').registerRunListener(async ({ device }) => Boolean(device && device.hasDeliveryWindowKnown()));
     this.homey.flow.getActionCard('sync_now').registerRunListener(async ({ device }) => {
       if (!device) throw new Error('No PostNL device selected.');
       await device.sync({ reason: 'flow', force: true });
