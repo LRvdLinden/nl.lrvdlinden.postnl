@@ -107,5 +107,9 @@
   "1.1.5": {
     "en": "Aligned PostNL parcel capabilities, Flow tokens and the package widget with the MyParcel implementation. Added delivery date/window capabilities, localized parcel statuses, improved parcel row timing and a PostNL-orange detail popup. Added a device trigger when a delivery window becomes available and a reversible condition for whether a delivery window is known.",
     "nl": "PostNL-pakketcapabilities, Flow-tokens en de pakketwidget gelijkgetrokken met de MyParcel-implementatie. Bezorgdatum/bezorgvenster-capabilities, gelokaliseerde pakketstatussen, betere datum/tijdinformatie op pakketregels en een PostNL-oranje detailpopup toegevoegd. Ook een device-trigger toegevoegd zodra een bezorgvenster bekend wordt en een omkeerbare conditie voor of een bezorgvenster bekend is."
+  },
+  "1.1.6": {
+    "en": "Fixed PostNL delivery-window timezone handling for timestamps without an explicit offset. Added a PostNL Package Details widget with the supplied animated van and a live delivery-window progress bar, plus package image camera support and package image/text Flow tokens.",
+    "nl": "PostNL-bezorgvenster tijdzone-afhandeling hersteld voor timestamps zonder expliciete offset. Nieuwe Pakketdetails-widget toegevoegd met het aangeleverde geanimeerde busje en een live voortgangsbalk voor het bezorgvenster, plus package-image camera-ondersteuning en extra pakketafbeelding/tekst Flow-tokens."
   }
 }
