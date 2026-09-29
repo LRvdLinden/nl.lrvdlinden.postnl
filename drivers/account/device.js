@@ -331,13 +331,13 @@ class PostNLDevice extends Homey.Device {
       const right = Date.parse(b.deliveryWindowFrom || b.deliveryDate || b.createdAt || '') || Number.MAX_SAFE_INTEGER;
       return left - right;
     })[0] || null;
-    const packageImageState = activePackage ? `active:${activePackage.id || activePackage.barcode || 'package'}` : `empty:${lang}`;
+    const packageImageState = activePackage ? `active:${activePackage.id || activePackage.barcode || 'package'}` : `empty:${language}`;
     if (this._latestPackageImageState !== packageImageState) {
       const packageImage = activePackage
         ? await this.getPackageVanImage().catch(() => null)
         : await this.getNoPackagePlaceholderImage().catch(() => null);
       if (packageImage) {
-        await this.setCameraImage('latest_package', lang === 'nl' ? 'Mijn pakket' : 'My package', packageImage);
+        await this.setCameraImage('latest_package', language === 'nl' ? 'Mijn pakket' : 'My package', packageImage);
         this._latestPackageImageState = packageImageState;
       }
     }
