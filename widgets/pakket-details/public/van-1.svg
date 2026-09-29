@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 180" role="img" aria-label="PostNL delivery van">
+  <g fill="none" stroke-linejoin="round">
+    <path d="M18 48c0-9 7-16 16-16h178c9 0 16 7 16 16v89H18V48z" fill="#e8f5fb"/>
+    <path d="M18 112h210v25H18z" fill="#24345c"/>
+    <path d="M228 70h47c12 0 22 5 29 15l23 34v18h-99V70z" fill="#fb6200"/>
+    <path d="M244 82h37c6 0 10 3 14 8l13 20h-64V82z" fill="#fff"/>
+    <path d="M244 112h83v25h-83z" fill="#f47721"/>
+    <path d="M54 57h54v31H54z" rx="4" fill="#fb6200"/>
+    <path d="M61 65h40v6H61zm0 11h28v6H61z" fill="#fff"/>
+    <circle cx="82" cy="139" r="27" fill="#27364b"/>
+    <circle cx="82" cy="139" r="11" fill="#aebbc7"/>
+    <circle cx="274" cy="139" r="27" fill="#27364b"/>
+    <circle cx="274" cy="139" r="11" fill="#aebbc7"/>
+    <path d="M228 137h-20" stroke="#24345c" stroke-width="7"/>
+  </g>
+</svg>
