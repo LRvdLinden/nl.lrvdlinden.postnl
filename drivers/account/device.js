@@ -9,6 +9,8 @@ const localizePackageStatus = require('../../lib/status-i18n');
 class PostNLDevice extends Homey.Device {
   async onInit() {
     this._latestMailImageId = null;
+    this._latestPackageImageState = null;
+    this._packageImageCache = new Map();
     this._letterImageCache = new Map();
     this._syncing = null;
     this._storage = {
@@ -128,18 +130,28 @@ class PostNLDevice extends Homey.Device {
   async triggerSyncFailed(message = '') { return this._flowTriggerSyncFailed.trigger(this, { error: String(message || '') }, {}); }
   async triggerLoginExpired() { return this._flowTriggerLoginExpired.trigger(this, {}, {}); }
 
-  _packageTokens(parcel = {}) {
-    return {
-      id: parcel.id || '', sender: parcel.sender || '', receiver: parcel.receiver || '',
-      title: parcel.title || parcel.sender || parcel.barcode || 'PostNL', barcode: parcel.barcode || '', status: localizePackageStatus(this.homey, parcel.status) || '',
-      delivery_date: parcel.deliveryDate ? this.api.formatDateDMY(parcel.deliveryDate) : '', delivery_window: parcel.deliveryWindow || '',
+  async _packageTokens(parcel = {}) {
+    const packageImage = await this.getPackageVanImage().catch(() => null);
+    const status = localizePackageStatus(this.homey, parcel.status) || '';
+    const deliveryDate = parcel.deliveryDate ? this.api.formatDateDMY(parcel.deliveryDate) : '';
+    const deliveryWindow = parcel.deliveryWindow || this.api.formatWindow(parcel.deliveryWindowFrom, parcel.deliveryWindowTo) || '';
+    const sender = parcel.sender || parcel.title || '';
+    const tracking = parcel.barcode || parcel.id || '';
+    const tokens = {
+      id: parcel.id || '', sender, receiver: parcel.receiver || '',
+      title: parcel.title || parcel.sender || parcel.barcode || 'PostNL', barcode: parcel.barcode || '', status,
+      delivery_date: deliveryDate, delivery_window: deliveryWindow,
       delivery_window_from: parcel.deliveryWindowFrom ? this.api.formatTime(parcel.deliveryWindowFrom) : '',
       delivery_window_to: parcel.deliveryWindowTo ? this.api.formatTime(parcel.deliveryWindowTo) : '',
       delivery_window_type: parcel.deliveryWindowType || '', details_url: parcel.detailsUrl || '', shipment_type: parcel.shipmentType || '',
       delivery_address_type: parcel.deliveryAddressType || '', direction: parcel.direction || '',
       created_at: parcel.createdAt ? this.api.formatDateTime(parcel.createdAt) : '',
       delivered: Boolean(parcel.delivered), shared_from: parcel.sourceDisplayName || '', source_account_id: parcel.sourceAccountId || '',
+      package_status_text: status, package_window_text: deliveryWindow, package_delivery_date: deliveryDate,
+      package_sender: sender, package_tracking: tracking, package_image_available: Boolean(packageImage),
     };
+    if (packageImage) tokens.package_image = packageImage;
+    return tokens;
   }
 
   async _mailTokens(letter = {}, count = 1) {
@@ -183,7 +195,7 @@ class PostNLDevice extends Homey.Device {
     }
     for (const parcel of current.packages || []) {
       const old = oldPackages.get(parcel.id);
-      const tokens = this._packageTokens(parcel);
+      const tokens = await this._packageTokens(parcel);
       if (!old) await this.triggerNewPackage(tokens);
 
       const hasWindow = !parcel.delivered && this._hasDeliveryWindow(parcel);
@@ -314,6 +326,22 @@ class PostNLDevice extends Homey.Device {
         }
       }
     }
+    const activePackage = [...packages].sort((a, b) => {
+      const left = Date.parse(a.deliveryWindowFrom || a.deliveryDate || a.createdAt || '') || Number.MAX_SAFE_INTEGER;
+      const right = Date.parse(b.deliveryWindowFrom || b.deliveryDate || b.createdAt || '') || Number.MAX_SAFE_INTEGER;
+      return left - right;
+    })[0] || null;
+    const packageImageState = activePackage ? `active:${activePackage.id || activePackage.barcode || 'package'}` : `empty:${lang}`;
+    if (this._latestPackageImageState !== packageImageState) {
+      const packageImage = activePackage
+        ? await this.getPackageVanImage().catch(() => null)
+        : await this.getNoPackagePlaceholderImage().catch(() => null);
+      if (packageImage) {
+        await this.setCameraImage('latest_package', lang === 'nl' ? 'Mijn pakket' : 'My package', packageImage);
+        this._latestPackageImageState = packageImageState;
+      }
+    }
+
     if (error) await this.setUnavailable(error.message).catch(this.error);
     else await this.setAvailable().catch(this.error);
   }
