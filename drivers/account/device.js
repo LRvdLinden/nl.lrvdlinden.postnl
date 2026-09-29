@@ -5,12 +5,17 @@ const fs = require('fs');
 const path = require('path');
 const PostNLApi = require('../../lib/postnl-api');
 const localizePackageStatus = require('../../lib/status-i18n');
+const { renderDeliveryCard, renderNoPackageCard, hhmm } = require('../../lib/delivery-image');
 
 class PostNLDevice extends Homey.Device {
   async onInit() {
     this._latestMailImageId = null;
     this._latestPackageImageState = null;
     this._packageImageCache = new Map();
+    this._packageCameraImage = null;
+    this._packageImageBuffer = null;
+    this._activePackageForImage = null;
+    this._packageImageTimer = null;
     this._letterImageCache = new Map();
     this._syncing = null;
     this._storage = {
@@ -29,8 +34,15 @@ class PostNLDevice extends Homey.Device {
     this._flowTriggerLoginExpired = this.homey.flow.getDeviceTriggerCard('login_expired');
 
     await this._ensureCapabilities();
+    await this._ensurePackageCameraImage();
+    this._startPackageImageRefresh();
     await this.applySnapshot(this.snapshot, null);
     if (this.api.hasCredentials()) this.homey.setTimeout(() => this.sync({ reason: 'device-init' }).catch(this.error), 5000);
+  }
+
+  async onUninit() {
+    if (this._packageImageTimer) this.homey.clearInterval(this._packageImageTimer);
+    this._packageImageTimer = null;
   }
 
   hasAccountCredentials() { return this.api?.hasCredentials() || Boolean(this.getStoreValue('auth')); }
@@ -131,7 +143,7 @@ class PostNLDevice extends Homey.Device {
   async triggerLoginExpired() { return this._flowTriggerLoginExpired.trigger(this, {}, {}); }
 
   async _packageTokens(parcel = {}) {
-    const packageImage = await this.getPackageVanImage().catch(() => null);
+    const packageImage = await this.getPackageDeliveryImage(parcel).catch(() => null);
     const status = localizePackageStatus(this.homey, parcel.status) || '';
     const deliveryDate = parcel.deliveryDate ? this.api.formatDateDMY(parcel.deliveryDate) : '';
     const deliveryWindow = parcel.deliveryWindow || this.api.formatWindow(parcel.deliveryWindowFrom, parcel.deliveryWindowTo) || '';
@@ -207,6 +219,124 @@ class PostNLDevice extends Homey.Device {
       }
     }
   }
+
+
+  _parseLocalOrZonedParts(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return null;
+    const hasZone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(raw);
+    const localMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})/);
+    if (localMatch && !hasZone) {
+      const [, year, month, day, hour, minute] = localMatch;
+      return { date: `${year}-${month}-${day}`, minutes: Number(hour) * 60 + Number(minute), time: `${hour}:${minute}` };
+    }
+    const date = new Date(raw);
+    if (Number.isNaN(date.getTime())) return null;
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: this.homey.clock.getTimezone(),
+      year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false,
+    }).formatToParts(date);
+    const get = type => parts.find(part => part.type === type)?.value || '';
+    return { date: `${get('year')}-${get('month')}-${get('day')}`, minutes: Number(get('hour')) * 60 + Number(get('minute')), time: `${get('hour')}:${get('minute')}` };
+  }
+
+  _nowLocalParts() {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: this.homey.clock.getTimezone(),
+      year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+    }).formatToParts(new Date());
+    const get = type => parts.find(part => part.type === type)?.value || '0';
+    const hour = Number(get('hour')), minute = Number(get('minute')), second = Number(get('second'));
+    return { date: `${get('year')}-${get('month')}-${get('day')}`, seconds: (hour * 3600) + (minute * 60) + second };
+  }
+
+  _deliveryHeadline(parcel = {}, language = 'nl') {
+    const fromParts = this._parseLocalOrZonedParts(parcel.deliveryWindowFrom);
+    const toParts = this._parseLocalOrZonedParts(parcel.deliveryWindowTo);
+    const dateKey = fromParts?.date || this._localDateKey(parcel.deliveryDate);
+    const todayKey = this._localDateKey();
+    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowKey = this._localDateKey(tomorrow);
+    if (fromParts?.time && toParts?.time) {
+      if (dateKey === todayKey) return language === 'nl' ? `Vandaag tussen ${fromParts.time} en ${toParts.time}` : `Today between ${fromParts.time} and ${toParts.time}`;
+      if (dateKey === tomorrowKey) return language === 'nl' ? `Morgen tussen ${fromParts.time} en ${toParts.time}` : `Tomorrow between ${fromParts.time} and ${toParts.time}`;
+      const dateText = parcel.deliveryDate ? this.api.formatDate(parcel.deliveryDate) : dateKey;
+      return language === 'nl' ? `${dateText} tussen ${fromParts.time} en ${toParts.time}` : `${dateText} between ${fromParts.time} and ${toParts.time}`;
+    }
+    if (parcel.deliveryWindow) return parcel.deliveryWindow;
+    if (parcel.deliveryDate) return this.api.formatDate(parcel.deliveryDate);
+    return language === 'nl' ? 'Pakket onderweg' : 'Parcel on the way';
+  }
+
+  _selectActivePackage(snapshot = this.snapshot) {
+    return [...((snapshot && snapshot.packages) || [])].filter(item => !item.delivered).sort((a, b) => {
+      const left = Date.parse(a.deliveryWindowFrom || a.deliveryDate || a.createdAt || '') || Number.MAX_SAFE_INTEGER;
+      const right = Date.parse(b.deliveryWindowFrom || b.deliveryDate || b.createdAt || '') || Number.MAX_SAFE_INTEGER;
+      return left - right;
+    })[0] || null;
+  }
+
+  async _ensurePackageCameraImage() {
+    if (this._packageCameraImage) return this._packageCameraImage;
+    this._packageCameraImage = await this.homey.images.createImage();
+    this._packageCameraImage.setStream(async stream => {
+      if (!this._packageImageBuffer?.length) await this._refreshPackageImageBuffer(true);
+      const buffer = this._packageImageBuffer;
+      if (!buffer?.length) throw new Error('PostNL delivery PNG buffer is empty');
+      stream.contentType = 'image/png';
+      stream.filename = 'postnl-my-delivery.png';
+      stream.end(buffer);
+      return stream;
+    });
+    const language = this.homey.i18n.getLanguage() === 'nl' ? 'nl' : 'en';
+    await this.setCameraImage('latest_package', language === 'nl' ? 'Mijn Bezorging' : 'My Delivery', this._packageCameraImage);
+    return this._packageCameraImage;
+  }
+
+  _startPackageImageRefresh() {
+    if (this._packageImageTimer) this.homey.clearInterval(this._packageImageTimer);
+    this._packageImageTimer = this.homey.setInterval(() => {
+      if (this._activePackageForImage) this._refreshPackageImageBuffer().catch(this.error);
+    }, 15000);
+  }
+
+  async _refreshPackageImageBuffer(force = false, parcel = undefined) {
+    const activePackage = parcel === undefined ? (this._activePackageForImage || this._selectActivePackage()) : parcel;
+    this._activePackageForImage = activePackage || null;
+    const language = this.homey.i18n.getLanguage() === 'nl' ? 'nl' : 'en';
+    if (!activePackage) {
+      this._packageImageBuffer = renderNoPackageCard(language);
+      return this._packageImageBuffer;
+    }
+    const from = this._parseLocalOrZonedParts(activePackage.deliveryWindowFrom);
+    const to = this._parseLocalOrZonedParts(activePackage.deliveryWindowTo);
+    let progress = 0, windowStartPct = 0.25, windowEndPct = 0.75, timelineStart = '', timelineMid = '', timelineEnd = '';
+    if (from && to) {
+      const displayStart = from.minutes - 60, displayEnd = to.minutes + 60, spanMinutes = Math.max(1, displayEnd - displayStart);
+      windowStartPct = (from.minutes - displayStart) / spanMinutes;
+      windowEndPct = (to.minutes - displayStart) / spanMinutes;
+      timelineStart = hhmm(displayStart); timelineMid = hhmm(Math.round((displayStart + displayEnd) / 2)); timelineEnd = hhmm(displayEnd);
+      const now = this._nowLocalParts();
+      if (now.date < from.date) progress = 0;
+      else if (now.date > from.date) progress = 1;
+      else progress = Math.max(0, Math.min(1, (now.seconds - displayStart * 60) / Math.max(1, (displayEnd - displayStart) * 60)));
+    }
+    const status = localizePackageStatus(this.homey, activePackage.status) || '';
+    const sender = activePackage.sender || activePackage.title || activePackage.sourceDisplayName || 'PostNL';
+    const tracking = activePackage.barcode || activePackage.id || '';
+    const headline = this._deliveryHeadline(activePackage, language);
+    this._packageImageBuffer = renderDeliveryCard({ sender, status, headline, tracking, progress, windowStartPct, windowEndPct, timelineStart, timelineMid, timelineEnd });
+    return this._packageImageBuffer;
+  }
+
+  async getPackageDeliveryImage(parcel = null) {
+    const image = await this._ensurePackageCameraImage();
+    await this._refreshPackageImageBuffer(true, parcel || this._selectActivePackage());
+    return image;
+  }
+
+  async getPackageVanImage() { return this.getPackageDeliveryImage(this._selectActivePackage()); }
+  async getNoPackagePlaceholderImage() { return this.getPackageDeliveryImage(null); }
 
   async getLetterImage(letter) {
     if (!letter?.imageData || !String(letter.imageData).startsWith('data:')) return null;
@@ -326,21 +456,10 @@ class PostNLDevice extends Homey.Device {
         }
       }
     }
-    const activePackage = [...packages].sort((a, b) => {
-      const left = Date.parse(a.deliveryWindowFrom || a.deliveryDate || a.createdAt || '') || Number.MAX_SAFE_INTEGER;
-      const right = Date.parse(b.deliveryWindowFrom || b.deliveryDate || b.createdAt || '') || Number.MAX_SAFE_INTEGER;
-      return left - right;
-    })[0] || null;
-    const packageImageState = activePackage ? `active:${activePackage.id || activePackage.barcode || 'package'}` : `empty:${language}`;
-    if (this._latestPackageImageState !== packageImageState) {
-      const packageImage = activePackage
-        ? await this.getPackageVanImage().catch(() => null)
-        : await this.getNoPackagePlaceholderImage().catch(() => null);
-      if (packageImage) {
-        await this.setCameraImage('latest_package', language === 'nl' ? 'Mijn pakket' : 'My package', packageImage);
-        this._latestPackageImageState = packageImageState;
-      }
-    }
+    const activePackage = this._selectActivePackage(snapshot);
+    this._activePackageForImage = activePackage;
+    await this._ensurePackageCameraImage().catch(this.error);
+    await this._refreshPackageImageBuffer(true, activePackage).catch(this.error);
 
     if (error) await this.setUnavailable(error.message).catch(this.error);
     else await this.setAvailable().catch(this.error);
