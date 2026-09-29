@@ -111,5 +111,9 @@
   "1.1.6": {
     "en": "Fixed PostNL delivery-window timezone handling for timestamps without an explicit offset. Added a PostNL Package Details widget with the supplied animated van and a live delivery-window progress bar, plus package image camera support and package image/text Flow tokens.",
     "nl": "PostNL-bezorgvenster tijdzone-afhandeling hersteld voor timestamps zonder expliciete offset. Nieuwe Pakketdetails-widget toegevoegd met het aangeleverde geanimeerde busje en een live voortgangsbalk voor het bezorgvenster, plus package-image camera-ondersteuning en extra pakketafbeelding/tekst Flow-tokens."
+  },
+  "1.1.7": {
+    "en": "Improved the PostNL device camera images. Generated and fallback images now use a taller square 800×800 layout for a better fit in Homey. The no-mail message now uses the same bold visual style as the My Delivery empty-state message. The PostNL delivery van is displayed larger and the My Delivery widget now uses the lightweight van-1.svg artwork.",
+    "nl": "De device-camera-afbeeldingen van PostNL zijn verbeterd. Gegenereerde en fallback-afbeeldingen gebruiken nu een hogere vierkante 800×800-indeling voor een betere weergave in Homey. De tekst bij geen post gebruikt nu dezelfde vetgedrukte visuele stijl als de lege status van Mijn Bezorging. Het PostNL-busje wordt groter weergegeven en de Mijn Bezorging-widget gebruikt nu de lichte van-1.svg-afbeelding."
   }
 }
