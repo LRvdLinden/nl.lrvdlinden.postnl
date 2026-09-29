@@ -235,6 +235,62 @@
             "en": "Source account ID",
             "nl": "Bronaccount-ID"
           }
+        },
+        {
+          "name": "package_status_text",
+          "type": "string",
+          "title": {
+            "en": "Package status",
+            "nl": "Pakketstatus"
+          }
+        },
+        {
+          "name": "package_window_text",
+          "type": "string",
+          "title": {
+            "en": "Delivery window text",
+            "nl": "Tekst bezorgvenster"
+          }
+        },
+        {
+          "name": "package_delivery_date",
+          "type": "string",
+          "title": {
+            "en": "Package delivery date",
+            "nl": "Bezorgdatum pakket"
+          }
+        },
+        {
+          "name": "package_sender",
+          "type": "string",
+          "title": {
+            "en": "Package sender",
+            "nl": "Afzender pakket"
+          }
+        },
+        {
+          "name": "package_tracking",
+          "type": "string",
+          "title": {
+            "en": "Package tracking number",
+            "nl": "Trackingnummer pakket"
+          }
+        },
+        {
+          "name": "package_image_available",
+          "type": "boolean",
+          "title": {
+            "en": "Package image available",
+            "nl": "Pakketafbeelding beschikbaar"
+          }
+        },
+        {
+          "name": "package_image",
+          "type": "image",
+          "title": {
+            "en": "Package image",
+            "nl": "Pakketafbeelding"
+          }
         }
       ]
     },
@@ -397,6 +453,62 @@
           "title": {
             "en": "Source account ID",
             "nl": "Bronaccount-ID"
+          }
+        },
+        {
+          "name": "package_status_text",
+          "type": "string",
+          "title": {
+            "en": "Package status",
+            "nl": "Pakketstatus"
+          }
+        },
+        {
+          "name": "package_window_text",
+          "type": "string",
+          "title": {
+            "en": "Delivery window text",
+            "nl": "Tekst bezorgvenster"
+          }
+        },
+        {
+          "name": "package_delivery_date",
+          "type": "string",
+          "title": {
+            "en": "Package delivery date",
+            "nl": "Bezorgdatum pakket"
+          }
+        },
+        {
+          "name": "package_sender",
+          "type": "string",
+          "title": {
+            "en": "Package sender",
+            "nl": "Afzender pakket"
+          }
+        },
+        {
+          "name": "package_tracking",
+          "type": "string",
+          "title": {
+            "en": "Package tracking number",
+            "nl": "Trackingnummer pakket"
+          }
+        },
+        {
+          "name": "package_image_available",
+          "type": "boolean",
+          "title": {
+            "en": "Package image available",
+            "nl": "Pakketafbeelding beschikbaar"
+          }
+        },
+        {
+          "name": "package_image",
+          "type": "image",
+          "title": {
+            "en": "Package image",
+            "nl": "Pakketafbeelding"
           }
         }
       ]
@@ -567,6 +679,62 @@
           "title": {
             "en": "Source account ID",
             "nl": "Bronaccount-ID"
+          }
+        },
+        {
+          "name": "package_status_text",
+          "type": "string",
+          "title": {
+            "en": "Package status",
+            "nl": "Pakketstatus"
+          }
+        },
+        {
+          "name": "package_window_text",
+          "type": "string",
+          "title": {
+            "en": "Delivery window text",
+            "nl": "Tekst bezorgvenster"
+          }
+        },
+        {
+          "name": "package_delivery_date",
+          "type": "string",
+          "title": {
+            "en": "Package delivery date",
+            "nl": "Bezorgdatum pakket"
+          }
+        },
+        {
+          "name": "package_sender",
+          "type": "string",
+          "title": {
+            "en": "Package sender",
+            "nl": "Afzender pakket"
+          }
+        },
+        {
+          "name": "package_tracking",
+          "type": "string",
+          "title": {
+            "en": "Package tracking number",
+            "nl": "Trackingnummer pakket"
+          }
+        },
+        {
+          "name": "package_image_available",
+          "type": "boolean",
+          "title": {
+            "en": "Package image available",
+            "nl": "Pakketafbeelding beschikbaar"
+          }
+        },
+        {
+          "name": "package_image",
+          "type": "image",
+          "title": {
+            "en": "Package image",
+            "nl": "Pakketafbeelding"
           }
         }
       ]
