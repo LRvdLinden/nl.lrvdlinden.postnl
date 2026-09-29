@@ -88,6 +88,31 @@
       },
       "id": "mijn-pakket",
       "settings": []
+    },
+    "pakket-details": {
+      "id": "pakket-details",
+      "name": {
+        "en": "Package Details",
+        "nl": "Pakketdetails"
+      },
+      "height": 360,
+      "api": {
+        "getData": {
+          "method": "GET",
+          "path": "/"
+        },
+        "sync": {
+          "method": "POST",
+          "path": "/sync"
+        }
+      },
+      "devices": {
+        "type": "app",
+        "singular": true,
+        "filter": {
+          "capabilities": "postnl_package_count"
+        }
+      }
     }
   },
   "homeyCommunityTopicId": 159674,
