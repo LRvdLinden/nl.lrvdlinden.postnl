@@ -115,5 +115,9 @@
   "1.1.7": {
     "en": "Improved the PostNL device camera images. Generated and fallback images now use a taller square 800×800 layout for a better fit in Homey. The no-mail message now uses the same bold visual style as the My Delivery empty-state message. The PostNL delivery van is displayed larger and the My Delivery widget now uses the lightweight van-1.svg artwork.",
     "nl": "De device-camera-afbeeldingen van PostNL zijn verbeterd. Gegenereerde en fallback-afbeeldingen gebruiken nu een hogere vierkante 800×800-indeling voor een betere weergave in Homey. De tekst bij geen post gebruikt nu dezelfde vetgedrukte visuele stijl als de lege status van Mijn Bezorging. Het PostNL-busje wordt groter weergegeven en de Mijn Bezorging-widget gebruikt nu de lichte van-1.svg-afbeelding."
+  },
+  "1.1.8": {
+    "en": "Renamed the parcel overview widget to My Packages and aligned the three PostNL widget names: My Post, My Packages and My Delivery.",
+    "nl": "De pakketoverzicht-widget is hernoemd naar Mijn Pakketten en de drie PostNL-widgetnamen zijn gelijkgetrokken: Mijn Post, Mijn Pakketten en Mijn Bezorging."
   }
 }
