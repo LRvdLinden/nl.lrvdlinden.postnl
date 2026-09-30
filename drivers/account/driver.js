@@ -43,10 +43,11 @@ class PostNLDriver extends Homey.Driver {
 
   async onPair(session) {
     const api = this._createPairApi();
+    let profile = null;
     session.setHandler('start_auth', async () => api.createAuthorization());
     session.setHandler('complete_auth', async callback => {
       await api.completeAuthorization(callback);
-      const profile = await api.fetchProfile();
+      profile = await api.fetchProfile();
       return { authenticated: true, username: profile?.username || '', device: this._accountDevice(profile, api) };
     });
   }

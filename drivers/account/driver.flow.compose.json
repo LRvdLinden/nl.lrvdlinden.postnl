@@ -280,16 +280,16 @@
           "name": "package_image_available",
           "type": "boolean",
           "title": {
-            "en": "Package image available",
-            "nl": "Pakketafbeelding beschikbaar"
+            "en": "My delivery image available",
+            "nl": "Afbeelding Mijn Bezorging beschikbaar"
           }
         },
         {
           "name": "package_image",
           "type": "image",
           "title": {
-            "en": "Package image",
-            "nl": "Pakketafbeelding"
+            "en": "My delivery image",
+            "nl": "Afbeelding Mijn Bezorging"
           }
         }
       ]
@@ -499,16 +499,16 @@
           "name": "package_image_available",
           "type": "boolean",
           "title": {
-            "en": "Package image available",
-            "nl": "Pakketafbeelding beschikbaar"
+            "en": "My delivery image available",
+            "nl": "Afbeelding Mijn Bezorging beschikbaar"
           }
         },
         {
           "name": "package_image",
           "type": "image",
           "title": {
-            "en": "Package image",
-            "nl": "Pakketafbeelding"
+            "en": "My delivery image",
+            "nl": "Afbeelding Mijn Bezorging"
           }
         }
       ]
@@ -725,16 +725,16 @@
           "name": "package_image_available",
           "type": "boolean",
           "title": {
-            "en": "Package image available",
-            "nl": "Pakketafbeelding beschikbaar"
+            "en": "My delivery image available",
+            "nl": "Afbeelding Mijn Bezorging beschikbaar"
           }
         },
         {
           "name": "package_image",
           "type": "image",
           "title": {
-            "en": "Package image",
-            "nl": "Pakketafbeelding"
+            "en": "My delivery image",
+            "nl": "Afbeelding Mijn Bezorging"
           }
         }
       ]

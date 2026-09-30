@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const PostNLApi = require('../../lib/postnl-api');
 const localizePackageStatus = require('../../lib/status-i18n');
-const { renderDeliveryCard, renderNoPackageCard, hhmm } = require('../../lib/delivery-image');
+const { renderDeliveryCard, renderNoPackageCard, loadDeliveryVan, hhmm } = require('../../lib/delivery-image');
 
 class PostNLDevice extends Homey.Device {
   async onInit() {
@@ -200,7 +200,6 @@ class PostNLDevice extends Homey.Device {
     const oldLetterIds = new Set(previousCurrentLetters.map(item => item.id));
     const newLetters = currentLiveLetters.filter(item => !oldLetterIds.has(item.id));
     const oldPackages = new Map((previous.packages || []).map(item => [item.id, item]));
-
     if (newLetters.length) {
       const newest = [...newLetters].sort((a, b) => new Date(b.deliveryDate || 0) - new Date(a.deliveryDate || 0))[0];
       await this.triggerNewMail(await this._mailTokens(newest, newLetters.length));
@@ -228,7 +227,11 @@ class PostNLDevice extends Homey.Device {
     const localMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})/);
     if (localMatch && !hasZone) {
       const [, year, month, day, hour, minute] = localMatch;
-      return { date: `${year}-${month}-${day}`, minutes: Number(hour) * 60 + Number(minute), time: `${hour}:${minute}` };
+      return {
+        date: `${year}-${month}-${day}`,
+        minutes: Number(hour) * 60 + Number(minute),
+        time: `${hour}:${minute}`,
+      };
     }
     const date = new Date(raw);
     if (Number.isNaN(date.getTime())) return null;
@@ -237,7 +240,11 @@ class PostNLDevice extends Homey.Device {
       year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false,
     }).formatToParts(date);
     const get = type => parts.find(part => part.type === type)?.value || '';
-    return { date: `${get('year')}-${get('month')}-${get('day')}`, minutes: Number(get('hour')) * 60 + Number(get('minute')), time: `${get('hour')}:${get('minute')}` };
+    return {
+      date: `${get('year')}-${get('month')}-${get('day')}`,
+      minutes: Number(get('hour')) * 60 + Number(get('minute')),
+      time: `${get('hour')}:${get('minute')}`,
+    };
   }
 
   _nowLocalParts() {
@@ -246,8 +253,13 @@ class PostNLDevice extends Homey.Device {
       year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
     }).formatToParts(new Date());
     const get = type => parts.find(part => part.type === type)?.value || '0';
-    const hour = Number(get('hour')), minute = Number(get('minute')), second = Number(get('second'));
-    return { date: `${get('year')}-${get('month')}-${get('day')}`, seconds: (hour * 3600) + (minute * 60) + second };
+    const hour = Number(get('hour'));
+    const minute = Number(get('minute'));
+    const second = Number(get('second'));
+    return {
+      date: `${get('year')}-${get('month')}-${get('day')}`,
+      seconds: (hour * 3600) + (minute * 60) + second,
+    };
   }
 
   _deliveryHeadline(parcel = {}, language = 'nl') {
@@ -255,7 +267,8 @@ class PostNLDevice extends Homey.Device {
     const toParts = this._parseLocalOrZonedParts(parcel.deliveryWindowTo);
     const dateKey = fromParts?.date || this._localDateKey(parcel.deliveryDate);
     const todayKey = this._localDateKey();
-    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowKey = this._localDateKey(tomorrow);
     if (fromParts?.time && toParts?.time) {
       if (dateKey === todayKey) return language === 'nl' ? `Vandaag tussen ${fromParts.time} en ${toParts.time}` : `Today between ${fromParts.time} and ${toParts.time}`;
@@ -269,11 +282,13 @@ class PostNLDevice extends Homey.Device {
   }
 
   _selectActivePackage(snapshot = this.snapshot) {
-    return [...((snapshot && snapshot.packages) || [])].filter(item => !item.delivered).sort((a, b) => {
-      const left = Date.parse(a.deliveryWindowFrom || a.deliveryDate || a.createdAt || '') || Number.MAX_SAFE_INTEGER;
-      const right = Date.parse(b.deliveryWindowFrom || b.deliveryDate || b.createdAt || '') || Number.MAX_SAFE_INTEGER;
-      return left - right;
-    })[0] || null;
+    return [...((snapshot && snapshot.packages) || [])]
+      .filter(item => !item.delivered)
+      .sort((a, b) => {
+        const left = Date.parse(a.deliveryWindowFrom || a.deliveryDate || a.createdAt || '') || Number.MAX_SAFE_INTEGER;
+        const right = Date.parse(b.deliveryWindowFrom || b.deliveryDate || b.createdAt || '') || Number.MAX_SAFE_INTEGER;
+        return left - right;
+      })[0] || null;
   }
 
   async _ensurePackageCameraImage() {
@@ -305,27 +320,46 @@ class PostNLDevice extends Homey.Device {
     this._activePackageForImage = activePackage || null;
     const language = this.homey.i18n.getLanguage() === 'nl' ? 'nl' : 'en';
     if (!activePackage) {
-      this._packageImageBuffer = renderNoPackageCard(language);
+      this._packageImageBuffer = renderNoPackageCard({ language, vanPng: loadDeliveryVan() });
       return this._packageImageBuffer;
     }
+
     const from = this._parseLocalOrZonedParts(activePackage.deliveryWindowFrom);
     const to = this._parseLocalOrZonedParts(activePackage.deliveryWindowTo);
-    let progress = 0, windowStartPct = 0.25, windowEndPct = 0.75, timelineStart = '', timelineMid = '', timelineEnd = '';
+    let progress = 0;
+    let windowStartPct = 0.25;
+    let windowEndPct = 0.75;
+    let timelineStart = '';
+    let timelineMid = '';
+    let timelineEnd = '';
     if (from && to) {
-      const displayStart = from.minutes - 60, displayEnd = to.minutes + 60, spanMinutes = Math.max(1, displayEnd - displayStart);
+      const displayStart = from.minutes - 60;
+      const displayEnd = to.minutes + 60;
+      const spanMinutes = Math.max(1, displayEnd - displayStart);
       windowStartPct = (from.minutes - displayStart) / spanMinutes;
       windowEndPct = (to.minutes - displayStart) / spanMinutes;
-      timelineStart = hhmm(displayStart); timelineMid = hhmm(Math.round((displayStart + displayEnd) / 2)); timelineEnd = hhmm(displayEnd);
+      timelineStart = hhmm(displayStart);
+      timelineMid = hhmm(Math.round((displayStart + displayEnd) / 2));
+      timelineEnd = hhmm(displayEnd);
       const now = this._nowLocalParts();
       if (now.date < from.date) progress = 0;
       else if (now.date > from.date) progress = 1;
-      else progress = Math.max(0, Math.min(1, (now.seconds - displayStart * 60) / Math.max(1, (displayEnd - displayStart) * 60)));
+      else {
+        const startSeconds = displayStart * 60;
+        const endSeconds = displayEnd * 60;
+        progress = Math.max(0, Math.min(1, (now.seconds - startSeconds) / Math.max(1, endSeconds - startSeconds)));
+      }
     }
+
     const status = localizePackageStatus(this.homey, activePackage.status) || '';
     const sender = activePackage.sender || activePackage.title || activePackage.sourceDisplayName || 'PostNL';
     const tracking = activePackage.barcode || activePackage.id || '';
     const headline = this._deliveryHeadline(activePackage, language);
-    this._packageImageBuffer = renderDeliveryCard({ sender, status, headline, tracking, progress, windowStartPct, windowEndPct, timelineStart, timelineMid, timelineEnd });
+    const vanPng = loadDeliveryVan();
+    this._packageImageBuffer = renderDeliveryCard({
+      sender, status, headline, tracking, progress, windowStartPct, windowEndPct,
+      timelineStart, timelineMid, timelineEnd, vanPng,
+    });
     return this._packageImageBuffer;
   }
 
@@ -334,9 +368,6 @@ class PostNLDevice extends Homey.Device {
     await this._refreshPackageImageBuffer(true, parcel || this._selectActivePackage());
     return image;
   }
-
-  async getPackageVanImage() { return this.getPackageDeliveryImage(this._selectActivePackage()); }
-  async getNoPackagePlaceholderImage() { return this.getPackageDeliveryImage(null); }
 
   async getLetterImage(letter) {
     if (!letter?.imageData || !String(letter.imageData).startsWith('data:')) return null;
@@ -378,6 +409,41 @@ class PostNLDevice extends Homey.Device {
     return image;
   }
 
+  async _imageFromFile(cache, cacheKey, filePath, contentType, filename) {
+    if (cache.has(cacheKey)) return cache.get(cacheKey);
+    const buffer = await fs.promises.readFile(filePath);
+    if (!buffer?.length) throw new Error(`PostNL image is empty: ${filename}`);
+    const image = await this.homey.images.createImage();
+    image.setStream(async stream => {
+      stream.contentType = contentType;
+      stream.filename = filename;
+      stream.end(buffer);
+      return stream;
+    });
+    cache.set(cacheKey, image);
+    return image;
+  }
+
+  async getPackageVanImage() {
+    return this.getPackageDeliveryImage(this._selectActivePackage());
+  }
+
+  async getNoPackagePlaceholderImage() {
+    const language = this.homey.i18n.getLanguage() === 'nl' ? 'nl' : 'en';
+    const cacheKey = `no-package:${language}`;
+    if (this._packageImageCache.has(cacheKey)) return this._packageImageCache.get(cacheKey);
+    const buffer = renderNoPackageCard({ language, vanPng: loadDeliveryVan() });
+    const image = await this.homey.images.createImage();
+    image.setStream(async stream => {
+      stream.contentType = 'image/png';
+      stream.filename = `postnl-no-package-${language}.png`;
+      stream.end(buffer);
+      return stream;
+    });
+    this._packageImageCache.set(cacheKey, image);
+    return image;
+  }
+
   _localDateKey(value = new Date()) {
     const date = value instanceof Date ? value : new Date(value);
     if (Number.isNaN(date.getTime())) return '';
@@ -411,14 +477,11 @@ class PostNLDevice extends Homey.Device {
         return left - right;
       })[0] || null;
     const packageDeliveryDate = nextPackage?.deliveryDate || nextPackage?.deliveryWindowFrom || nextPackage?.deliveryWindowTo || null;
-    const packageDeliveryWindow = nextPackage?.deliveryWindow
-      || this.api.formatWindow(nextPackage?.deliveryWindowFrom, nextPackage?.deliveryWindowTo)
-      || '';
+    const packageDeliveryWindow = nextPackage?.deliveryWindow || this.api.formatWindow(nextPackage?.deliveryWindowFrom, nextPackage?.deliveryWindowTo) || '';
     const updated = snapshot.updatedAt
       ? new Intl.DateTimeFormat(this.homey.i18n.getLanguage() === 'nl' ? 'nl-NL' : 'en-GB', { timeZone: this.homey.clock.getTimezone(), dateStyle: 'short', timeStyle: 'short' }).format(new Date(snapshot.updatedAt))
       : '—';
     const connected = this.api.hasCredentials();
-    const lang = this.homey.i18n.getLanguage();
     const values = {
       postnl_mail_expected: currentMail.length > 0,
       postnl_mail_count: currentMail.length,
@@ -426,16 +489,17 @@ class PostNLDevice extends Homey.Device {
       postnl_next_delivery: nextDelivery,
       postnl_delivery_date: packageDeliveryDate ? this.api.formatDateDMY(packageDeliveryDate) : '—',
       postnl_delivery_window: packageDeliveryWindow || '—',
-      postnl_status: !connected ? (lang === 'nl' ? 'Niet verbonden' : 'Not connected')
-        : error ? `${lang === 'nl' ? 'Fout' : 'Error'}: ${error.message}`
-          : snapshot.mailApiStatus === 'temporarily_unavailable' ? (lang === 'nl' ? 'Verbonden • Mijn PostNL niet beschikbaar' : 'Connected • My PostNL unavailable')
-            : snapshot.mailApiStatus === 'available' ? (lang === 'nl' ? 'Verbonden • Mijn PostNL actief' : 'Connected • My PostNL active')
-              : (snapshot.updatedAt ? (lang === 'nl' ? 'Verbonden' : 'Connected') : (lang === 'nl' ? 'Wachten op synchronisatie' : 'Waiting for sync')),
+      postnl_status: !connected ? (this.homey.i18n.getLanguage() === 'nl' ? 'Niet verbonden' : 'Not connected')
+        : error ? `${this.homey.i18n.getLanguage() === 'nl' ? 'Fout' : 'Error'}: ${error.message}`
+          : snapshot.mailApiStatus === 'temporarily_unavailable' ? (this.homey.i18n.getLanguage() === 'nl' ? 'Verbonden • Mijn PostNL niet beschikbaar' : 'Connected • My PostNL unavailable')
+            : snapshot.mailApiStatus === 'available' ? (this.homey.i18n.getLanguage() === 'nl' ? 'Verbonden • Mijn PostNL actief' : 'Connected • My PostNL active')
+              : (snapshot.updatedAt ? (this.homey.i18n.getLanguage() === 'nl' ? 'Verbonden' : 'Connected') : (this.homey.i18n.getLanguage() === 'nl' ? 'Wachten op synchronisatie' : 'Waiting for sync')),
       postnl_last_update: updated,
     };
     for (const [capability, value] of Object.entries(values)) if (this.hasCapability(capability)) await this.setCapabilityValue(capability, value).catch(this.error);
 
-    const imageTitle = lang === 'nl' ? 'Laatste poststuk' : 'Latest mail item';
+    const language = this.homey.i18n.getLanguage() === 'nl' ? 'nl' : 'en';
+    const imageTitle = language === 'nl' ? 'Laatste poststuk' : 'Latest mail item';
     const latestWithImage = [...currentMail]
       .sort((a, b) => new Date(b.deliveryDate || 0) - new Date(a.deliveryDate || 0))
       .find(item => item?.imageData);
@@ -447,7 +511,7 @@ class PostNLDevice extends Homey.Device {
       }
     }
     if (!latestWithImage) {
-      const placeholderId = `__no_mail__:${lang}`;
+      const placeholderId = `__no_mail__:${language}`;
       if (this._latestMailImageId !== placeholderId) {
         const image = await this.getNoMailPlaceholderImage().catch(() => null);
         if (image) {
@@ -460,6 +524,7 @@ class PostNLDevice extends Homey.Device {
     this._activePackageForImage = activePackage;
     await this._ensurePackageCameraImage().catch(this.error);
     await this._refreshPackageImageBuffer(true, activePackage).catch(this.error);
+
 
     if (error) await this.setUnavailable(error.message).catch(this.error);
     else await this.setAvailable().catch(this.error);

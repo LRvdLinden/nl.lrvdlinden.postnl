@@ -7,6 +7,7 @@ class PostNLApp extends Homey.App {
     this._syncInterval = this.homey.setInterval(() => this.syncAllDevices('interval'), 5 * 60 * 1000);
     this._midnightInterval = this.homey.setInterval(() => this._midnightCheck(), 60 * 1000);
 
+    // One-time migration from <=1.0.x where credentials/snapshot were app-global.
     this.homey.setTimeout(() => this._migrateLegacyAccount().catch(this.error), 3000);
     this.homey.setTimeout(() => this.syncAllDevices('startup'), 10000);
     this.log(`PostNL ${Homey.manifest.version} initialized in per-device account mode`);

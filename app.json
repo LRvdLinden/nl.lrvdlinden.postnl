@@ -116,6 +116,60 @@
     }
   },
   "homeyCommunityTopicId": 159674,
+  "tags": {
+    "en": [
+      "postnl",
+      "post",
+      "mail",
+      "letter",
+      "letters",
+      "mail item",
+      "mail items",
+      "parcel",
+      "parcels",
+      "package",
+      "packages",
+      "package tracking",
+      "parcel tracking",
+      "delivery",
+      "deliveries",
+      "shipment",
+      "shipments",
+      "tracking",
+      "track and trace",
+      "postal service",
+      "postal delivery",
+      "my post",
+      "my delivery",
+      "mailbox",
+      "automation",
+      "my packages"
+    ],
+    "nl": [
+      "postnl",
+      "post",
+      "brief",
+      "brieven",
+      "poststuk",
+      "poststukken",
+      "pakket",
+      "pakketten",
+      "pakket volgen",
+      "pakketten volgen",
+      "bezorging",
+      "bezorgen",
+      "zending",
+      "zendingen",
+      "tracking",
+      "track en trace",
+      "postbezorging",
+      "mijn post",
+      "mijn bezorging",
+      "brievenbus",
+      "automatisering",
+      "mijn pakketten"
+    ]
+  },
   "flow": {
     "triggers": [
       {
@@ -410,16 +464,16 @@
             "name": "package_image_available",
             "type": "boolean",
             "title": {
-              "en": "Package image available",
-              "nl": "Pakketafbeelding beschikbaar"
+              "en": "My delivery image available",
+              "nl": "Afbeelding Mijn Bezorging beschikbaar"
             }
           },
           {
             "name": "package_image",
             "type": "image",
             "title": {
-              "en": "Package image",
-              "nl": "Pakketafbeelding"
+              "en": "My delivery image",
+              "nl": "Afbeelding Mijn Bezorging"
             }
           }
         ]
@@ -635,16 +689,16 @@
             "name": "package_image_available",
             "type": "boolean",
             "title": {
-              "en": "Package image available",
-              "nl": "Pakketafbeelding beschikbaar"
+              "en": "My delivery image available",
+              "nl": "Afbeelding Mijn Bezorging beschikbaar"
             }
           },
           {
             "name": "package_image",
             "type": "image",
             "title": {
-              "en": "Package image",
-              "nl": "Pakketafbeelding"
+              "en": "My delivery image",
+              "nl": "Afbeelding Mijn Bezorging"
             }
           }
         ]
@@ -867,16 +921,16 @@
             "name": "package_image_available",
             "type": "boolean",
             "title": {
-              "en": "Package image available",
-              "nl": "Pakketafbeelding beschikbaar"
+              "en": "My delivery image available",
+              "nl": "Afbeelding Mijn Bezorging beschikbaar"
             }
           },
           {
             "name": "package_image",
             "type": "image",
             "title": {
-              "en": "Package image",
-              "nl": "Pakketafbeelding"
+              "en": "My delivery image",
+              "nl": "Afbeelding Mijn Bezorging"
             }
           }
         ]
@@ -1010,12 +1064,12 @@
           "id": "login_postnl"
         }
       ],
-      "id": "account",
       "repair": [
         {
           "id": "repair_login"
         }
-      ]
+      ],
+      "id": "account"
     }
   ],
   "capabilities": {
@@ -1110,59 +1164,5 @@
       "insights": false,
       "icon": "/assets/calendar.svg"
     }
-  },
-  "tags": {
-    "en": [
-      "postnl",
-      "post",
-      "mail",
-      "letter",
-      "letters",
-      "mail item",
-      "mail items",
-      "parcel",
-      "parcels",
-      "package",
-      "packages",
-      "package tracking",
-      "parcel tracking",
-      "delivery",
-      "deliveries",
-      "shipment",
-      "shipments",
-      "tracking",
-      "track and trace",
-      "postal service",
-      "postal delivery",
-      "my post",
-      "my delivery",
-      "mailbox",
-      "automation",
-      "my packages"
-    ],
-    "nl": [
-      "postnl",
-      "post",
-      "brief",
-      "brieven",
-      "poststuk",
-      "poststukken",
-      "pakket",
-      "pakketten",
-      "pakket volgen",
-      "pakketten volgen",
-      "bezorging",
-      "bezorgen",
-      "zending",
-      "zendingen",
-      "tracking",
-      "track en trace",
-      "postbezorging",
-      "mijn post",
-      "mijn bezorging",
-      "brievenbus",
-      "automatisering",
-      "mijn pakketten"
-    ]
   }
 }

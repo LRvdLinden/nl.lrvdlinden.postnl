@@ -5,32 +5,63 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
 :root{color-scheme:light dark;--orange:#FB6200;--primary:#232323;--secondary:#747378;--muted:#97969b;--card:#f4f4f5;--header:#fafafa;--border:#dedee0;--panel:#fff;--line:#777b9c}
-*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:transparent;color:var(--primary);font:14px/1.28 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box}
+html,body{width:100%;height:100%;margin:0;overflow:hidden;background:transparent;color:var(--primary);font:14px/1.28 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 .card{display:grid;grid-template-rows:52px minmax(0,1fr);width:100%;height:100%;overflow:hidden;border-radius:17px;background:var(--card)}
-header{display:flex;align-items:center;padding:0 18px;border-bottom:1px solid var(--border);background:var(--header)}.app-icon{width:36px;height:36px}h1{margin:0 0 0 auto;color:#77767b;font-size:18px;font-weight:600}
-#content{min-width:0;min-height:0;padding:10px 12px;overflow:hidden}.package{height:100%;overflow:hidden;border-radius:12px;background:var(--panel);padding:12px 12px 10px;display:flex;flex-direction:column}
-.package-top{display:flex;align-items:center;gap:9px;min-height:28px}.mini-logo{width:38px;height:38px;object-fit:contain}.sender{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}.status{color:var(--secondary);font-size:11px;max-width:40%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.headline{font-size:13px;font-weight:650;margin:9px 0 1px}.tracking{color:var(--muted);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.vanwrap{flex:1;min-height:84px;display:grid;place-items:center;padding:2px 0}.van{display:block;width:min(78%,250px);max-height:150px;object-fit:contain}
-.timeline{position:relative;height:58px}.track,.elapsed{position:absolute;left:0;top:20px;height:3px}.track{right:0;background:var(--line)}.elapsed{background:var(--orange);width:0}.dot{position:absolute;top:12px;width:18px;height:18px;margin-left:-9px;border:4px solid var(--orange);border-radius:50%;background:var(--panel);left:0}
-.actual-start,.actual-end{position:absolute;top:11px;width:3px;height:21px;background:#cfcfd5;border-radius:2px}.times{position:absolute;left:0;right:0;top:33px;display:grid;grid-template-columns:1fr 1fr 1fr;color:var(--muted);font-size:10px}.times span:nth-child(2){text-align:center}.times span:nth-child(3){text-align:right}.hidden{display:none!important}
-.state{display:grid;place-items:center;height:100%;padding:16px;text-align:center;color:var(--primary)}.state-inner{display:grid;place-items:center;gap:12px}.state .van{width:min(82%,270px);max-height:160px}.state p{margin:0;font-size:17px;font-weight:700}
-@media(prefers-color-scheme:dark){:root{--primary:#f4f4f5;--secondary:#c4c3c7;--muted:#aaa9ad;--card:#202022;--header:#29292b;--border:#424244;--panel:#343436;--line:#71748e}h1{color:#aaa9ad}.dot{background:var(--panel)}}
+header{display:flex;align-items:center;padding:0 18px;border-bottom:1px solid var(--border);background:var(--header)}
+.app-icon{display:block;width:36px;height:36px;object-fit:contain}
+h1{margin:0 0 0 auto;color:#77767b;font-size:18px;font-weight:600;white-space:nowrap}
+#content{min-width:0;min-height:0;padding:10px 12px;overflow:hidden}
+.package{height:100%;min-height:0;overflow:hidden;border-radius:12px;background:var(--panel);padding:12px 12px 10px;display:flex;flex-direction:column}
+.package-top{display:flex;align-items:center;gap:9px;min-height:28px}.mini-logo{width:38px;height:38px;object-fit:contain;flex:0 0 auto}.sender{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}.status{color:var(--secondary);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:40%}
+.headline{font-size:13px;font-weight:650;margin:9px 0 1px;min-height:17px}.tracking{color:var(--muted);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:13px}
+.vanwrap{flex:1;min-height:82px;display:grid;place-items:center;padding:4px 0}.van{display:block;max-width:260px;max-height:145px;object-fit:contain}
+.timeline{position:relative;height:58px;margin-top:0}.track{position:absolute;left:0;right:0;top:20px;height:3px;background:var(--line)}.elapsed{position:absolute;left:0;top:20px;height:3px;background:var(--orange);width:0}.dot{position:absolute;top:12px;width:18px;height:18px;margin-left:-9px;border:4px solid var(--orange);border-radius:50%;background:var(--panel);left:0}.tick{position:absolute;top:15px;width:1px;height:13px;background:#9d9fac}.actual-start,.actual-end{position:absolute;top:11px;width:3px;height:21px;background:#cfcfd5;border-radius:2px}.times{position:absolute;left:0;right:0;top:33px;display:grid;grid-template-columns:1fr 1fr 1fr;color:var(--muted);font-size:10px}.times span:nth-child(2){text-align:center}.times span:nth-child(3){text-align:right}.hidden{display:none!important}
+.state{display:grid;place-items:center;height:100%;padding:16px;text-align:center;color:var(--primary)}.state-inner{display:grid;place-items:center;gap:12px}.state .van{width:min(88%,290px);max-height:170px}.state p{margin:0;font-size:17px;font-weight:700}
+@media(prefers-color-scheme:dark){:root{--primary:#f4f4f5;--secondary:#c4c3c7;--muted:#aaa9ad;--card:#202022;--header:#29292b;--border:#424244;--panel:#343436;--line:#71748e}h1{color:#aaa9ad}.dot{background:var(--panel)}.state{color:#aaa9ad}}
 </style>
 </head>
 <body>
-<main class="card"><header><img class="app-icon" src="icon.svg" alt="PostNL"><h1 id="title">Mijn Bezorging</h1></header><section id="content"><div class="state">Pakket ophalen…</div></section></main>
+<main class="card">
+  <header><img class="app-icon" src="icon.svg" alt="PostNL"><h1 id="title">Mijn Bezorging</h1></header>
+  <section id="content"><div class="state">Pakket ophalen…</div></section>
+</main>
 <script>
-const i18n={nl:{title:'Mijn Bezorging',empty:'Er is geen pakket onderweg',today:'Vandaag tussen {from} en {to}',tomorrow:'Morgen tussen {from} en {to}',date:'{date} tussen {from} en {to}',tracking:'Tracking'},en:{title:'My Delivery',empty:'There is currently no parcel on the way',today:'Today between {from} and {to}',tomorrow:'Tomorrow between {from} and {to}',date:'{date} between {from} and {to}',tracking:'Tracking'}};
-function L(v){return String(v||'en').split('-')[0]==='nl'?'nl':'en'}function text(v){return String(v??'').trim()}function zoned(raw){return/(?:Z|[+-]\d{2}:?\d{2})$/i.test(raw)}
-function parts(value,tz){const raw=text(value);if(!raw)return null;let m=raw.match(/^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})/);if(m&&!zoned(raw))return{date:`${m[1]}-${m[2]}-${m[3]}`,mins:+m[4]*60 + +m[5],time:`${m[4]}:${m[5]}`};const d=new Date(raw);if(Number.isNaN(d.getTime()))return null;const p=new Intl.DateTimeFormat('en-CA',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(d),g=t=>p.find(x=>x.type===t)?.value||'';return{date:`${g('year')}-${g('month')}-${g('day')}`,mins:+g('hour')*60 + +g('minute'),time:`${g('hour')}:${g('minute')}`}}
-function nowParts(tz){const p=new Intl.DateTimeFormat('en-CA',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).formatToParts(new Date()),g=t=>p.find(x=>x.type===t)?.value||'';const hh=+g('hour'),mm=+g('minute'),ss=+g('second');return{date:`${g('year')}-${g('month')}-${g('day')}`,secs:hh*3600+mm*60+ss}}
-function addDay(key,n){const[y,m,d]=key.split('-').map(Number),x=new Date(Date.UTC(y,m-1,d+n,12));return x.toISOString().slice(0,10)}function dmy(k){if(!k)return'';const[y,m,d]=k.split('-');return `${d}-${m}-${y}`}function fmt(t,v){return Object.entries(v).reduce((s,[k,x])=>s.replace(`{${k}}`,x),t)}
-function onHomeyReady(Homey){const host=document.getElementById('content'),title=document.getElementById('title');let data=null,labels=i18n.en,timer=null;
-function empty(){host.innerHTML=`<div class="state"><div class="state-inner"><img class="van" src="van-1.svg" alt="PostNL"><p>${labels.empty}</p></div></div>`}
-function hhmm(total){const mins=((total%1440)+1440)%1440;return String(Math.floor(mins/60)).padStart(2,'0')+':'+String(mins%60).padStart(2,'0')}
-function progress(){if(!data?.parcel)return;const a=parts(data.parcel.deliveryWindowFrom,data.timeZone),b=parts(data.parcel.deliveryWindowTo,data.timeZone),n=nowParts(data.timeZone);if(!a||!b)return;const ds=a.mins-60,de=b.mins+60,span=Math.max(1,(de-ds)*60);let pct=n.date>a.date?100:n.date<a.date?0:Math.max(0,Math.min(100,(n.secs-ds*60)/span*100));const el=host.querySelector('.elapsed'),dot=host.querySelector('.dot'),st=host.querySelector('.actual-start'),et=host.querySelector('.actual-end'),ts=host.querySelectorAll('.times span');if(el)el.style.width=pct+'%';if(dot)dot.style.left=pct+'%';if(st)st.style.left=((a.mins-ds)/(de-ds)*100)+'%';if(et)et.style.left=((b.mins-ds)/(de-ds)*100)+'%';if(ts[0])ts[0].textContent=hhmm(ds);if(ts[1])ts[1].textContent=hhmm(Math.round((ds+de)/2));if(ts[2])ts[2].textContent=hhmm(de)}
-function render(){title.textContent=labels.title;if(!data?.authenticated||!data?.parcel){empty();return}const p=data.parcel,a=parts(p.deliveryWindowFrom,data.timeZone),b=parts(p.deliveryWindowTo,data.timeZone),n=nowParts(data.timeZone),from=a?.time||'',to=b?.time||'',date=a?.date||parts(p.deliveryDate,data.timeZone)?.date||'';let headline=text(p.status);if(from&&to){const tpl=date===n.date?labels.today:date===addDay(n.date,1)?labels.tomorrow:labels.date;headline=fmt(tpl,{from,to,date:dmy(date)})}host.innerHTML=`<section class="package"><div class="package-top"><img class="mini-logo" src="package.svg" alt=""><div class="sender"></div><div class="status"></div></div><div class="headline"></div><div class="tracking"></div><div class="vanwrap"><img class="van" src="van-1.svg" alt="PostNL"></div><div class="timeline ${a&&b?'':'hidden'}"><div class="track"></div><div class="elapsed"></div><div class="dot"></div><i class="actual-start"></i><i class="actual-end"></i><div class="times"><span></span><span></span><span></span></div></div></section>`;host.querySelector('.sender').textContent=text(p.sender||'PostNL');host.querySelector('.status').textContent=text(p.status);host.querySelector('.headline').textContent=headline;host.querySelector('.tracking').textContent=p.tracking?`${labels.tracking}: ${p.tracking}`:'';progress();clearInterval(timer);timer=setInterval(progress,1000)}
-(async()=>{try{const id=(Homey.getDeviceIds()||[])[0]||'';data=await Homey.api('GET','/?deviceId='+encodeURIComponent(id),{});labels=i18n[L(data.locale)];render()}catch(e){host.innerHTML='<div class="state">'+String(e.message||e)+'</div>'}})();Homey.ready()}
+const i18n={
+ nl:{title:'Mijn Bezorging',loading:'Pakket ophalen…',empty:'Er is geen pakket onderweg',today:'Vandaag tussen {from} en {to}',tomorrow:'Morgen tussen {from} en {to}',date:'{date} tussen {from} en {to}',tracking:'Tracking'},
+ en:{title:'My Delivery',loading:'Loading parcel…',empty:'There is currently no parcel on the way',today:'Today between {from} and {to}',tomorrow:'Tomorrow between {from} and {to}',date:'{date} between {from} and {to}',tracking:'Tracking'}
+};
+function L(v){return String(v||'en').split('-')[0]==='nl'?'nl':'en'}
+function text(v){return String(v??'').trim()}
+function zoned(raw){return/(?:Z|[+-]\d{2}:?\d{2})$/i.test(raw)}
+function parts(value,tz){const raw=text(value);if(!raw)return null;let m=raw.match(/^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})/);if(m&&!zoned(raw))return{date:`${m[1]}-${m[2]}-${m[3]}`,mins:+m[4]*60 + +m[5],time:`${m[4]}:${m[5]}`};const d=new Date(raw);if(Number.isNaN(d.getTime()))return null;try{const p=new Intl.DateTimeFormat('en-CA',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(d),g=t=>p.find(x=>x.type===t)?.value||'';return{date:`${g('year')}-${g('month')}-${g('day')}`,mins:+g('hour')*60 + +g('minute'),time:`${g('hour')}:${g('minute')}`}}catch(_){return null}}
+function nowParts(tz){const d=new Date(),p=new Intl.DateTimeFormat('en-CA',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).formatToParts(d),g=t=>p.find(x=>x.type===t)?.value||'';const hh=+g('hour'),mm=+g('minute'),ss=+g('second');return{date:`${g('year')}-${g('month')}-${g('day')}`,mins:hh*60+mm,secs:hh*3600+mm*60+ss}}
+function addDay(key,n){const[y,m,d]=key.split('-').map(Number),x=new Date(Date.UTC(y,m-1,d+n,12));return x.toISOString().slice(0,10)}
+function dmy(k){if(!k)return'';const[y,m,d]=k.split('-');return`${d}-${m}-${y}`}
+function fmt(t,vars){return Object.entries(vars).reduce((s,[k,v])=>s.replace(`{${k}}`,v),t)}
+function onHomeyReady(Homey){
+ const host=document.getElementById('content'),title=document.getElementById('title');let data=null,labels=i18n.en,timer=null;
+ function empty(){host.innerHTML=`<div class="state"><div class="state-inner"><img class="van" src="van-1.svg" alt="PostNL"><p>${labels.empty}</p></div></div>`}
+ function render(){
+  title.textContent=labels.title;
+  if(!data?.authenticated||!data?.parcel){empty();return}
+  const p=data.parcel,a=parts(p.deliveryWindowFrom,data.timeZone),b=parts(p.deliveryWindowTo,data.timeZone),n=nowParts(data.timeZone),from=a?.time||'',to=b?.time||'',date=a?.date||parts(p.deliveryDate,data.timeZone)?.date||'';
+  let headline=text(p.status);
+  if(from&&to){const template=date===n.date?labels.today:date===addDay(n.date,1)?labels.tomorrow:labels.date;headline=fmt(template,{from,to,date:dmy(date)})}
+  const sender=text(p.sender||p.title||p.sourceDisplayName||'PostNL');
+  const tracking=text(p.tracking);
+  const status=text(p.status);
+  host.innerHTML=`<section class="package"><div class="package-top"><img class="mini-logo" src="package.svg" alt="Package"><div class="sender"></div><div class="status"></div></div><div class="headline"></div><div class="tracking"></div><div class="vanwrap"><img class="van" src="van-1.svg" alt="PostNL"></div><div class="timeline ${a&&b?'':'hidden'}"><div class="track"></div><div class="elapsed"></div><div class="dot"></div><i class="actual-start"></i><i class="actual-end"></i><div class="times"><span></span><span></span><span></span></div></div></section>`;
+  host.querySelector('.sender').textContent=sender;
+  host.querySelector('.status').textContent=status;
+  host.querySelector('.headline').textContent=headline;
+  host.querySelector('.tracking').textContent=tracking?`${labels.tracking}: ${tracking}`:'';
+  updateProgress();clearInterval(timer);timer=setInterval(updateProgress,1000)
+ }
+ function hhmm(total){const mins=((total%1440)+1440)%1440;const hh=String(Math.floor(mins/60)).padStart(2,'0'),mm=String(mins%60).padStart(2,'0');return `${hh}:${mm}`}
+ function updateProgress(){if(!data?.parcel)return;const a=parts(data.parcel.deliveryWindowFrom,data.timeZone),b=parts(data.parcel.deliveryWindowTo,data.timeZone),n=nowParts(data.timeZone);if(!a||!b)return;const displayStart=a.mins-60,displayEnd=b.mins+60;const startSec=displayStart*60,endSec=displayEnd*60;let pct=0;if(n.date>a.date)pct=100;else if(n.date<a.date)pct=0;else{const span=Math.max(1,endSec-startSec);pct=Math.max(0,Math.min(100,(n.secs-startSec)/span*100))}const elapsed=host.querySelector('.elapsed'),dot=host.querySelector('.dot'),startTick=host.querySelector('.actual-start'),endTick=host.querySelector('.actual-end');const t1=host.querySelector('.times span:nth-child(1)'),t2=host.querySelector('.times span:nth-child(2)'),t3=host.querySelector('.times span:nth-child(3)');if(elapsed)elapsed.style.width=pct+'%';if(dot)dot.style.left=pct+'%';const startPct=((a.mins-displayStart)/(displayEnd-displayStart))*100;const endPct=((b.mins-displayStart)/(displayEnd-displayStart))*100;if(startTick)startTick.style.left=startPct+'%';if(endTick)endTick.style.left=endPct+'%';if(t1)t1.textContent=hhmm(displayStart);if(t2)t2.textContent=hhmm(Math.round((displayStart+displayEnd)/2));if(t3)t3.textContent=hhmm(displayEnd)}
+ (async()=>{try{const id=(Homey.getDeviceIds()||[])[0]||'',x=await Homey.api('GET','/?deviceId='+encodeURIComponent(id),{});data=x;labels=i18n[L(x.locale)];render()}catch(e){host.innerHTML='<div class="state">'+String(e.message||e)+'</div>'}})();Homey.ready()
+}
 </script>
-</body></html>
+</body>
+</html>
