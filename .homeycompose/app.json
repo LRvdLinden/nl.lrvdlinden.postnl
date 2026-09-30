@@ -1,6 +1,6 @@
 {
   "id": "nl.lrvdlinden.postnl",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "compatibility": ">=12.3.0",
   "sdk": 3,
   "platforms": [
@@ -64,8 +64,8 @@
     "mijn-pakket": {
       "id": "mijn-pakket",
       "name": {
-        "en": "My Delivery",
-        "nl": "Mijn Bezorging"
+        "en": "My Packages",
+        "nl": "Mijn Pakketten"
       },
       "height": 360,
       "api": {
@@ -89,8 +89,8 @@
     "pakket-details": {
       "id": "pakket-details",
       "name": {
-        "en": "Delivery Details",
-        "nl": "Bezorgdetails"
+        "en": "My Delivery",
+        "nl": "Mijn Bezorging"
       },
       "height": 360,
       "api": {
@@ -139,7 +139,8 @@
       "my post",
       "my delivery",
       "mailbox",
-      "automation"
+      "automation",
+      "my packages"
     ],
     "nl": [
       "postnl",
@@ -162,7 +163,8 @@
       "mijn post",
       "mijn bezorging",
       "brievenbus",
-      "automatisering"
+      "automatisering",
+      "mijn pakketten"
     ]
   }
 }
