@@ -88,13 +88,18 @@ class PostNLDevice extends Homey.Device {
     const previous = this.snapshot || { letters: [], liveLetters: [], packages: [] };
     try {
       const live = await this.api.fetchAll();
-      const letters = await this.api.archiveLetters(live.letters, previous.letters || []);
-      const archivedById = new Map(letters.map(item => [item.id, item]));
-      // Keep a hydrated copy of only the items currently returned by PostNL.
-      // Capabilities, device image and mail Flow tokens must never use archive-only items.
-      const liveLetters = (live.letters || []).map(item => archivedById.get(item.id) || item);
+      // My Post is live-only: keep only the mail items currently returned by PostNL.
+      // Images are hydrated for the current response only; removed items are not archived locally.
+      const liveLetters = await Promise.all((live.letters || []).map(async item => {
+        const next = { ...item };
+        if (item.imageUrl) {
+          try { next.imageData = await this.api.fetchImage(item.imageUrl); }
+          catch (error) { this.log('Live mail image fetch failed', item.id, error.message); }
+        }
+        return next;
+      }));
       const current = {
-        letters,
+        letters: liveLetters,
         liveLetters,
         packages: live.packages,
         updatedAt: new Date().toISOString(),
@@ -120,7 +125,18 @@ class PostNLDevice extends Homey.Device {
         }
       }
       await this.triggerSyncFailed(error.message).catch(this.error);
-      await this.applySnapshot(previous, error);
+      // Never expose stale mail when live PostNL retrieval fails.
+      const failed = {
+        ...previous,
+        letters: [],
+        liveLetters: [],
+        updatedAt: new Date().toISOString(),
+        mailApiStatus: 'temporarily_unavailable',
+        mailApiError: error.message || String(error),
+      };
+      this.snapshot = failed;
+      await this.setStoreValue('snapshot', failed);
+      await this.applySnapshot(failed, error);
       throw error;
     }
   }
@@ -185,8 +201,6 @@ class PostNLDevice extends Homey.Device {
   }
 
   async handleSnapshotChanges(previous = {}, current = {}) {
-    // For upgrades from <=1.1.2, fall back to the old archive list once. This avoids
-    // firing false "new mail" triggers for items that were already known before liveLetters existed.
     const previousLiveLetters = Array.isArray(previous.liveLetters) ? previous.liveLetters : (previous.letters || []);
     const todayKey = this._localDateKey();
     const currentLiveLetters = (current.liveLetters || []).filter(item => {
@@ -455,9 +469,7 @@ class PostNLDevice extends Homey.Device {
   }
 
   async applySnapshot(snapshot = {}, error = null) {
-    // Only current PostNL mail drives device capabilities. The archive is widget-only.
-    // Old snapshots do not have liveLetters; in that case wait for the first fresh sync
-    // instead of exposing archived mail as current mail again.
+    // Only mail currently returned by PostNL drives device capabilities and images.
     const letters = Array.isArray(snapshot.liveLetters) ? snapshot.liveLetters : [];
     const packages = (snapshot.packages || []).filter(item => !item.delivered);
     const todayKey = this._localDateKey();
@@ -537,8 +549,9 @@ class PostNLDevice extends Homey.Device {
   getWidgetData() {
     return {
       authenticated: this.api.hasCredentials(),
-      // Widget deliberately receives the 21-day archive. Its API sorts newest first.
-      letters: (this.snapshot.letters || []).slice(0, 60),
+      // My Post is live-only; no local mail history is exposed or retained.
+      letters: (this.snapshot.liveLetters || []).slice(0, 60),
+      liveLetters: (this.snapshot.liveLetters || []).slice(0, 60),
       packages: (this.snapshot.packages || []).slice(0, 40),
       updatedAt: this.snapshot.updatedAt || null, mailApiStatus: this.snapshot.mailApiStatus || 'unknown', mailApiError: this.snapshot.mailApiError || null,
     };
