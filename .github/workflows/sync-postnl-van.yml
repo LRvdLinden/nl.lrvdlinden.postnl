@@ -1,0 +1,29 @@
+name: Sync PostNL van GIF
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Copy original GIF from MyParcel
+        run: |
+          mkdir -p widgets/pakket-details/public
+          curl -L --fail --silent --show-error \
+            https://raw.githubusercontent.com/LRvdLinden/nl.lrvdlinden.myparcel/main/widgets/postnl-pakketdetails/public/postnl-van.gif \
+            -o widgets/pakket-details/public/postnl-van.gif
+          test "$(sha256sum widgets/pakket-details/public/postnl-van.gif | cut -d' ' -f1)" = "efcca70ca181a6b98a0077dcaa0455d4255bec7f97b5ea341b22cd1d51ac1f87"
+      - name: Commit GIF and remove helper workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add widgets/pakket-details/public/postnl-van.gif
+          git rm .github/workflows/sync-postnl-van.yml
+          git commit -m "Add original PostNL delivery van GIF"
+          git push
