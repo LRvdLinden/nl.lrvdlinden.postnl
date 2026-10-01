@@ -129,7 +129,7 @@
     "nl": "Mijn Bezorging gebruikt nu de geanimeerde PostNL-bezorgbus GIF zolang een pakket onderweg is. De lege status zonder pakket behoudt de statische busafbeelding."
   },
   "1.1.10": {
-    "en": "My Delivery now renders the original animated PostNL van GIF at its native 480×340 pixel size without CSS downscaling. The wrapper only clips transparent canvas space so the GIF frames, sharpness and animation timing remain untouched.",
-    "nl": "Mijn Bezorging toont de originele geanimeerde PostNL-bus GIF nu op de native grootte van 480×340 pixels zonder CSS-verkleining. Alleen de transparante ruimte rondom wordt door de widget uitgesneden; frames, scherpte en animatiesnelheid blijven volledig ongewijzigd."
+    "en": "Fixed My Delivery GIF rendering by matching the proven MyParcel PostNL implementation exactly. The original PostNL van GIF remains byte-for-byte unchanged and is shown with the same animated-van class and CSS sizing used by the working PostNL package-details widget.",
+    "nl": "De GIF-weergave in Mijn Bezorging is hersteld door exact dezelfde implementatie te gebruiken als de werkende PostNL-pakketdetailswidget in MyParcel. De originele PostNL-bus GIF blijft byte-voor-byte ongewijzigd en gebruikt dezelfde animated-van class en CSS-afmetingen."
   }
 }
