@@ -123,5 +123,9 @@
   "1.1.8": {
     "en": "Renamed the parcel overview widget to My Packages and aligned the three PostNL widget names: My Post, My Packages and My Delivery.",
     "nl": "De pakketoverzicht-widget is hernoemd naar Mijn Pakketten en de drie PostNL-widgetnamen zijn gelijkgetrokken: Mijn Post, Mijn Pakketten en Mijn Bezorging."
+  },
+  "1.1.9": {
+    "en": "My Delivery now uses the animated PostNL delivery van GIF while a parcel is underway. The no-parcel empty state keeps the static van illustration.",
+    "nl": "Mijn Bezorging gebruikt nu de geanimeerde PostNL-bezorgbus GIF zolang een pakket onderweg is. De lege status zonder pakket behoudt de statische busafbeelding."
   }
 }
