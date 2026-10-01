@@ -65,8 +65,9 @@
       track.addEventListener('wheel',e=>{if(track.scrollWidth<=track.clientWidth)return;if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){e.preventDefault();track.scrollLeft+=e.deltaY}},{passive:false});
       content.replaceChildren(track)
     }
-    async function load(){content.innerHTML=`<div class="state">${words.nl.loading}</div>`;try{render(await Homey.api('GET','/?deviceId='+encodeURIComponent((Homey.getDeviceIds()||[])[0]||''),{}))}catch(e){content.innerHTML=`<div class="state error">${String(e.message||e)}</div>`}}
-    async function onHomeyReady(Homey){await load();Homey.ready()}
+    let refreshTimer=null;
+    async function load(showLoading=false){if(showLoading)content.innerHTML=`<div class="state">${words.nl.loading}</div>`;try{render(await Homey.api('GET','/?deviceId='+encodeURIComponent((Homey.getDeviceIds()||[])[0]||''),{}))}catch(e){content.innerHTML=`<div class="state error">${String(e.message||e)}</div>`}}
+    async function onHomeyReady(Homey){await load(true);if(refreshTimer)clearInterval(refreshTimer);refreshTimer=setInterval(()=>load(false),60000);Homey.ready()}
   </script>
 </body>
 </html>
