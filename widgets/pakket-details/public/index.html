@@ -51,7 +51,7 @@ function onHomeyReady(Homey){
   const sender=text(p.sender||p.title||p.sourceDisplayName||'PostNL');
   const tracking=text(p.tracking);
   const status=text(p.status);
-  host.innerHTML=`<section class="package"><div class="package-top"><img class="mini-logo" src="package.svg" alt="Package"><div class="sender"></div><div class="status"></div></div><div class="headline"></div><div class="tracking"></div><div class="vanwrap"><img class="van" src="van-1.svg" alt="PostNL"></div><div class="timeline ${a&&b?'':'hidden'}"><div class="track"></div><div class="elapsed"></div><div class="dot"></div><i class="actual-start"></i><i class="actual-end"></i><div class="times"><span></span><span></span><span></span></div></div></section>`;
+  host.innerHTML=`<section class="package"><div class="package-top"><img class="mini-logo" src="package.svg" alt="Package"><div class="sender"></div><div class="status"></div></div><div class="headline"></div><div class="tracking"></div><div class="vanwrap"><img class="van" src="postnl-van.gif" alt="PostNL"></div><div class="timeline ${a&&b?'':'hidden'}"><div class="track"></div><div class="elapsed"></div><div class="dot"></div><i class="actual-start"></i><i class="actual-end"></i><div class="times"><span></span><span></span><span></span></div></div></section>`;
   host.querySelector('.sender').textContent=sender;
   host.querySelector('.status').textContent=status;
   host.querySelector('.headline').textContent=headline;
