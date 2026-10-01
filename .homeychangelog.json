@@ -131,5 +131,9 @@
   "1.1.10": {
     "en": "Fixed My Delivery GIF rendering by matching the proven MyParcel PostNL implementation exactly. The original PostNL van GIF remains byte-for-byte unchanged and is shown with the same animated-van class and CSS sizing used by the working PostNL package-details widget.",
     "nl": "De GIF-weergave in Mijn Bezorging is hersteld door exact dezelfde implementatie te gebruiken als de werkende PostNL-pakketdetailswidget in MyParcel. De originele PostNL-bus GIF blijft byte-voor-byte ongewijzigd en gebruikt dezelfde animated-van class en CSS-afmetingen."
+  },
+  "1.1.11": {
+    "en": "My Post is now fully live and no longer keeps a local 21-day mail archive. The widget refreshes directly from the PostNL account, removes mail items as soon as PostNL no longer returns them, and refreshes automatically while the widget is open.",
+    "nl": "Mijn Post is nu volledig live en bewaart geen lokaal 21-daags postarchief meer. De widget ververst rechtstreeks vanuit het PostNL-account, verwijdert poststukken zodra PostNL ze niet meer teruggeeft en ververst automatisch zolang de widget open staat."
   }
 }
