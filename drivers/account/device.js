@@ -59,14 +59,12 @@ class PostNLDevice extends Homey.Device {
       this.snapshot = snapshot;
       await this.setStoreValue('snapshot', snapshot);
     }
-    await this.setStoreValue('authExpiredNotified', false);
     await this.applySnapshot(this.snapshot, null);
   }
 
   async updateCredentials(auth, profile = null) {
     await this.api.replaceAuth(auth);
     if (profile?.username) await this.setStoreValue('username', profile.username);
-    await this.setStoreValue('authExpiredNotified', false);
     await this.setAvailable().catch(this.error);
     return this.sync({ reason: 'repair-login', force: true });
   }
@@ -112,17 +110,12 @@ class PostNLDevice extends Homey.Device {
       await this.setStoreValue('snapshot', current);
       await this.handleSnapshotChanges(previous, current);
       await this.applySnapshot(current, null);
-      await this.setStoreValue('authExpiredNotified', false);
-      return current;
+        return current;
     } catch (error) {
       const authExpired = error?.code === 'AUTH_REAUTH_REQUIRED' || error?.code === 'AUTH_EXPIRED' || [401, 403].includes(Number(error?.statusCode));
       this.error('[PostNLDevice] sync_failed', JSON.stringify({ reason, ...this.api.safeErrorInfo(error), ...this.api.getAuthDiagnostics() }));
       if (authExpired) {
-        const alreadyNotified = this.getStoreValue('authExpiredNotified') === true;
-        if (!alreadyNotified) {
-          await this.triggerLoginExpired().catch(this.error);
-          await this._notifyAuthExpiredOnce().catch(this.error);
-        }
+        await this.triggerLoginExpired().catch(this.error);
       }
       await this.triggerSyncFailed(error.message).catch(this.error);
       // Never expose stale mail when live PostNL retrieval fails.
@@ -141,15 +134,6 @@ class PostNLDevice extends Homey.Device {
     }
   }
 
-  async _notifyAuthExpiredOnce() {
-    if (this.getStoreValue('authExpiredNotified') === true) return;
-    const language = this.homey.i18n.getLanguage();
-    const excerpt = language === 'nl'
-      ? `PostNL opnieuw koppelen – De inloggegevens van ${this.getName()} zijn verlopen. Open het betreffende apparaat en koppel je PostNL-account opnieuw.`
-      : `Reconnect PostNL – The credentials for ${this.getName()} have expired. Open the affected device and reconnect your PostNL account.`;
-    await this.homey.notifications.createNotification({ excerpt });
-    await this.setStoreValue('authExpiredNotified', true);
-  }
 
   async triggerNewMail(tokens = {}) { return this._flowTriggerNewMail.trigger(this, tokens, {}); }
   async triggerNewPackage(tokens = {}) { return this._flowTriggerNewPackage.trigger(this, tokens, {}); }
