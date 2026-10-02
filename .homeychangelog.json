@@ -135,5 +135,9 @@
   "1.1.11": {
     "en": "My Post is now fully live and no longer keeps a local 21-day mail archive. The widget refreshes directly from the PostNL account, removes mail items as soon as PostNL no longer returns them, and refreshes automatically while the widget is open.",
     "nl": "Mijn Post is nu volledig live en bewaart geen lokaal 21-daags postarchief meer. De widget ververst rechtstreeks vanuit het PostNL-account, verwijdert poststukken zodra PostNL ze niet meer teruggeeft en ververst automatisch zolang de widget open staat."
+  },
+  "1.1.12": {
+    "en": "Removed automatic Homey Timeline notifications for PostNL reconnects. Expired credentials can still be handled through the existing device status and login-expired Flow trigger without repeated Timeline messages.",
+    "nl": "Automatische Homey Timeline-meldingen voor het opnieuw verbinden van PostNL zijn verwijderd. Verlopen inloggegevens kunnen nog steeds via de bestaande apparaatstatus en de login-verlopen Flow-trigger worden afgehandeld, zonder herhaalde Timeline-meldingen."
   }
 }
