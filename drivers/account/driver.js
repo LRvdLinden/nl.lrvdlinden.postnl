@@ -36,7 +36,6 @@ class PostNLDriver extends Homey.Driver {
         username,
         auth: api.exportAuth(),
         snapshot: { letters: [], packages: [], updatedAt: null, account: profile || null, mailApiStatus: 'unknown', mailApiError: null },
-        authExpiredNotified: false,
       },
     };
   }
