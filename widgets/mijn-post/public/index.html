@@ -65,9 +65,11 @@
       track.addEventListener('wheel',e=>{if(track.scrollWidth<=track.clientWidth)return;if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){e.preventDefault();track.scrollLeft+=e.deltaY}},{passive:false});
       content.replaceChildren(track)
     }
-    let refreshTimer=null;
-    async function load(showLoading=false){if(showLoading)content.innerHTML=`<div class="state">${words.nl.loading}</div>`;try{render(await Homey.api('GET','/?deviceId='+encodeURIComponent((Homey.getDeviceIds()||[])[0]||''),{}))}catch(e){content.innerHTML=`<div class="state error">${String(e.message||e)}</div>`}}
-    async function onHomeyReady(Homey){await load(true);if(refreshTimer)clearInterval(refreshTimer);refreshTimer=setInterval(()=>load(false),60000);Homey.ready()}
+    let refreshTimer=null,syncBusy=false;
+    function deviceId(){return (Homey.getDeviceIds()||[])[0]||''}
+    async function load(showLoading=false){if(showLoading)content.innerHTML=`<div class="state">${words.nl.loading}</div>`;try{render(await Homey.api('GET','/?deviceId='+encodeURIComponent(deviceId()),{}))}catch(e){content.innerHTML=`<div class="state error">${String(e.message||e)}</div>`}}
+    async function refreshLive(){if(syncBusy)return;syncBusy=true;try{await Homey.api('POST','/sync',{deviceId:deviceId()});await load(false)}catch(_){ }finally{syncBusy=false}}
+    async function onHomeyReady(Homey){await load(true);Homey.ready();refreshLive();if(refreshTimer)clearInterval(refreshTimer);refreshTimer=setInterval(refreshLive,60000)}
   </script>
 </body>
 </html>
