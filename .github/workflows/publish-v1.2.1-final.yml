@@ -24,8 +24,11 @@ jobs:
           tar -xzf /tmp/patch.tgz -C .
           rm -rf widgets/reis-pakket
           mkdir -p widgets/pakket-details/public widgets/pakket-reis/public
-          git cat-file blob a1ebab5adeb9669e81fba5eeb01a6db2faa9d571 > widgets/pakket-details/public/postnl-van.gif
+          git remote add myparcel https://github.com/LRvdLinden/nl.lrvdlinden.myparcel.git
+          git fetch --no-tags myparcel db43f2a94d81abac237da9666e019594f26d4f21
+          git show FETCH_HEAD:widgets/postnl-pakketdetails/public/postnl-van.gif > widgets/pakket-details/public/postnl-van.gif
           cp widgets/pakket-details/public/van-1.svg widgets/pakket-reis/public/van-1.svg
+          git remote remove myparcel
           rm -rf .sync .github
       - name: Validate exact source
         run: |
