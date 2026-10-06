@@ -6,6 +6,17 @@ const PostNLApi = require('../../lib/postnl-api');
 
 class PostNLDriver extends Homey.Driver {
   async onInit() {
+    // Device Flow triggers are initialized once on the Driver. Devices delegate
+    // triggering here so Homey's card lifecycle is consistent for every account.
+    this._flowTriggers = {
+      new_mail: this.homey.flow.getDeviceTriggerCard('new_mail'),
+      new_package: this.homey.flow.getDeviceTriggerCard('new_package'),
+      delivery_window_known: this.homey.flow.getDeviceTriggerCard('delivery_window_known'),
+      package_status_changed: this.homey.flow.getDeviceTriggerCard('package_status_changed'),
+      sync_failed: this.homey.flow.getDeviceTriggerCard('sync_failed'),
+      login_expired: this.homey.flow.getDeviceTriggerCard('login_expired'),
+    };
+
     this.homey.flow.getConditionCard('mail_expected').registerRunListener(async ({ device }) => Boolean(device && device.isMailExpected()));
     this.homey.flow.getConditionCard('packages_underway').registerRunListener(async ({ device }) => Boolean(device && device.hasPackagesUnderway()));
     this.homey.flow.getConditionCard('delivery_window_known').registerRunListener(async ({ device }) => Boolean(device && device.hasDeliveryWindowKnown()));
@@ -14,6 +25,23 @@ class PostNLDriver extends Homey.Driver {
       await device.sync({ reason: 'flow', force: true });
       return true;
     });
+  }
+
+  async triggerDeviceFlow(cardId, device, tokens = {}, state = {}) {
+    const card = this._flowTriggers?.[cardId];
+    if (!card) throw new Error(`PostNL Flow trigger not initialized: ${cardId}`);
+    const safeTokens = Object.fromEntries(Object.entries(tokens || {}).filter(([, value]) => value !== undefined));
+    try {
+      this.log('[FlowTrigger]', cardId, device?.getName?.() || device?.getId?.() || 'unknown', JSON.stringify(
+        Object.fromEntries(Object.entries(safeTokens).filter(([key]) => !['image', 'package_image'].includes(key)))
+      ));
+      await card.trigger(device, safeTokens, state || {});
+      this.log('[FlowTrigger]', cardId, 'accepted');
+      return true;
+    } catch (error) {
+      this.error('[FlowTrigger]', cardId, 'failed', error);
+      throw error;
+    }
   }
 
   _createMemoryStorage() {
@@ -35,7 +63,7 @@ class PostNLDriver extends Homey.Driver {
       store: {
         username,
         auth: api.exportAuth(),
-        snapshot: { letters: [], packages: [], updatedAt: null, account: profile || null, mailApiStatus: 'unknown', mailApiError: null },
+        snapshot: { letters: [], liveLetters: [], packages: [], updatedAt: null, account: profile || null, mailApiStatus: 'unknown', mailApiError: null },
       },
     };
   }

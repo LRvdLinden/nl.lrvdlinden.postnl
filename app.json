@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "nl.lrvdlinden.postnl",
-  "version": "1.1.12",
+  "version": "1.1.13",
   "compatibility": ">=12.3.0",
   "sdk": 3,
   "platforms": [
@@ -317,6 +317,38 @@
             }
           },
           {
+            "name": "status_raw",
+            "type": "string",
+            "title": {
+              "en": "Official PostNL status",
+              "nl": "Officiële PostNL-status"
+            }
+          },
+          {
+            "name": "status_code",
+            "type": "string",
+            "title": {
+              "en": "Official PostNL status code",
+              "nl": "Officiële PostNL-statuscode"
+            }
+          },
+          {
+            "name": "status_event",
+            "type": "string",
+            "title": {
+              "en": "Latest PostNL event",
+              "nl": "Laatste PostNL-gebeurtenis"
+            }
+          },
+          {
+            "name": "status_event_time",
+            "type": "string",
+            "title": {
+              "en": "Latest status update",
+              "nl": "Laatste statusupdate"
+            }
+          },
+          {
             "name": "delivery_date",
             "type": "string",
             "title": {
@@ -539,6 +571,38 @@
             "title": {
               "en": "Status",
               "nl": "Status"
+            }
+          },
+          {
+            "name": "status_raw",
+            "type": "string",
+            "title": {
+              "en": "Official PostNL status",
+              "nl": "Officiële PostNL-status"
+            }
+          },
+          {
+            "name": "status_code",
+            "type": "string",
+            "title": {
+              "en": "Official PostNL status code",
+              "nl": "Officiële PostNL-statuscode"
+            }
+          },
+          {
+            "name": "status_event",
+            "type": "string",
+            "title": {
+              "en": "Latest PostNL event",
+              "nl": "Laatste PostNL-gebeurtenis"
+            }
+          },
+          {
+            "name": "status_event_time",
+            "type": "string",
+            "title": {
+              "en": "Latest status update",
+              "nl": "Laatste statusupdate"
             }
           },
           {
@@ -771,6 +835,38 @@
             "title": {
               "en": "Status",
               "nl": "Status"
+            }
+          },
+          {
+            "name": "status_raw",
+            "type": "string",
+            "title": {
+              "en": "Official PostNL status",
+              "nl": "Officiële PostNL-status"
+            }
+          },
+          {
+            "name": "status_code",
+            "type": "string",
+            "title": {
+              "en": "Official PostNL status code",
+              "nl": "Officiële PostNL-statuscode"
+            }
+          },
+          {
+            "name": "status_event",
+            "type": "string",
+            "title": {
+              "en": "Latest PostNL event",
+              "nl": "Laatste PostNL-gebeurtenis"
+            }
+          },
+          {
+            "name": "status_event_time",
+            "type": "string",
+            "title": {
+              "en": "Latest status update",
+              "nl": "Laatste statusupdate"
             }
           },
           {

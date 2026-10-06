@@ -26,13 +26,6 @@ class PostNLDevice extends Homey.Device {
     this.api = new PostNLApi({ homey: this.homey, log: (...args) => this.log(...args), storage: this._storage });
     this.snapshot = this.getStoreValue('snapshot') || { letters: [], liveLetters: [], packages: [], updatedAt: null };
 
-    this._flowTriggerNewMail = this.homey.flow.getDeviceTriggerCard('new_mail');
-    this._flowTriggerNewPackage = this.homey.flow.getDeviceTriggerCard('new_package');
-    this._flowTriggerDeliveryWindowKnown = this.homey.flow.getDeviceTriggerCard('delivery_window_known');
-    this._flowTriggerPackageStatusChanged = this.homey.flow.getDeviceTriggerCard('package_status_changed');
-    this._flowTriggerSyncFailed = this.homey.flow.getDeviceTriggerCard('sync_failed');
-    this._flowTriggerLoginExpired = this.homey.flow.getDeviceTriggerCard('login_expired');
-
     await this._ensureCapabilities();
     await this._ensurePackageCameraImage();
     this._startPackageImageRefresh();
@@ -109,13 +102,25 @@ class PostNLDevice extends Homey.Device {
       this.snapshot = current;
       await this.setStoreValue('snapshot', current);
       await this.handleSnapshotChanges(previous, current);
+      if (current.mailApiStatus === 'temporarily_unavailable') {
+        const previousMailError = String(previous.mailApiError || '');
+        const currentMailError = String(current.mailApiError || 'Mijn PostNL is tijdelijk niet beschikbaar');
+        if (previous.mailApiStatus !== 'temporarily_unavailable' || previousMailError !== currentMailError) {
+          await this.triggerSyncFailed(currentMailError).catch(this.error);
+        }
+      }
+      await this.setStoreValue('loginExpiredFlowNotified', false);
       await this.applySnapshot(current, null);
-        return current;
+      return current;
     } catch (error) {
       const authExpired = error?.code === 'AUTH_REAUTH_REQUIRED' || error?.code === 'AUTH_EXPIRED' || [401, 403].includes(Number(error?.statusCode));
       this.error('[PostNLDevice] sync_failed', JSON.stringify({ reason, ...this.api.safeErrorInfo(error), ...this.api.getAuthDiagnostics() }));
       if (authExpired) {
-        await this.triggerLoginExpired().catch(this.error);
+        const alreadyTriggered = this.getStoreValue('loginExpiredFlowNotified') === true;
+        if (!alreadyTriggered) {
+          await this.triggerLoginExpired().catch(this.error);
+          await this.setStoreValue('loginExpiredFlowNotified', true);
+        }
       }
       await this.triggerSyncFailed(error.message).catch(this.error);
       // Never expose stale mail when live PostNL retrieval fails.
@@ -135,12 +140,20 @@ class PostNLDevice extends Homey.Device {
   }
 
 
-  async triggerNewMail(tokens = {}) { return this._flowTriggerNewMail.trigger(this, tokens, {}); }
-  async triggerNewPackage(tokens = {}) { return this._flowTriggerNewPackage.trigger(this, tokens, {}); }
-  async triggerDeliveryWindowKnown(tokens = {}) { return this._flowTriggerDeliveryWindowKnown.trigger(this, tokens, {}); }
-  async triggerPackageStatusChanged(tokens = {}) { return this._flowTriggerPackageStatusChanged.trigger(this, tokens, {}); }
-  async triggerSyncFailed(message = '') { return this._flowTriggerSyncFailed.trigger(this, { error: String(message || '') }, {}); }
-  async triggerLoginExpired() { return this._flowTriggerLoginExpired.trigger(this, {}, {}); }
+  _flowDriver() {
+    return this.driver || this.homey.drivers.getDriver('account');
+  }
+
+  async _triggerDeviceFlow(cardId, tokens = {}, state = {}) {
+    return this._flowDriver().triggerDeviceFlow(cardId, this, tokens, state);
+  }
+
+  async triggerNewMail(tokens = {}) { return this._triggerDeviceFlow('new_mail', tokens); }
+  async triggerNewPackage(tokens = {}) { return this._triggerDeviceFlow('new_package', tokens); }
+  async triggerDeliveryWindowKnown(tokens = {}) { return this._triggerDeviceFlow('delivery_window_known', tokens); }
+  async triggerPackageStatusChanged(tokens = {}) { return this._triggerDeviceFlow('package_status_changed', tokens); }
+  async triggerSyncFailed(message = '') { return this._triggerDeviceFlow('sync_failed', { error: String(message || '') }); }
+  async triggerLoginExpired() { return this._triggerDeviceFlow('login_expired', {}); }
 
   async _packageTokens(parcel = {}) {
     const packageImage = await this.getPackageDeliveryImage(parcel).catch(() => null);
@@ -149,9 +162,15 @@ class PostNLDevice extends Homey.Device {
     const deliveryWindow = parcel.deliveryWindow || this.api.formatWindow(parcel.deliveryWindowFrom, parcel.deliveryWindowTo) || '';
     const sender = parcel.sender || parcel.title || '';
     const tracking = parcel.barcode || parcel.id || '';
+    const statusRaw = String(parcel.statusRaw || parcel.status || status || '');
+    const statusEventTime = parcel.statusChangedAt ? this.api.formatDateTime(parcel.statusChangedAt) || String(parcel.statusChangedAt) : '';
     const tokens = {
       id: parcel.id || '', sender, receiver: parcel.receiver || '',
       title: parcel.title || parcel.sender || parcel.barcode || 'PostNL', barcode: parcel.barcode || '', status,
+      status_raw: statusRaw,
+      status_code: String(parcel.statusCode || ''),
+      status_event: String(parcel.latestStatusEvent || statusRaw || ''),
+      status_event_time: statusEventTime,
       delivery_date: deliveryDate, delivery_window: deliveryWindow,
       delivery_window_from: parcel.deliveryWindowFrom ? this.api.formatTime(parcel.deliveryWindowFrom) : '',
       delivery_window_to: parcel.deliveryWindowTo ? this.api.formatTime(parcel.deliveryWindowTo) : '',
@@ -184,6 +203,17 @@ class PostNLDevice extends Homey.Device {
     );
   }
 
+  _packageStatusFingerprint(parcel = {}) {
+    return String(parcel.statusFingerprint || [
+      parcel.statusRaw || parcel.status || '',
+      parcel.statusCode || '',
+      parcel.statusChangedAt || '',
+      parcel.latestStatusEvent || '',
+      parcel.deliveryWindow || '',
+      parcel.deliveryDate || '',
+    ].join('|'));
+  }
+
   async handleSnapshotChanges(previous = {}, current = {}) {
     const previousLiveLetters = Array.isArray(previous.liveLetters) ? previous.liveLetters : (previous.letters || []);
     const todayKey = this._localDateKey();
@@ -198,6 +228,15 @@ class PostNLDevice extends Homey.Device {
     const oldLetterIds = new Set(previousCurrentLetters.map(item => item.id));
     const newLetters = currentLiveLetters.filter(item => !oldLetterIds.has(item.id));
     const oldPackages = new Map((previous.packages || []).map(item => [item.id, item]));
+
+    // On the first successful sync after install/upgrade, seed a baseline rather
+    // than firing every existing PostNL item as if it had just appeared.
+    if (this.getStoreValue('flowBaselineInitialized') !== true) {
+      await this.setStoreValue('flowBaselineInitialized', true);
+      this.log('[FlowTrigger] baseline initialized; existing mail/parcels suppressed once');
+      return;
+    }
+
     if (newLetters.length) {
       const newest = [...newLetters].sort((a, b) => new Date(b.deliveryDate || 0) - new Date(a.deliveryDate || 0))[0];
       await this.triggerNewMail(await this._mailTokens(newest, newLetters.length));
@@ -211,8 +250,31 @@ class PostNLDevice extends Homey.Device {
       const hadWindow = Boolean(old && !old.delivered && this._hasDeliveryWindow(old));
       if (hasWindow && !hadWindow) await this.triggerDeliveryWindowKnown(tokens);
 
-      if (old && `${old.status}|${old.deliveryWindow}|${old.deliveryDate}` !== `${parcel.status}|${parcel.deliveryWindow}|${parcel.deliveryDate}`) {
-        await this.triggerPackageStatusChanged({ ...tokens, old_status: localizePackageStatus(this.homey, old.status) || '' });
+      if (old && this._packageStatusFingerprint(old) !== this._packageStatusFingerprint(parcel)) {
+        await this.triggerPackageStatusChanged({
+          ...tokens,
+          old_status: String(old.statusRaw || localizePackageStatus(this.homey, old.status) || old.status || ''),
+        });
+      }
+    }
+
+    // A parcel can disappear from the account list immediately after delivery.
+    // Refresh such a previously active parcel once via Track & Trace so the final
+    // official status (for example "Bezorgd") is not missed by the Flow trigger.
+    const currentIds = new Set((current.packages || []).map(item => item.id));
+    for (const old of oldPackages.values()) {
+      if (currentIds.has(old.id) || old.delivered || !old.detailsUrl) continue;
+      try {
+        const refreshed = await this.api.refreshPackageTracking(old);
+        if (this._packageStatusFingerprint(old) !== this._packageStatusFingerprint(refreshed)) {
+          const tokens = await this._packageTokens(refreshed);
+          await this.triggerPackageStatusChanged({
+            ...tokens,
+            old_status: String(old.statusRaw || localizePackageStatus(this.homey, old.status) || old.status || ''),
+          });
+        }
+      } catch (error) {
+        this.log('Final PostNL status refresh failed', old.barcode || old.id, error.message);
       }
     }
   }

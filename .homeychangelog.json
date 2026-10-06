@@ -139,5 +139,9 @@
   "1.1.12": {
     "en": "Removed automatic Homey Timeline notifications for PostNL reconnects. My Post now opens immediately from the latest live snapshot and refreshes from PostNL in the background, avoiding the long loading screen while remaining live-only.",
     "nl": "Automatische Homey Timeline-meldingen voor het opnieuw verbinden van PostNL zijn verwijderd. Mijn Post opent nu direct vanuit de laatste live snapshot en ververst PostNL op de achtergrond, waardoor het lange laadscherm verdwijnt terwijl de widget live-only blijft."
+  },
+  "1.1.13": {
+    "en": "Flow system overhaul: all device triggers are centralized in the PostNL driver, trigger delivery is logged and guarded against duplicates, synchronization failures and expired logins behave consistently, and parcel status changes now use the full official PostNL Track & Trace status/timeline instead of only Announced / In transit / Delivered. Flow tokens now include the exact official status, status code, latest event and update time.",
+    "nl": "Flow-systeem volledig herzien: alle apparaat-triggers worden centraal door de PostNL-driver afgehandeld, trigger-uitvoering wordt gelogd en tegen dubbelen beschermd, synchronisatiefouten en verlopen aanmeldingen werken consistent, en pakketstatuswijzigingen gebruiken nu de volledige officiële PostNL Track & Trace-status/tijdlijn in plaats van alleen Aangemeld / Onderweg / Bezorgd. Flow-tokens bevatten nu ook de exacte officiële status, statuscode, laatste gebeurtenis en het tijdstip van de statusupdate."
   }
 }
