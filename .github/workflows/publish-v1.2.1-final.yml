@@ -12,9 +12,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Apply exact v1.2.1 payload
+      - name: Reconstruct and apply exact v1.2.1 payload
         run: |
-          cat .sync/part00 .sync/part01 .sync/part02 .sync/part03 .sync/part04 .sync/part05 .sync/part06 .sync/part07 .sync/part08 .sync/part09 .sync/part10 > /tmp/patch.b64
+          git show 39e61f819d7d19b772bbb5845c291c676610ead0:.sync/part00 > /tmp/patch.b64
+          git show d51a1899f87f0b95508bc64638f5e2906ab03df3:.sync/part01 >> /tmp/patch.b64
+          git show 88a2d9c757f41ea11421828e0f403e54e9c8d497:.sync/part02 >> /tmp/patch.b64
+          git show d99293d04d4079aaa939d6045fadf7407162552a:.sync/part03 >> /tmp/patch.b64
+          git show c4ca6300be51f20309978e9fbf2a6a5a0cc13e4f:.sync/part04 >> /tmp/patch.b64
+          cat .sync/part05 .sync/part06 .sync/part07 .sync/part08 .sync/part09 .sync/part10 >> /tmp/patch.b64
           base64 -d /tmp/patch.b64 > /tmp/patch.tgz
           tar -xzf /tmp/patch.tgz -C .
           rm -rf widgets/reis-pakket
