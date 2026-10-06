@@ -1145,6 +1145,14 @@
         "postnl_next_delivery",
         "postnl_delivery_date",
         "postnl_delivery_window",
+        "postnl_package_status",
+        "postnl_package_sender",
+        "postnl_package_receiver",
+        "postnl_package_tracking",
+        "postnl_package_event",
+        "postnl_package_status_time",
+        "postnl_package_delivered",
+        "postnl_package_shipment_type",
         "postnl_status",
         "postnl_last_update"
       ],
@@ -1230,8 +1238,8 @@
     "postnl_status": {
       "type": "string",
       "title": {
-        "en": "Status",
-        "nl": "Status"
+        "en": "Connection status",
+        "nl": "Verbindingsstatus"
       },
       "getable": true,
       "setable": false,
@@ -1259,6 +1267,95 @@
       "setable": false,
       "insights": false,
       "icon": "/assets/calendar.svg"
+    },
+    "postnl_package_status": {
+      "type": "string",
+      "title": {
+        "en": "Parcel status",
+        "nl": "Pakketstatus"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/package.svg"
+    },
+    "postnl_package_sender": {
+      "type": "string",
+      "title": {
+        "en": "Parcel sender",
+        "nl": "Afzender pakket"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/package.svg"
+    },
+    "postnl_package_receiver": {
+      "type": "string",
+      "title": {
+        "en": "Parcel receiver",
+        "nl": "Ontvanger pakket"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/package.svg"
+    },
+    "postnl_package_tracking": {
+      "type": "string",
+      "title": {
+        "en": "Tracking number",
+        "nl": "Trackingnummer"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/package.svg"
+    },
+    "postnl_package_event": {
+      "type": "string",
+      "title": {
+        "en": "Latest parcel event",
+        "nl": "Laatste pakketgebeurtenis"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/package.svg"
+    },
+    "postnl_package_status_time": {
+      "type": "string",
+      "title": {
+        "en": "Parcel status time",
+        "nl": "Tijdstip pakketstatus"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/clock.svg"
+    },
+    "postnl_package_delivered": {
+      "type": "boolean",
+      "title": {
+        "en": "Parcel delivered",
+        "nl": "Pakket bezorgd"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "insights": true,
+      "icon": "/assets/package.svg"
+    },
+    "postnl_package_shipment_type": {
+      "type": "string",
+      "title": {
+        "en": "Shipment type",
+        "nl": "Type zending"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/package.svg"
     }
   }
 }

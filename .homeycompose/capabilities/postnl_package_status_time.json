@@ -1,11 +1,11 @@
 {
   "type": "string",
   "title": {
-    "en": "Connection status",
-    "nl": "Verbindingsstatus"
+    "en": "Parcel status time",
+    "nl": "Tijdstip pakketstatus"
   },
   "getable": true,
   "setable": false,
   "insights": false,
-  "icon": "/assets/status.svg"
+  "icon": "/assets/clock.svg"
 }

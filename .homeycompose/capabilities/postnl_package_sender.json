@@ -1,11 +1,11 @@
 {
   "type": "string",
   "title": {
-    "en": "Connection status",
-    "nl": "Verbindingsstatus"
+    "en": "Parcel sender",
+    "nl": "Afzender pakket"
   },
   "getable": true,
   "setable": false,
   "insights": false,
-  "icon": "/assets/status.svg"
+  "icon": "/assets/package.svg"
 }
