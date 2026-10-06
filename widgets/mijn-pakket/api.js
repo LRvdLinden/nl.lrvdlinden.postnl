@@ -2,6 +2,7 @@
 const localizePackageStatus = require('../../lib/status-i18n');
 function timestamp(item){const value=item?.deliveryDate||item?.deliveryWindowFrom||item?.updatedAt||item?.createdAt||0;const time=Date.parse(value);return Number.isFinite(time)?time:0;}
 function str(...values){for(const value of values){if(value===0)return'0';if(value!==undefined&&value!==null&&String(value).trim())return String(value).trim();}return'';}
+function shipmentType(homey,value){const raw=str(value);if(!raw)return'';return homey.i18n.getLanguage()==='nl'&&/^parcel$/i.test(raw)?'Pakket':raw;}
 function getDevice(homey,id){const device=homey.drivers.getDriver('account').getDevices().find(d=>d.getId()===id);if(!device)throw new Error('PostNL device not found.');return device;}
 module.exports={
  async getData({homey,query}){
@@ -10,7 +11,7 @@ module.exports={
    carrier:'PostNL',carrierLogo:'icon.svg',account:device.getName(),tracking:str(parcel.barcode,parcel.id),status:str(parcel.statusRaw,parcel.latestStatusEvent,parcel.status,localizePackageStatus(homey,parcel.status||'')),
    sender:str(parcel.sender,parcel.title,parcel.sourceDisplayName),receiver:str(parcel.receiver),deliveryDate:str(parcel.deliveryDate,parcel.deliveryWindowFrom),deliveryWindow:str(parcel.deliveryWindow),deliveryWindowFrom:str(parcel.deliveryWindowFrom),deliveryWindowTo:str(parcel.deliveryWindowTo),
    updatedAt:str(parcel.updatedAt,parcel.createdAt),createdAt:str(parcel.createdAt),eventAt:str(parcel.lastEventAt,parcel.eventAt,parcel.delivered?parcel.deliveryDate:'',parcel.updatedAt,parcel.createdAt),lastEventAt:str(parcel.lastEventAt,parcel.eventAt,parcel.delivered?parcel.deliveryDate:'',parcel.updatedAt,parcel.createdAt),lastEvent:str(parcel.latestStatusEvent,parcel.lastEvent,parcel.statusRaw,parcel.status),
-   shipmentType:str(parcel.shipmentType),deliveryAddressType:str(parcel.deliveryAddressType),direction:str(parcel.direction),sharedFrom:str(parcel.sourceDisplayName),sourceAccountId:str(parcel.sourceAccountId),title:str(parcel.title),detailsUrl:str(parcel.detailsUrl),weight:str(parcel.weight),dimensions:str(parcel.dimensions),statusEvents:Array.isArray(parcel.statusEvents)?parcel.statusEvents:[],delivered:Boolean(parcel.delivered)
+   shipmentType:shipmentType(homey,parcel.shipmentType),deliveryAddressType:str(parcel.deliveryAddressType),direction:str(parcel.direction),sharedFrom:str(parcel.sourceDisplayName),sourceAccountId:str(parcel.sourceAccountId),title:str(parcel.title),detailsUrl:str(parcel.detailsUrl),weight:str(parcel.weight),dimensions:str(parcel.dimensions),statusEvents:Array.isArray(parcel.statusEvents)?parcel.statusEvents:[],delivered:Boolean(parcel.delivered)
   })).sort((a,b)=>timestamp(b)-timestamp(a)).slice(0,5);
   return{authenticated:data.authenticated,packages,locale:homey.i18n.getLanguage(),timeZone:homey.clock.getTimezone()};
  },

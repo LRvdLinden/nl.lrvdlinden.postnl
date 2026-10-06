@@ -151,5 +151,9 @@
   "1.2.1": {
     "en": "Added Parcel Journey widget with the official PostNL tracking timeline for the current active parcel. When no parcel is underway, including after delivery, the widget shows an empty state. Added parcel weight and dimensions to device capabilities, global Flow tokens, package Flow trigger tokens and My Packages details whenever PostNL provides these values.",
     "nl": "Nieuwe widget Reis van je pakket met de officiële PostNL Track & Trace-tijdlijn van het huidige actieve pakket. Wanneer er geen pakket onderweg is, dus ook na bezorging, toont de widget een lege status. Gewicht en afmetingen zijn toegevoegd aan apparaat-capabilities, globale Flow-tokens, pakket-Flowtokens en Mijn Pakketten-details wanneer PostNL deze gegevens beschikbaar stelt."
+  },
+  "1.2.2": {
+    "en": "Fixed My Packages widget crash caused by the shipment type formatter not being defined.",
+    "nl": "Crash in de Mijn Pakketten-widget opgelost waarbij de formatter voor het zendingstype niet was gedefinieerd."
   }
 }
