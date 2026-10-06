@@ -28,7 +28,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -f tools/noop.tmp tools/ping.tmp tools/check.tmp 2>/dev/null || true
           git add -A
           git rm tools/apply121.py .github/workflows/apply121.yml
           git commit -m "PostNL v1.2.1: parcel journey, weight and dimensions"
+          git pull --rebase origin main
           git push
