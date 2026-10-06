@@ -1,0 +1,34 @@
+name: Apply PostNL v1.2.1
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply121.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply update
+        run: python tools/apply121.py
+      - name: Validate
+        run: |
+          node --check lib/postnl-api.js
+          node --check drivers/account/device.js
+          node --check drivers/account/driver.js
+          node --check widgets/pakket-reis/api.js
+          python -m json.tool app.json >/dev/null
+          python -m json.tool drivers/account/driver.flow.compose.json >/dev/null
+          python -m json.tool drivers/account/driver.compose.json >/dev/null
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git rm tools/apply121.py .github/workflows/apply121.yml
+          git commit -m "PostNL v1.2.1: parcel journey, weight and dimensions"
+          git push
