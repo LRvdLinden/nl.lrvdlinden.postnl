@@ -1,0 +1,43 @@
+name: Publish PostNL v1.2.2
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/publish122.yml']
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate version
+        run: |
+          test "$(node -p "require('./package.json').version")" = "1.2.2"
+          node --check widgets/mijn-pakket/api.js
+      - name: Build release ZIP
+        run: |
+          mkdir -p /tmp/release/PostNL-for-Homey-v1.2.2
+          rsync -a ./ /tmp/release/PostNL-for-Homey-v1.2.2/ \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude 'tools'
+          cd /tmp/release
+          zip -qr "$GITHUB_WORKSPACE/PostNL-for-Homey-v1.2.2.zip" PostNL-for-Homey-v1.2.2
+      - name: Remove temporary workflow from main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/publish122.yml
+          git commit -m "Remove temporary v1.2.2 publish workflow"
+          git push
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create v1.2.2 \
+            PostNL-for-Homey-v1.2.2.zip \
+            --target main \
+            --title "PostNL v1.2.2" \
+            --notes "Fixes the My Packages widget crash caused by an undefined shipmentType helper. Parcel shipment types continue to display as Pakket in Dutch."
