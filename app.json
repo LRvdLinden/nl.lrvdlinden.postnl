@@ -139,6 +139,32 @@
       },
       "id": "pakket-reis",
       "settings": []
+    },
+    "reis-pakket": {
+      "name": {
+        "en": "Parcel Journey",
+        "nl": "Reis van je pakket"
+      },
+      "height": 420,
+      "api": {
+        "getData": {
+          "method": "GET",
+          "path": "/"
+        },
+        "sync": {
+          "method": "POST",
+          "path": "/sync"
+        }
+      },
+      "devices": {
+        "type": "app",
+        "singular": true,
+        "filter": {
+          "capabilities": "postnl_package_count"
+        }
+      },
+      "id": "reis-pakket",
+      "settings": []
     }
   },
   "homeyCommunityTopicId": 159674,
@@ -549,6 +575,22 @@
               "en": "Package dimensions",
               "nl": "Afmetingen pakket"
             }
+          },
+          {
+            "name": "weight",
+            "type": "string",
+            "title": {
+              "en": "Weight",
+              "nl": "Gewicht"
+            }
+          },
+          {
+            "name": "dimensions",
+            "type": "string",
+            "title": {
+              "en": "Dimensions",
+              "nl": "Afmetingen"
+            }
           }
         ]
       },
@@ -821,6 +863,22 @@
             "title": {
               "en": "Package dimensions",
               "nl": "Afmetingen pakket"
+            }
+          },
+          {
+            "name": "weight",
+            "type": "string",
+            "title": {
+              "en": "Weight",
+              "nl": "Gewicht"
+            }
+          },
+          {
+            "name": "dimensions",
+            "type": "string",
+            "title": {
+              "en": "Dimensions",
+              "nl": "Afmetingen"
             }
           }
         ]
@@ -1101,6 +1159,22 @@
             "title": {
               "en": "Package dimensions",
               "nl": "Afmetingen pakket"
+            }
+          },
+          {
+            "name": "weight",
+            "type": "string",
+            "title": {
+              "en": "Weight",
+              "nl": "Gewicht"
+            }
+          },
+          {
+            "name": "dimensions",
+            "type": "string",
+            "title": {
+              "en": "Dimensions",
+              "nl": "Afmetingen"
             }
           }
         ]

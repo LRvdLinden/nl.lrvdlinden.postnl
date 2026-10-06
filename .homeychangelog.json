@@ -149,7 +149,7 @@
     "nl": "Capabiliteit-iconen bijgewerkt: het bezorgvenster gebruikt nu het delivery-icoon en alle pakketgerelateerde capabilities gebruiken nu het nieuwe package-icoon uit de bijlage."
   },
   "1.2.1": {
-    "en": "Added Parcel Journey widget with the full official PostNL tracking timeline. When no parcel is underway, the widget shows an empty state. Package weight and dimensions are now extracted from PostNL tracking data when available and exposed in the journey widget, device capabilities, global Flow tokens and package trigger tokens.",
-    "nl": "Nieuwe Reis van je pakket-widget met de volledige officiële PostNL Track & Trace-tijdlijn. Wanneer er geen pakket onderweg is, toont de widget een lege status. Gewicht en afmetingen worden waar beschikbaar uit de PostNL-trackingdata gehaald en zijn beschikbaar in de reis-widget, apparaat-capabilities, globale Flow-tokens en pakket-trigger-tokens."
+    "en": "Added Parcel Journey widget with the official PostNL tracking timeline for the current active parcel. When no parcel is underway, including after delivery, the widget shows an empty state. Added parcel weight and dimensions to device capabilities, global Flow tokens, package Flow trigger tokens and My Packages details whenever PostNL provides these values.",
+    "nl": "Nieuwe widget Reis van je pakket met de officiële PostNL Track & Trace-tijdlijn van het huidige actieve pakket. Wanneer er geen pakket onderweg is, dus ook na bezorging, toont de widget een lege status. Gewicht en afmetingen zijn toegevoegd aan apparaat-capabilities, globale Flow-tokens, pakket-Flowtokens en Mijn Pakketten-details wanneer PostNL deze gegevens beschikbaar stelt."
   }
 }

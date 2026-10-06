@@ -339,6 +339,22 @@
             "en": "Package dimensions",
             "nl": "Afmetingen pakket"
           }
+        },
+        {
+          "name": "weight",
+          "type": "string",
+          "title": {
+            "en": "Weight",
+            "nl": "Gewicht"
+          }
+        },
+        {
+          "name": "dimensions",
+          "type": "string",
+          "title": {
+            "en": "Dimensions",
+            "nl": "Afmetingen"
+          }
         }
       ]
     },
@@ -605,6 +621,22 @@
           "title": {
             "en": "Package dimensions",
             "nl": "Afmetingen pakket"
+          }
+        },
+        {
+          "name": "weight",
+          "type": "string",
+          "title": {
+            "en": "Weight",
+            "nl": "Gewicht"
+          }
+        },
+        {
+          "name": "dimensions",
+          "type": "string",
+          "title": {
+            "en": "Dimensions",
+            "nl": "Afmetingen"
           }
         }
       ]
@@ -879,6 +911,22 @@
           "title": {
             "en": "Package dimensions",
             "nl": "Afmetingen pakket"
+          }
+        },
+        {
+          "name": "weight",
+          "type": "string",
+          "title": {
+            "en": "Weight",
+            "nl": "Gewicht"
+          }
+        },
+        {
+          "name": "dimensions",
+          "type": "string",
+          "title": {
+            "en": "Dimensions",
+            "nl": "Afmetingen"
           }
         }
       ]

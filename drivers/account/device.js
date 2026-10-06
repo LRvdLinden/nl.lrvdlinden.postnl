@@ -178,6 +178,7 @@ class PostNLDevice extends Homey.Device {
       delivery_address_type: parcel.deliveryAddressType || '', direction: parcel.direction || '',
       created_at: parcel.createdAt ? this.api.formatDateTime(parcel.createdAt) : '',
       delivered: Boolean(parcel.delivered), shared_from: parcel.sourceDisplayName || '', source_account_id: parcel.sourceAccountId || '',
+      weight: String(parcel.weight || ''), dimensions: String(parcel.dimensions || ''),
       package_status_text: status, package_window_text: deliveryWindow, package_delivery_date: deliveryDate,
       package_sender: sender, package_tracking: tracking, package_weight: String(parcel.packageWeight || ''),
       package_dimensions: String(parcel.packageDimensions || ''), package_image_available: Boolean(packageImage),
