@@ -1,0 +1,21 @@
+name: Restore PostNL v1.2.2 main
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/restore122.yml']
+permissions:
+  contents: write
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Restore exact v1.2.2 tree
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git read-tree --reset -u 5479123e66126778545bed92416a0ba45b2fc9b3
+          git commit -m "Restore PostNL v1.2.2 release state"
+          git push
