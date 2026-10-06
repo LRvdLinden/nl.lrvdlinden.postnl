@@ -1,0 +1,192 @@
+k & Trace so the final
++    // official status (for example "Bezorgd") is not missed by the Flow trigger.
++    const currentIds = new Set((current.packages || []).map(item => item.id));
++    for (const old of oldPackages.values()) {
++      if (currentIds.has(old.id) || old.delivered || !old.detailsUrl) continue;
++      try {
++        const refreshed = await this.api.refreshPackageTracking(old);
++        if (this._packageStatusFingerprint(old) !== this._packageStatusFingerprint(refreshed)) {
++          const tokens = await this._packageTokens(refreshed);
++          await this.triggerPackageStatusChanged({
++            ...tokens,
++            old_status: String(old.statusRaw || localizePackageStatus(this.homey, old.status) || old.status || ''),
++          });
++        }
++      } catch (error) {
++        this.log('Final PostNL status refresh failed', old.barcode || old.id, error.message);
+       }
+     }
+   }
+diff --git a/drivers/account/driver.flow.compose.json b/drivers/account/driver.flow.compose.json
+index d6687bc..571b623 100644
+--- a/drivers/account/driver.flow.compose.json
++++ b/drivers/account/driver.flow.compose.json
+@@ -132,6 +132,38 @@
+             "nl": "Status"
+           }
+         },
++        {
++          "name": "status_raw",
++          "type": "string",
++          "title": {
++            "en": "Official PostNL status",
++            "nl": "Officiële PostNL-status"
++          }
++        },
++        {
++          "name": "status_code",
++          "type": "string",
++          "title": {
++            "en": "Official PostNL status code",
++            "nl": "Officiële PostNL-statuscode"
++          }
++        },
++        {
++          "name": "status_event",
++          "type": "string",
++          "title": {
++            "en": "Latest PostNL event",
++            "nl": "Laatste PostNL-gebeurtenis"
++          }
++        },
++        {
++          "name": "status_event_time",
++          "type": "string",
++          "title": {
++            "en": "Latest status update",
++            "nl": "Laatste statusupdate"
++          }
++        },
+         {
+           "name": "delivery_date",
+           "type": "string",
+@@ -351,6 +383,38 @@
+             "nl": "Status"
+           }
+         },
++        {
++          "name": "status_raw",
++          "type": "string",
++          "title": {
++            "en": "Official PostNL status",
++            "nl": "Officiële PostNL-status"
++          }
++        },
++        {
++          "name": "status_code",
++          "type": "string",
++          "title": {
++            "en": "Official PostNL status code",
++            "nl": "Officiële PostNL-statuscode"
++          }
++        },
++        {
++          "name": "status_event",
++          "type": "string",
++          "title": {
++            "en": "Latest PostNL event",
++            "nl": "Laatste PostNL-gebeurtenis"
++          }
++        },
++        {
++          "name": "status_event_time",
++          "type": "string",
++          "title": {
++            "en": "Latest status update",
++            "nl": "Laatste statusupdate"
++          }
++        },
+         {
+           "name": "delivery_date",
+           "type": "string",
+@@ -577,6 +641,38 @@
+             "nl": "Status"
+           }
+         },
++        {
++          "name": "status_raw",
++          "type": "string",
++          "title": {
++            "en": "Official PostNL status",
++            "nl": "Officiële PostNL-status"
++          }
++        },
++        {
++          "name": "status_code",
++          "type": "string",
++          "title": {
++            "en": "Official PostNL status code",
++            "nl": "Officiële PostNL-statuscode"
++          }
++        },
++        {
++          "name": "status_event",
++          "type": "string",
++          "title": {
++            "en": "Latest PostNL event",
++            "nl": "Laatste PostNL-gebeurtenis"
++          }
++        },
++        {
++          "name": "status_event_time",
++          "type": "string",
++          "title": {
++            "en": "Latest status update",
++            "nl": "Laatste statusupdate"
++          }
++        },
+         {
+           "name": "delivery_date",
+           "type": "string",
+diff --git a/drivers/account/driver.js b/drivers/account/driver.js
+index ceda839..c1e4e82 100644
+--- a/drivers/account/driver.js
++++ b/drivers/account/driver.js
+@@ -6,6 +6,17 @@ const PostNLApi = require('../../lib/postnl-api');
+ 
+ class PostNLDriver extends Homey.Driver {
+   async onInit() {
++    // Device Flow triggers are initialized once on the Driver. Devices delegate
++    // triggering here so Homey's card lifecycle is consistent for every account.
++    this._flowTriggers = {
++      new_mail: this.homey.flow.getDeviceTriggerCard('new_mail'),
++      new_package: this.homey.flow.getDeviceTriggerCard('new_package'),
++      delivery_window_known: this.homey.flow.getDeviceTriggerCard('delivery_window_known'),
++      package_status_changed: this.homey.flow.getDeviceTriggerCard('package_status_changed'),
++      sync_failed: this.homey.flow.getDeviceTriggerCard('sync_failed'),
++      login_expired: this.homey.flow.getDeviceTriggerCard('login_expired'),
++    };
++
+     this.homey.flow.getConditionCard('mail_expected').registerRunListener(async ({ device }) => Boolean(device && device.isMailExpected()));
+     this.homey.flow.getConditionCard('packages_underway').registerRunListener(async ({ device }) => Boolean(device && device.hasPackagesUnderway()));
+     this.homey.flow.getConditionCard('delivery_window_known').registerRunListener(async ({ device }) => Boolean(device && device.hasDeliveryWindowKnown()));
+@@ -16,6 +27,23 @@ class PostNLDriver extends Homey.Driver {
+     });
+   }
+ 
++  async triggerDeviceFlow(cardId, device, tokens = {}, state = {}) {
++    const card = this._flowTriggers?.[cardId];
++    if (!card) throw new Error(`PostNL Flow trigger not initialized: ${cardId}`);
++    const safeTokens = Object.fromEntries(Object.entries(tokens || {}).filter(([, value]) => value !== undefined));
++    try {
++      this.log('[FlowTrigger]', cardId, device?.getName?.() || device?.getId?.() || 'unknown', JSON.stringify(
++        Object.fromEntries(Object.entries(safeTokens).filter(([key]) => !['image', 'package_image'].includes(key)))
++      ));
++      await card.trigger(device, safeTokens, state || {});
++      this.log('[FlowTrigger]', cardId, 'accepted');
++      return true;
++    } catch (error) {
++      this.error('[FlowTrigger]', cardId, 'failed', error);
++      throw error;
++    }
++  }
++
+   _createMemoryStorage() {
+     const values = new Map();
+     return { get: key => values.get(key), set: async (key, value) => values.set(key, value), unset: async key => values.delete(key) };
+@@ -35,7 +63,7 @@ class PostNLDriver extends Homey.Driver {
+       store: {
+         username,
+         auth: api.exportAuth(),
+-        snapshot: { letters: [], packages: [], updatedAt: null, account: profile || null, mailApiStatus: 'unknown', mailApiError: null },
++        snapshot: { letters: [], liveLetters: [], pack
