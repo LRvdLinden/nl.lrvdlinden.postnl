@@ -19,6 +19,8 @@
     "postnl_package_status_time",
     "postnl_package_delivered",
     "postnl_package_shipment_type",
+    "postnl_package_dimensions",
+    "postnl_package_weight",
     "postnl_status",
     "postnl_last_update"
   ],

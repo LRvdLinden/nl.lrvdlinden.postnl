@@ -41,7 +41,7 @@ class PostNLDevice extends Homey.Device {
   hasAccountCredentials() { return this.api?.hasCredentials() || Boolean(this.getStoreValue('auth')); }
 
   async _ensureCapabilities() {
-    for (const capability of ['postnl_delivery_date', 'postnl_delivery_window', 'postnl_package_status', 'postnl_package_sender', 'postnl_package_receiver', 'postnl_package_tracking', 'postnl_package_event', 'postnl_package_status_time', 'postnl_package_delivered', 'postnl_package_shipment_type']) {
+    for (const capability of ['postnl_delivery_date', 'postnl_delivery_window', 'postnl_package_status', 'postnl_package_sender', 'postnl_package_receiver', 'postnl_package_tracking', 'postnl_package_event', 'postnl_package_status_time', 'postnl_package_delivered', 'postnl_package_shipment_type', 'postnl_package_weight', 'postnl_package_dimensions']) {
       if (!this.hasCapability(capability)) await this.addCapability(capability);
     }
   }
@@ -179,7 +179,8 @@ class PostNLDevice extends Homey.Device {
       created_at: parcel.createdAt ? this.api.formatDateTime(parcel.createdAt) : '',
       delivered: Boolean(parcel.delivered), shared_from: parcel.sourceDisplayName || '', source_account_id: parcel.sourceAccountId || '',
       package_status_text: status, package_window_text: deliveryWindow, package_delivery_date: deliveryDate,
-      package_sender: sender, package_tracking: tracking, package_image_available: Boolean(packageImage),
+      package_sender: sender, package_tracking: tracking, package_weight: String(parcel.packageWeight || ''),
+      package_dimensions: String(parcel.packageDimensions || ''), package_image_available: Boolean(packageImage),
     };
     if (packageImage) tokens.package_image = packageImage;
     return tokens;

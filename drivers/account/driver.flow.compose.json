@@ -323,6 +323,22 @@
             "en": "My delivery image",
             "nl": "Afbeelding Mijn Bezorging"
           }
+        },
+        {
+          "name": "package_weight",
+          "type": "string",
+          "title": {
+            "en": "Package weight",
+            "nl": "Gewicht pakket"
+          }
+        },
+        {
+          "name": "package_dimensions",
+          "type": "string",
+          "title": {
+            "en": "Package dimensions",
+            "nl": "Afmetingen pakket"
+          }
         }
       ]
     },
@@ -573,6 +589,22 @@
           "title": {
             "en": "My delivery image",
             "nl": "Afbeelding Mijn Bezorging"
+          }
+        },
+        {
+          "name": "package_weight",
+          "type": "string",
+          "title": {
+            "en": "Package weight",
+            "nl": "Gewicht pakket"
+          }
+        },
+        {
+          "name": "package_dimensions",
+          "type": "string",
+          "title": {
+            "en": "Package dimensions",
+            "nl": "Afmetingen pakket"
           }
         }
       ]
@@ -831,6 +863,22 @@
           "title": {
             "en": "My delivery image",
             "nl": "Afbeelding Mijn Bezorging"
+          }
+        },
+        {
+          "name": "package_weight",
+          "type": "string",
+          "title": {
+            "en": "Package weight",
+            "nl": "Gewicht pakket"
+          }
+        },
+        {
+          "name": "package_dimensions",
+          "type": "string",
+          "title": {
+            "en": "Package dimensions",
+            "nl": "Afmetingen pakket"
           }
         }
       ]

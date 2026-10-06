@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "nl.lrvdlinden.postnl",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "compatibility": ">=12.3.0",
   "sdk": 3,
   "platforms": [
@@ -113,6 +113,32 @@
           "capabilities": "postnl_package_count"
         }
       }
+    },
+    "pakket-reis": {
+      "name": {
+        "en": "Parcel Journey",
+        "nl": "Reis van je pakket"
+      },
+      "height": 420,
+      "api": {
+        "getData": {
+          "method": "GET",
+          "path": "/"
+        },
+        "sync": {
+          "method": "POST",
+          "path": "/sync"
+        }
+      },
+      "devices": {
+        "type": "app",
+        "singular": true,
+        "filter": {
+          "capabilities": "postnl_package_count"
+        }
+      },
+      "id": "pakket-reis",
+      "settings": []
     }
   },
   "homeyCommunityTopicId": 159674,
@@ -507,6 +533,22 @@
               "en": "My delivery image",
               "nl": "Afbeelding Mijn Bezorging"
             }
+          },
+          {
+            "name": "package_weight",
+            "type": "string",
+            "title": {
+              "en": "Package weight",
+              "nl": "Gewicht pakket"
+            }
+          },
+          {
+            "name": "package_dimensions",
+            "type": "string",
+            "title": {
+              "en": "Package dimensions",
+              "nl": "Afmetingen pakket"
+            }
           }
         ]
       },
@@ -763,6 +805,22 @@
             "title": {
               "en": "My delivery image",
               "nl": "Afbeelding Mijn Bezorging"
+            }
+          },
+          {
+            "name": "package_weight",
+            "type": "string",
+            "title": {
+              "en": "Package weight",
+              "nl": "Gewicht pakket"
+            }
+          },
+          {
+            "name": "package_dimensions",
+            "type": "string",
+            "title": {
+              "en": "Package dimensions",
+              "nl": "Afmetingen pakket"
             }
           }
         ]
@@ -1028,6 +1086,22 @@
               "en": "My delivery image",
               "nl": "Afbeelding Mijn Bezorging"
             }
+          },
+          {
+            "name": "package_weight",
+            "type": "string",
+            "title": {
+              "en": "Package weight",
+              "nl": "Gewicht pakket"
+            }
+          },
+          {
+            "name": "package_dimensions",
+            "type": "string",
+            "title": {
+              "en": "Package dimensions",
+              "nl": "Afmetingen pakket"
+            }
           }
         ]
       },
@@ -1153,6 +1227,8 @@
         "postnl_package_status_time",
         "postnl_package_delivered",
         "postnl_package_shipment_type",
+        "postnl_package_dimensions",
+        "postnl_package_weight",
         "postnl_status",
         "postnl_last_update"
       ],
@@ -1351,6 +1427,28 @@
       "title": {
         "en": "Shipment type",
         "nl": "Type zending"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/package.svg"
+    },
+    "postnl_package_weight": {
+      "type": "string",
+      "title": {
+        "en": "Parcel weight",
+        "nl": "Gewicht pakket"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/package.svg"
+    },
+    "postnl_package_dimensions": {
+      "type": "string",
+      "title": {
+        "en": "Parcel dimensions",
+        "nl": "Afmetingen pakket"
       },
       "getable": true,
       "setable": false,

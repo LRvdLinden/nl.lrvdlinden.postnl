@@ -64,6 +64,8 @@ class PostNLDriver extends Homey.Driver {
       package_shared_from: { type: 'string', en: 'Parcel shared from', nl: 'Pakket gedeeld via' },
       package_source_account_id: { type: 'string', en: 'Parcel source account ID', nl: 'Bronaccount-ID pakket' },
       package_tracking: { type: 'string', en: 'Parcel tracking number', nl: 'Trackingnummer pakket' },
+      package_weight: { type: 'string', en: 'Parcel weight', nl: 'Gewicht pakket' },
+      package_dimensions: { type: 'string', en: 'Parcel dimensions', nl: 'Afmetingen pakket' },
       next_delivery: { type: 'string', en: 'Next delivery', nl: 'Volgende bezorging' },
       connection_status: { type: 'string', en: 'PostNL connection status', nl: 'PostNL-verbindingsstatus' },
       last_update: { type: 'string', en: 'Last PostNL update', nl: 'Laatste PostNL-update' },
