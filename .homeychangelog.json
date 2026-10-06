@@ -143,5 +143,9 @@
   "1.1.13": {
     "en": "Flow system overhaul: Flow cards remain device-specific while current PostNL values are also exposed as global Flow tokens. Official PostNL Track & Trace statuses are preserved. Device capabilities now include connection status, parcel status, sender, receiver, tracking number, latest event, status time, delivered state and shipment type. Long parcel statuses wrap in My Packages and are fully shown in the My Delivery camera/image token.",
     "nl": "Flow-systeem volledig herzien: Flow-kaarten blijven apparaatgebonden, terwijl actuele PostNL-waarden ook als globale Flow-tokens beschikbaar zijn. Officiële PostNL Track & Trace-statussen blijven volledig behouden. De apparaat-capabilities bevatten nu verbindingsstatus, pakketstatus, afzender, ontvanger, trackingnummer, laatste gebeurtenis, tijdstip status, bezorgd-status en type zending. Lange pakketstatussen lopen door in Mijn Pakketten en worden volledig weergegeven in de Mijn Bezorging camera/image-token."
+  },
+  "1.2.0": {
+    "en": "Updated capability icons: the delivery window now uses the delivery icon and all parcel-related capabilities now use the new package icon provided.",
+    "nl": "Capabiliteit-iconen bijgewerkt: het bezorgvenster gebruikt nu het delivery-icoon en alle pakketgerelateerde capabilities gebruiken nu het nieuwe package-icoon uit de bijlage."
   }
 }
