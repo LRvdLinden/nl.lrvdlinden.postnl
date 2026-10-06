@@ -1,0 +1,40 @@
+name: Sync PostNL v1.1.13 Flow fixes
+
+on:
+  push:
+    paths:
+      - '.sync113/**'
+      - '.github/workflows/sync113.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply v1.1.13 patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .sync113/part*.patch > /tmp/v113.patch
+          git apply --check /tmp/v113.patch
+          git apply /tmp/v113.patch
+          node --check drivers/account/driver.js
+          node --check drivers/account/device.js
+          node --check lib/postnl-api.js
+          node -e "JSON.parse(require('fs').readFileSync('drivers/account/driver.flow.compose.json')); JSON.parse(require('fs').readFileSync('app.json'));"
+          rm -rf .sync113
+          rm -f .github/workflows/sync113.yml
+      - name: Commit v1.1.13
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Release PostNL v1.1.13 Flow and official status fixes"
+          git push
