@@ -1,0 +1,95 @@
+name: Rebuild PostNL v1.2.1 clean
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/rebuild121-clean.yml']
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Restore exact v1.2.0 baseline and add only requested v1.2.1 features
+        run: |
+          git checkout d0fb143d2af090429123944bc7bd916b370bcd2c -- .
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          base=Path('.')
+          for rel in ['package.json','package-lock.json','.homeycompose/app.json','app.json']:
+              p=base/rel; d=json.loads(p.read_text()); d['version']='1.2.1'
+              if rel=='package-lock.json' and d.get('packages',{}).get(''): d['packages']['']['version']='1.2.1'
+              p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
+
+          p=base/'lib/postnl-api.js'; s=p.read_text()
+          needle='  async _fetchTrackingDetail(parcel) {\n'
+          helper='''  _trackingPhysicalProperties(colli = {}) {\n    const candidates = [colli?.physicalProperties, colli?.parcelCharacteristics, colli?.characteristics, colli?.measurements, colli?.dimensions, colli?.size, colli].filter(value => value && typeof value === 'object');\n    const first = (...values) => values.find(value => value !== undefined && value !== null && String(value).trim() !== '');\n    let weight = first(colli.weightInGrams, colli.weightInGram, colli.weightGram, colli.weight, colli.parcelWeight);\n    let length, width, height, unit;\n    for (const obj of candidates) {\n      if (weight == null) weight = first(obj.weightInGrams, obj.weightInGram, obj.weightGram, obj.weight, obj.mass);\n      length = length ?? first(obj.length, obj.depth, obj.longSide, obj.l); width = width ?? first(obj.width, obj.shortSide, obj.w); height = height ?? first(obj.height, obj.h); unit = unit ?? first(obj.unit, obj.dimensionUnit, obj.dimensionsUnit, obj.unitOfMeasure);\n      if ((!length || !width || !height) && Array.isArray(obj.dimensions) && obj.dimensions.length >= 3) [length, width, height] = obj.dimensions;\n    }\n    const number = value => { if (typeof value === 'number') return Number.isFinite(value) ? value : null; const m = String(value ?? '').replace(',', '.').match(/-?\\d+(?:\\.\\d+)?/); return m ? Number(m[0]) : null; };\n    const formatNumber = value => { const n = number(value); if (n == null) return ''; return Number.isInteger(n) ? String(n) : String(Math.round(n * 10) / 10).replace('.', ','); };\n    let weightText = ''; if (weight != null) { if (typeof weight === 'string' && /(?:g|kg)\\b/i.test(weight)) weightText = String(weight).trim(); else { const n = number(weight); if (n != null) weightText = `${formatNumber(n)} gram`; } }\n    const l=formatNumber(length), w=formatNumber(width), h=formatNumber(height); const unitText=String(unit||'cm').toLowerCase().replace('centimeter','cm').replace('centimetre','cm');\n    return { weight: weightText, dimensions: l && w && h ? `${l} x ${w} x ${h} ${unitText}` : '' };\n  }\n\n'''
+          s=s.replace(needle,helper+needle)
+          s=s.replace("    const deliveredByStatus = /\\b(bezorgd|afgehaald)\\b/i.test(officialStatus);\n", "    const deliveredByStatus = /\\b(bezorgd|afgehaald)\\b/i.test(officialStatus);\n    const physical = this._trackingPhysicalProperties(colli);\n",1)
+          s=s.replace("      deliveryWindow: this.formatWindow(etaFrom, etaTo) || parcel.deliveryWindow || '',\n", "      deliveryWindow: this.formatWindow(etaFrom, etaTo) || parcel.deliveryWindow || '',\n      weight: physical.weight || parcel.weight || '',\n      dimensions: physical.dimensions || parcel.dimensions || '',\n",1)
+          s=s.replace("      statusFingerprint: [fallbackStatus, item.deliveredTimeStamp || item.creationDateTime || ''].join('|'),\n", "      statusFingerprint: [fallbackStatus, item.deliveredTimeStamp || item.creationDateTime || ''].join('|'),\n      weight: '',\n      dimensions: '',\n",1)
+          p.write_text(s)
+
+          p=base/'drivers/account/driver.js'; s=p.read_text()
+          s=s.replace("      package_tracking: { type: 'string', en: 'Parcel tracking number', nl: 'Trackingnummer pakket' },\n", "      package_tracking: { type: 'string', en: 'Parcel tracking number', nl: 'Trackingnummer pakket' },\n      package_weight: { type: 'string', en: 'Parcel weight', nl: 'Gewicht pakket' },\n      package_dimensions: { type: 'string', en: 'Parcel dimensions', nl: 'Afmetingen pakket' },\n",1)
+          s=s.replace("      package_tracking: tokens.package_tracking || tokens.barcode || tokens.id, old_status: tokens.old_status,\n", "      package_tracking: tokens.package_tracking || tokens.barcode || tokens.id, package_weight: tokens.weight, package_dimensions: tokens.dimensions, old_status: tokens.old_status,\n",1)
+          p.write_text(s)
+
+          p=base/'drivers/account/device.js'; s=p.read_text()
+          s=s.replace("'postnl_package_delivered', 'postnl_package_shipment_type']", "'postnl_package_delivered', 'postnl_package_shipment_type', 'postnl_package_weight', 'postnl_package_dimensions']",1)
+          s=s.replace("      delivered: Boolean(parcel.delivered), shared_from: parcel.sourceDisplayName || '', source_account_id: parcel.sourceAccountId || '',\n", "      delivered: Boolean(parcel.delivered), shared_from: parcel.sourceDisplayName || '', source_account_id: parcel.sourceAccountId || '',\n      weight: String(parcel.weight || ''), dimensions: String(parcel.dimensions || ''),\n",1)
+          s=s.replace("      package_source_account_id: activePackage.sourceAccountId || '', package_tracking: activePackage.barcode || activePackage.id || '',\n", "      package_source_account_id: activePackage.sourceAccountId || '', package_tracking: activePackage.barcode || activePackage.id || '',\n      package_weight: activePackage.weight || '', package_dimensions: activePackage.dimensions || '',\n",1)
+          s=s.replace("      postnl_package_shipment_type: nextPackage?.shipmentType || '—',\n", "      postnl_package_shipment_type: nextPackage?.shipmentType || '—',\n      postnl_package_weight: nextPackage?.weight || '—',\n      postnl_package_dimensions: nextPackage?.dimensions || '—',\n",1)
+          p.write_text(s)
+
+          caps={'postnl_package_weight':{'type':'string','title':{'en':'Parcel weight','nl':'Gewicht pakket'},'getable':True,'setable':False,'insights':False,'icon':'/assets/package.svg'},'postnl_package_dimensions':{'type':'string','title':{'en':'Parcel dimensions','nl':'Afmetingen pakket'},'getable':True,'setable':False,'insights':False,'icon':'/assets/package.svg'}}
+          capdir=base/'.homeycompose/capabilities'; capdir.mkdir(parents=True,exist_ok=True)
+          for cid,obj in caps.items(): (capdir/f'{cid}.json').write_text(json.dumps(obj,ensure_ascii=False,indent=2)+'\n')
+          p=base/'drivers/account/driver.compose.json'; d=json.loads(p.read_text())
+          for cid in ['postnl_package_weight','postnl_package_dimensions']:
+              if cid not in d['capabilities']: d['capabilities'].insert(d['capabilities'].index('postnl_status'),cid)
+          p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
+          p=base/'drivers/account/driver.flow.compose.json'; flow=json.loads(p.read_text())
+          for trig in flow.get('triggers',[]):
+              if trig.get('id') in {'new_package','delivery_window_known','package_status_changed'}:
+                  names={t.get('name') for t in trig.get('tokens',[])}
+                  if 'weight' not in names: trig['tokens'].append({'name':'weight','type':'string','title':{'en':'Weight','nl':'Gewicht'}})
+                  if 'dimensions' not in names: trig['tokens'].append({'name':'dimensions','type':'string','title':{'en':'Dimensions','nl':'Afmetingen'}})
+          p.write_text(json.dumps(flow,ensure_ascii=False,indent=2)+'\n')
+
+          w=base/'widgets/pakket-reis'; (w/'public').mkdir(parents=True,exist_ok=True)
+          compose={'name':{'en':'Parcel Journey','nl':'Reis van je pakket'},'height':420,'api':{'getData':{'method':'GET','path':'/'},'sync':{'method':'POST','path':'/sync'}},'devices':{'type':'app','singular':True,'filter':{'capabilities':'postnl_package_count'}}}
+          (w/'widget.compose.json').write_text(json.dumps(compose,ensure_ascii=False,indent=2)+'\n')
+          (w/'public/icon.svg').write_text((base/'assets/icon.svg').read_text()); (w/'public/package.svg').write_text((base/'assets/package.svg').read_text())
+          (w/'api.js').write_text("""'use strict';\nfunction ids(v){if(Array.isArray(v))return v.map(String).filter(Boolean);if(typeof v!=='string')return[];return v.split(',').map(x=>x.trim()).filter(Boolean)}\nfunction str(...v){for(const x of v){if(x===0)return'0';if(x!==undefined&&x!==null&&String(x).trim())return String(x).trim()}return''}\nfunction device(homey,raw){const wanted=ids(raw),list=homey.drivers.getDriver('account').getDevices(),id=wanted[0]||String(raw||'').trim(),d=list.find(x=>x.getId()===id);if(!d)throw new Error('Select a PostNL device for this widget.');return d}\nfunction rank(p){const raw=p?.deliveryWindowFrom||p?.deliveryDate||p?.createdAt||'';const t=Date.parse(raw);return Number.isFinite(t)?t:Number.MAX_SAFE_INTEGER}\nmodule.exports={async getData({homey,query}){const d=device(homey,query?.deviceIds||query?.deviceId),data=d.getWidgetData(),active=(data.packages||[]).filter(p=>!p.delivered).sort((a,b)=>rank(a)-rank(b))[0]||null;const capabilityStatus=d.hasCapability('postnl_package_status')?d.getCapabilityValue('postnl_package_status'):'';return{authenticated:data.authenticated,locale:homey.i18n.getLanguage(),timeZone:homey.clock.getTimezone(),updatedAt:data.updatedAt||null,parcel:active?{id:str(active.id),sender:str(active.sender,active.title,active.sourceDisplayName,'PostNL'),tracking:str(active.barcode,active.id),status:str(capabilityStatus,active.statusRaw,active.latestStatusEvent,active.status),weight:str(active.weight),dimensions:str(active.dimensions),events:Array.isArray(active.statusEvents)?active.statusEvents:[]}:null}},async sync({homey,body}){const d=device(homey,body?.deviceIds||body?.deviceId);await d.sync({reason:'widget',force:true});return{ok:true}}};\n""")
+          (w/'public/index.html').write_text('''<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>:root{color-scheme:light dark;--bg:#f4f4f5;--header:#fafafa;--border:#dedee0;--primary:#20202a;--secondary:#676773;--orange:#e75a1c}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent;color:var(--primary);font:14px/1.35 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.card{height:100%;display:grid;grid-template-rows:52px minmax(0,1fr);border-radius:17px;overflow:hidden;background:var(--bg)}header{display:flex;align-items:center;padding:0 18px;background:var(--header);border-bottom:1px solid var(--border)}header img{width:36px;height:36px}h1{margin:0 0 0 auto;font-size:18px;color:#77767b}.body{overflow:auto;padding:15px 16px 18px}.summary{padding:0 2px 13px;border-bottom:1px solid var(--border)}.sender{font-size:16px;font-weight:800}.tracking,.physical{color:var(--secondary);font-size:11px;margin-top:3px}.status{display:flex;align-items:flex-start;gap:9px;font-size:18px;font-weight:850;margin-top:8px;overflow-wrap:anywhere}.current{flex:none;width:27px;height:27px;border-radius:50%;display:grid;place-items:center;background:var(--orange);color:#fff;font-size:14px}.journey{position:relative;padding:13px 0 0 42px}.journey:before{content:"";position:absolute;left:17px;top:24px;bottom:18px;width:3px;background:var(--orange)}.event{position:relative;padding:0 0 18px;min-height:55px}.dot{position:absolute;left:-39px;top:2px;width:27px;height:27px;border-radius:50%;display:grid;place-items:center;background:var(--orange);color:#fff;font-size:17px;font-weight:900}.when{font-weight:750;font-size:12px}.msg{font-size:14px;margin-top:4px;overflow-wrap:anywhere}.location{font-size:11px;color:var(--secondary);margin-top:3px}.state{height:100%;display:grid;place-items:center;text-align:center;padding:25px;color:#77767b}.state img{width:105px;margin-bottom:14px}.state strong{display:block;font-size:17px;color:var(--primary)}@media(prefers-color-scheme:dark){:root{--bg:#202022;--header:#29292b;--border:#454548;--primary:#f4f4f5;--secondary:#c4c3c7}}</style></head><body><main class="card"><header><img src="icon.svg"><h1 id="title">Reis van je pakket</h1></header><section id="body" class="body"><div class="state">Pakketreis ophalen…</div></section></main><script>const t={nl:{title:'Reis van je pakket',loading:'Pakketreis ophalen…',empty:'Er is momenteel geen pakketreis.',tracking:'Tracking',weight:'Gewicht',dimensions:'Afmetingen',login:'Koppel eerst je PostNL-account.'},en:{title:'Parcel Journey',loading:'Loading parcel journey…',empty:'There is currently no parcel journey.',tracking:'Tracking',weight:'Weight',dimensions:'Dimensions',login:'Connect your PostNL account first.'}};function L(v){return String(v||'en').split('-')[0]==='nl'?'nl':'en'}function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}function fmt(v,locale,tz){const d=new Date(v);if(Number.isNaN(d.getTime()))return String(v||'');try{return new Intl.DateTimeFormat(locale==='nl'?'nl-NL':'en-GB',{timeZone:tz,day:'2-digit',month:'long',hour:'2-digit',minute:'2-digit'}).format(d)}catch(_){return String(v||'')}}function norm(v){return String(v||'').trim().toLocaleLowerCase()}function onHomeyReady(Homey){const body=document.getElementById('body'),title=document.getElementById('title');let id=(Homey.getDeviceIds()||[])[0]||'',busy=false;async function get(){return Homey.api('GET','/?deviceId='+encodeURIComponent(id),{})}function render(x){const lang=L(x.locale),w=t[lang];title.textContent=w.title;if(!x.authenticated){body.innerHTML='<div class="state">'+esc(w.login)+'</div>';return}const p=x.parcel;if(!p){body.innerHTML='<div class="state"><div><img src="package.svg"><strong>'+esc(w.empty)+'</strong></div></div>';return}const physical=[p.weight?w.weight+': '+p.weight:'',p.dimensions?w.dimensions+': '+p.dimensions:''].filter(Boolean).join(' · ');let events=[...(p.events||[])].sort((a,b)=>(Date.parse(b.timestamp||'')||0)-(Date.parse(a.timestamp||'')||0));const current=norm(p.status);if(events.length&&current&&norm(events[0].description)===current)events=events.slice(1);let h='<section class="summary"><div class="sender">'+esc(p.sender||'PostNL')+'</div><div class="tracking">'+esc(w.tracking)+': '+esc(p.tracking)+'</div>'+(physical?'<div class="physical">'+esc(physical)+'</div>':'')+'<div class="status"><span class="current">▣</span><span>'+esc(p.status||'')+'</span></div></section>';h+='<div class="journey">'+events.map(e=>'<article class="event"><span class="dot">✓</span><div class="when">'+esc(fmt(e.timestamp,x.locale,x.timeZone))+'</div><div class="msg">'+esc(e.description||'')+'</div>'+(e.location?'<div class="location">'+esc(e.location)+'</div>':'')+'</article>').join('')+'</div>';body.innerHTML=h}async function load(show=true){if(show)body.innerHTML='<div class="state">'+t.nl.loading+'</div>';try{render(await get())}catch(e){body.innerHTML='<div class="state">'+esc(e.message||e)+'</div>'}}async function refresh(){if(busy)return;busy=true;try{await Homey.api('POST','/sync',{deviceId:id});await load(false)}catch(_){}finally{busy=false}}(async()=>{await load(true);Homey.ready();refresh();setInterval(refresh,60000)})()}</script></body></html>''')
+
+          p=base/'app.json'; app=json.loads(p.read_text()); app.setdefault('capabilities',{}).update(caps)
+          for drv in app.get('drivers',[]):
+              if drv.get('id')=='account':
+                  for cid in ['postnl_package_weight','postnl_package_dimensions']:
+                      if cid not in drv['capabilities']: drv['capabilities'].insert(drv['capabilities'].index('postnl_status'),cid)
+          for trig in app.get('flow',{}).get('triggers',[]):
+              if trig.get('id') in {'new_package','delivery_window_known','package_status_changed'}:
+                  names={t.get('name') for t in trig.get('tokens',[])}
+                  if 'weight' not in names: trig['tokens'].append({'name':'weight','type':'string','title':{'en':'Weight','nl':'Gewicht'}})
+                  if 'dimensions' not in names: trig['tokens'].append({'name':'dimensions','type':'string','title':{'en':'Dimensions','nl':'Afmetingen'}})
+          app.setdefault('widgets',{})['pakket-reis']={**compose,'id':'pakket-reis','settings':[]}; p.write_text(json.dumps(app,ensure_ascii=False,indent=2)+'\n')
+          p=base/'.homeychangelog.json'; ch=json.loads(p.read_text()); ch['1.2.1']={'en':'Added the Parcel Journey widget plus parcel weight and dimensions as capabilities and Flow tokens when provided by PostNL.','nl':'Nieuwe Reis van je pakket-widget toegevoegd, plus pakketgewicht en afmetingen als capabilities en Flow-tokens wanneer PostNL deze gegevens beschikbaar stelt.'}; p.write_text(json.dumps(ch,ensure_ascii=False,indent=2)+'\n')
+          PY
+      - name: Validate and commit
+        run: |
+          node --check drivers/account/driver.js
+          node --check drivers/account/device.js
+          node --check lib/postnl-api.js
+          node --check widgets/pakket-reis/api.js
+          test "$(find widgets -maxdepth 1 -mindepth 1 -type d -name '*reis*' | wc -l)" -eq 1
+          python -m json.tool app.json >/dev/null
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "PostNL v1.2.1: add only parcel journey, weight and dimensions"
+          git push
