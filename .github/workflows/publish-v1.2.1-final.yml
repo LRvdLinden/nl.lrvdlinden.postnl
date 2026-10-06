@@ -1,0 +1,76 @@
+name: Publish PostNL v1.2.1 final
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/publish-v1.2.1-final.yml']
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply exact v1.2.1 payload
+        run: |
+          cat .sync/part00 .sync/part01 .sync/part02 .sync/part03 .sync/part04 .sync/part05 .sync/part06 .sync/part07 .sync/part08 .sync/part09 .sync/part10 > /tmp/patch.b64
+          base64 -d /tmp/patch.b64 > /tmp/patch.tgz
+          tar -xzf /tmp/patch.tgz -C .
+          rm -rf widgets/reis-pakket
+          mkdir -p widgets/pakket-details/public widgets/pakket-reis/public
+          curl -L --fail --silent --show-error https://raw.githubusercontent.com/LRvdLinden/nl.lrvdlinden.myparcel/main/widgets/postnl-pakketdetails/public/postnl-van.gif -o widgets/pakket-details/public/postnl-van.gif
+          cp widgets/pakket-details/public/van-1.svg widgets/pakket-reis/public/van-1.svg
+          rm -rf .sync .github
+      - name: Validate exact source
+        run: |
+          test "$(git hash-object app.json)" = "69e5d027e0c2fccd33eb745dd806d6560e2e8880"
+          test "$(git hash-object .homeychangelog.json)" = "ecff4488028e7289c9064547e6369d8e61b3c44a"
+          test "$(git hash-object drivers/account/device.js)" = "e561c69c8e87683a6c12db26a61f3dc085e858f3"
+          test "$(git hash-object drivers/account/driver.js)" = "0a70aa71cae78b7e1cc454b2f1f2b14af3377026"
+          test "$(git hash-object lib/postnl-api.js)" = "ea4123e2a48e0caa76990a53fd024ec4aae6072d"
+          test "$(git hash-object widgets/pakket-details/api.js)" = "9d1621928a1dcf0c49e653f893e3c496a953f16c"
+          test "$(git hash-object widgets/pakket-details/public/postnl-van.gif)" = "a1ebab5adeb9669e81fba5eeb01a6db2faa9d571"
+          test "$(git hash-object widgets/pakket-reis/api.js)" = "0b829daf88b9d3d99187f3a38d8db599e56a458e"
+          test "$(git hash-object widgets/pakket-reis/public/index.html)" = "c2d5bf37dc6e5e96810367ee43d9423c09a7a702"
+          test "$(git hash-object widgets/pakket-reis/widget.compose.json)" = "51e5fdcac5a6084ac6b3456de4cc4d8bd963a3e3"
+          test "$(git hash-object package.json)" = "00285bf61cab629add1fa3ba9c0545b24ddec168"
+          test "$(find . -type f -not -path './.git/*' | wc -l | tr -d ' ')" = "92"
+          node --check app.js
+          node --check drivers/account/device.js
+          node --check drivers/account/driver.js
+          node --check lib/postnl-api.js
+          node --check widgets/pakket-reis/api.js
+          python -m json.tool app.json >/dev/null
+          python -m json.tool package.json >/dev/null
+      - name: Build release ZIP
+        run: |
+          mkdir -p /tmp/release/PostNL-for-Homey-v1.2.1
+          rsync -a --exclude='.git' ./ /tmp/release/PostNL-for-Homey-v1.2.1/
+          cd /tmp/release
+          zip -qr /tmp/PostNL-for-Homey-v1.2.1.zip PostNL-for-Homey-v1.2.1
+          unzip -t /tmp/PostNL-for-Homey-v1.2.1.zip >/dev/null
+      - name: Commit exact repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "PostNL v1.2.1 final"
+          git push origin main
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete v1.2.1 --yes --cleanup-tag >/dev/null 2>&1 || true
+          cat > /tmp/release-notes.md <<'EOF'
+          ## New
+
+          📍 **Parcel Journey widget**: Added a new **Reis van je pakket / Parcel Journey** widget showing the official PostNL Track & Trace timeline with the current status and previous journey events.
+
+          ⚖️ **Parcel weight**: Added **Weight** as a device capability and Flow token when PostNL provides this information.
+
+          📐 **Parcel dimensions**: Added **Dimensions** as a device capability and Flow token when PostNL provides this information.
+
+          🏷️ **Additional parcel Flow tokens**: Package-related Flow triggers now also include **weight** and **dimensions** values.
+          EOF
+          gh release create v1.2.1 /tmp/PostNL-for-Homey-v1.2.1.zip --target main --title "📦 v1.2.1" --notes-file /tmp/release-notes.md
