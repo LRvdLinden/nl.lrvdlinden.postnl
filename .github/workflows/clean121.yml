@@ -1,0 +1,57 @@
+name: Clean PostNL v1.2.1 scope
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/clean121.yml']
+permissions:
+  contents: write
+jobs:
+  clean:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Keep only requested v1.2.1 changes
+        run: |
+          git checkout d0fb143d2af090429123944bc7bd916b370bcd2c -- widgets/mijn-pakket/api.js widgets/mijn-pakket/public/index.html
+          rm -rf widgets/reis-pakket
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path('app.json'); d=json.loads(p.read_text()); d.get('widgets',{}).pop('reis-pakket',None); p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
+          p=Path('.homeychangelog.json'); d=json.loads(p.read_text()); d['1.2.1']={'en':'Added the Parcel Journey widget plus parcel weight and dimensions as capabilities and Flow tokens when provided by PostNL.','nl':'Nieuwe Reis van je pakket-widget toegevoegd, plus pakketgewicht en afmetingen als capabilities en Flow-tokens wanneer PostNL deze gegevens beschikbaar stelt.'}; p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
+          PY
+          cat > widgets/pakket-reis/api.js <<'EOF'
+          'use strict';
+          function ids(v){if(Array.isArray(v))return v.map(String).filter(Boolean);if(typeof v!=='string')return[];return v.split(',').map(x=>x.trim()).filter(Boolean)}
+          function str(...v){for(const x of v){if(x===0)return'0';if(x!==undefined&&x!==null&&String(x).trim())return String(x).trim()}return''}
+          function device(homey,raw){const wanted=ids(raw),list=homey.drivers.getDriver('account').getDevices(),id=wanted[0]||String(raw||'').trim(),d=list.find(x=>x.getId()===id);if(!d)throw new Error('Select a PostNL device for this widget.');return d}
+          function rank(p){const raw=p?.deliveryWindowFrom||p?.deliveryDate||p?.createdAt||'';const t=Date.parse(raw);return Number.isFinite(t)?t:Number.MAX_SAFE_INTEGER}
+          module.exports={async getData({homey,query}){const d=device(homey,query?.deviceIds||query?.deviceId),data=d.getWidgetData(),active=(data.packages||[]).filter(p=>!p.delivered).sort((a,b)=>rank(a)-rank(b))[0]||null;const capabilityStatus=d.hasCapability('postnl_package_status')?d.getCapabilityValue('postnl_package_status'):'';return{authenticated:data.authenticated,locale:homey.i18n.getLanguage(),timeZone:homey.clock.getTimezone(),updatedAt:data.updatedAt||null,parcel:active?{id:str(active.id),sender:str(active.sender,active.title,active.sourceDisplayName,'PostNL'),tracking:str(active.barcode,active.id),status:str(capabilityStatus,active.statusRaw,active.latestStatusEvent,active.status),weight:str(active.weight),dimensions:str(active.dimensions),events:Array.isArray(active.statusEvents)?active.statusEvents:[]}:null}},async sync({homey,body}){const d=device(homey,body?.deviceIds||body?.deviceId);await d.sync({reason:'widget',force:true});return{ok:true}}};
+          EOF
+          sed -i 's/^          //' widgets/pakket-reis/api.js
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('widgets/pakket-reis/public/index.html')
+          s=p.read_text()
+          s=s.replace('.status{font-size:18px;font-weight:850;margin-top:8px;overflow-wrap:anywhere}', '.status{display:flex;align-items:flex-start;gap:9px;font-size:18px;font-weight:850;margin-top:8px;overflow-wrap:anywhere}.current{flex:none;width:27px;height:27px;border-radius:50%;display:grid;place-items:center;background:var(--orange);color:#fff;font-size:14px}')
+          old="let h='<section class=\"summary\"><div class=\"sender\">'+esc(p.sender||'PostNL')+'</div><div class=\"tracking\">'+esc(w.tracking)+': '+esc(p.tracking)+'</div>'+(physical?'<div class=\"physical\">'+esc(physical)+'</div>':'')+'<div class=\"status\">'+esc(p.status||'')+'</div></section>';if(!events.length)events.push({description:p.status,timestamp:x.updatedAt||''});h+='<div class=\"journey\">'+events.map((e,i)=>'<article class=\"event\"><span class=\"dot\">'+(i?'✓':'▣')+'</span><div class=\"when\">'+esc(fmt(e.timestamp,x.locale,x.timeZone))+'</div><div class=\"msg\">'+esc(e.description||'')+'</div>'+(e.location?'<div class=\"location\">'+esc(e.location)+'</div>':'')+'</article>').join('')+'</div>';"
+          new="const current=String(p.status||'').trim().toLocaleLowerCase();if(events.length&&current&&String(events[0].description||'').trim().toLocaleLowerCase()===current)events=events.slice(1);let h='<section class=\"summary\"><div class=\"sender\">'+esc(p.sender||'PostNL')+'</div><div class=\"tracking\">'+esc(w.tracking)+': '+esc(p.tracking)+'</div>'+(physical?'<div class=\"physical\">'+esc(physical)+'</div>':'')+'<div class=\"status\"><span class=\"current\">▣</span><span>'+esc(p.status||'')+'</span></div></section>';h+='<div class=\"journey\">'+events.map(e=>'<article class=\"event\"><span class=\"dot\">✓</span><div class=\"when\">'+esc(fmt(e.timestamp,x.locale,x.timeZone))+'</div><div class=\"msg\">'+esc(e.description||'')+'</div>'+(e.location?'<div class=\"location\">'+esc(e.location)+'</div>':'')+'</article>').join('')+'</div>';"
+          if old not in s: raise SystemExit('expected journey render block not found')
+          p.write_text(s.replace(old,new))
+          PY
+      - name: Validate and commit
+        run: |
+          node --check widgets/pakket-reis/api.js
+          node --check drivers/account/driver.js
+          node --check drivers/account/device.js
+          node --check lib/postnl-api.js
+          test "$(find widgets -maxdepth 1 -mindepth 1 -type d -name '*reis*' | wc -l)" -eq 1
+          python -m json.tool app.json >/dev/null
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/rebuild121-clean.yml .github/workflows/clean121.yml
+          git add -A
+          git commit -m "PostNL v1.2.1: keep only journey widget, weight and dimensions"
+          git push
