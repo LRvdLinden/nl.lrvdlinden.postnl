@@ -1,0 +1,36 @@
+name: Publish PostNL v1.2.2 release
+on:
+  push:
+    branches: ['publish-v1.2.2-temp']
+    paths: ['.github/workflows/publish122-temp.yml']
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate release source
+        run: |
+          test "$(node -p "require('./package.json').version")" = "1.2.2"
+          node --check widgets/mijn-pakket/api.js
+      - name: Build release ZIP
+        run: |
+          mkdir -p /tmp/release/PostNL-for-Homey-v1.2.2
+          rsync -a ./ /tmp/release/PostNL-for-Homey-v1.2.2/ \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude 'tools'
+          cd /tmp/release
+          zip -qr "$GITHUB_WORKSPACE/PostNL-for-Homey-v1.2.2.zip" PostNL-for-Homey-v1.2.2
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create v1.2.2 \
+            PostNL-for-Homey-v1.2.2.zip \
+            --target 386a04728de3585d46116851ff735346f7afe15f \
+            --title "PostNL v1.2.2" \
+            --notes "Fixed the My Packages widget crash caused by an undefined shipment type formatter."
