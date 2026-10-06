@@ -1,0 +1,272 @@
+name: Sync PostNL v1.1.13 global tokens and capabilities
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/sync113-globalcaps.yml']
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply v1.1.13 updates
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+
+          # --- Driver: global Flow tokens, Flow cards remain device-specific ---
+          p=Path('drivers/account/driver.js')
+          s=p.read_text()
+          if 'this._globalTokens = new Map();' not in s:
+              s=s.replace("    this.homey.flow.getActionCard('sync_now').registerRunListener(async ({ device }) => {\n      if (!device) throw new Error('No PostNL device selected.');\n      await device.sync({ reason: 'flow', force: true });\n      return true;\n    });\n", "    this.homey.flow.getActionCard('sync_now').registerRunListener(async ({ device }) => {\n      if (!device) throw new Error('No PostNL device selected.');\n      await device.sync({ reason: 'flow', force: true });\n      return true;\n    });\n\n    // App/global Flow tokens; the Flow cards themselves stay device-specific.\n    this._globalTokens = new Map();\n")
+
+          if '_globalTokenDefinitions()' not in s:
+              marker='  async triggerDeviceFlow(cardId, device, tokens = {}, state = {}) {'
+              block=r'''  _globalTokenDefinitions() {
+    return {
+      mail_expected: { type: 'boolean', en: 'Mail expected', nl: 'Post verwacht' },
+      mail_count: { type: 'number', en: 'Mail items', nl: 'Poststukken' },
+      mail_id: { type: 'string', en: 'Latest mail item ID', nl: 'Laatste poststuk-ID' },
+      mail_title: { type: 'string', en: 'Latest mail item', nl: 'Laatste poststuk' },
+      mail_sender: { type: 'string', en: 'Latest mail sender', nl: 'Afzender laatste poststuk' },
+      mail_date: { type: 'string', en: 'Latest mail delivery date', nl: 'Bezorgdatum laatste poststuk' },
+      mail_unread: { type: 'boolean', en: 'Latest mail unread', nl: 'Laatste poststuk ongelezen' },
+      package_count: { type: 'number', en: 'Parcels underway', nl: 'Pakketten onderweg' },
+      package_id: { type: 'string', en: 'Current parcel ID', nl: 'Huidig pakket-ID' },
+      package_sender: { type: 'string', en: 'Parcel sender', nl: 'Afzender pakket' },
+      package_receiver: { type: 'string', en: 'Parcel receiver', nl: 'Ontvanger pakket' },
+      package_title: { type: 'string', en: 'Parcel', nl: 'Pakket' },
+      package_barcode: { type: 'string', en: 'Parcel barcode', nl: 'Barcode pakket' },
+      package_status: { type: 'string', en: 'Parcel status', nl: 'Pakketstatus' },
+      package_status_raw: { type: 'string', en: 'Official PostNL status', nl: 'Officiële PostNL-status' },
+      package_status_code: { type: 'string', en: 'Official PostNL status code', nl: 'Officiële PostNL-statuscode' },
+      package_status_event: { type: 'string', en: 'Latest PostNL status event', nl: 'Laatste PostNL-statusgebeurtenis' },
+      package_status_event_time: { type: 'string', en: 'Latest PostNL status time', nl: 'Tijdstip laatste PostNL-status' },
+      package_delivery_date: { type: 'string', en: 'Parcel delivery date', nl: 'Bezorgdatum pakket' },
+      package_delivery_window: { type: 'string', en: 'Parcel delivery window', nl: 'Bezorgvenster pakket' },
+      package_delivery_window_from: { type: 'string', en: 'Parcel delivery window from', nl: 'Bezorgvenster pakket vanaf' },
+      package_delivery_window_to: { type: 'string', en: 'Parcel delivery window to', nl: 'Bezorgvenster pakket tot' },
+      package_delivery_window_type: { type: 'string', en: 'Parcel delivery window type', nl: 'Type bezorgvenster pakket' },
+      package_details_url: { type: 'string', en: 'Parcel tracking URL', nl: 'Tracking-URL pakket' },
+      package_shipment_type: { type: 'string', en: 'Parcel shipment type', nl: 'Zendingstype pakket' },
+      package_delivery_address_type: { type: 'string', en: 'Parcel delivery address type', nl: 'Type bezorgadres pakket' },
+      package_direction: { type: 'string', en: 'Parcel direction', nl: 'Richting pakket' },
+      package_created_at: { type: 'string', en: 'Parcel created at', nl: 'Pakket aangemaakt op' },
+      package_delivered: { type: 'boolean', en: 'Parcel delivered', nl: 'Pakket bezorgd' },
+      package_shared_from: { type: 'string', en: 'Parcel shared from', nl: 'Pakket gedeeld via' },
+      package_source_account_id: { type: 'string', en: 'Parcel source account ID', nl: 'Bronaccount-ID pakket' },
+      package_tracking: { type: 'string', en: 'Parcel tracking number', nl: 'Trackingnummer pakket' },
+      next_delivery: { type: 'string', en: 'Next delivery', nl: 'Volgende bezorging' },
+      connection_status: { type: 'string', en: 'PostNL connection status', nl: 'PostNL-verbindingsstatus' },
+      last_update: { type: 'string', en: 'Last PostNL update', nl: 'Laatste PostNL-update' },
+      old_status: { type: 'string', en: 'Previous parcel status', nl: 'Vorige pakketstatus' },
+      last_error: { type: 'string', en: 'Last PostNL error', nl: 'Laatste PostNL-fout' },
+      last_trigger: { type: 'string', en: 'Last PostNL trigger', nl: 'Laatste PostNL-trigger' },
+      last_trigger_time: { type: 'string', en: 'Last PostNL trigger time', nl: 'Tijdstip laatste PostNL-trigger' },
+    };
+  }
+
+  _globalTokenDeviceKey(device) {
+    return crypto.createHash('sha1').update(String(device?.getData?.().id || device?.getId?.() || 'postnl')).digest('hex').slice(0, 10);
+  }
+
+  async ensureGlobalTokens(device) {
+    const deviceKey = this._globalTokenDeviceKey(device);
+    const language = this.homey.i18n.getLanguage() === 'nl' ? 'nl' : 'en';
+    const deviceName = device?.getName?.() || (language === 'nl' ? 'Mijn PostNL' : 'My PostNL');
+    if (!this._globalTokens) this._globalTokens = new Map();
+    if (!this._globalTokens.has(deviceKey)) this._globalTokens.set(deviceKey, new Map());
+    const set = this._globalTokens.get(deviceKey);
+    for (const [name, definition] of Object.entries(this._globalTokenDefinitions())) {
+      if (set.has(name)) continue;
+      const id = `postnl_${deviceKey}_${name}`;
+      const title = `${deviceName} · ${definition[language] || definition.en}`;
+      let token;
+      try {
+        token = await this.homey.flow.createToken(id, { type: definition.type, title });
+      } catch (error) {
+        try { token = await this.homey.flow.getToken(id); }
+        catch (_) { throw error; }
+      }
+      if (token) set.set(name, token);
+    }
+    return set;
+  }
+
+  async updateGlobalTokens(device, values = {}) {
+    const set = await this.ensureGlobalTokens(device);
+    const definitions = this._globalTokenDefinitions();
+    await Promise.all(Object.entries(values).map(async ([name, value]) => {
+      const token = set.get(name);
+      const definition = definitions[name];
+      if (!token || !definition) return;
+      let safeValue = value;
+      if (definition.type === 'boolean') safeValue = Boolean(value);
+      else if (definition.type === 'number') safeValue = Number.isFinite(Number(value)) ? Number(value) : 0;
+      else safeValue = value == null ? '' : String(value);
+      await token.setValue(safeValue).catch(error => this.error('[GlobalToken]', name, error));
+    }));
+  }
+
+  async updateGlobalEventTokens(cardId, device, tokens = {}) {
+    const common = { last_trigger: String(cardId || ''), last_trigger_time: new Date().toISOString() };
+    if (cardId === 'new_mail') Object.assign(common, {
+      mail_count: tokens.count, mail_id: tokens.id, mail_title: tokens.title, mail_sender: tokens.sender,
+      mail_date: tokens.date, mail_unread: tokens.unread,
+    });
+    if (['new_package', 'delivery_window_known', 'package_status_changed'].includes(cardId)) Object.assign(common, {
+      package_id: tokens.id, package_sender: tokens.sender, package_receiver: tokens.receiver,
+      package_title: tokens.title, package_barcode: tokens.barcode, package_status: tokens.status,
+      package_status_raw: tokens.status_raw, package_status_code: tokens.status_code,
+      package_status_event: tokens.status_event, package_status_event_time: tokens.status_event_time,
+      package_delivery_date: tokens.delivery_date, package_delivery_window: tokens.delivery_window,
+      package_delivery_window_from: tokens.delivery_window_from, package_delivery_window_to: tokens.delivery_window_to,
+      package_delivery_window_type: tokens.delivery_window_type, package_details_url: tokens.details_url,
+      package_shipment_type: tokens.shipment_type, package_delivery_address_type: tokens.delivery_address_type,
+      package_direction: tokens.direction, package_created_at: tokens.created_at, package_delivered: tokens.delivered,
+      package_shared_from: tokens.shared_from, package_source_account_id: tokens.source_account_id,
+      package_tracking: tokens.package_tracking || tokens.barcode || tokens.id, old_status: tokens.old_status,
+    });
+    if (cardId === 'sync_failed') common.last_error = tokens.error;
+    await this.updateGlobalTokens(device, common);
+  }
+
+'''
+              s=s.replace(marker,block+marker)
+          if 'await this.updateGlobalEventTokens(cardId, device, safeTokens)' not in s:
+              s=s.replace('      await card.trigger(device, safeTokens, state || {});', "      await this.updateGlobalEventTokens(cardId, device, safeTokens).catch(error => this.error('[GlobalToken] event update failed', error));\n      await card.trigger(device, safeTokens, state || {});")
+          p.write_text(s)
+
+          # --- Device: global snapshot tokens + richer capabilities ---
+          p=Path('drivers/account/device.js')
+          s=p.read_text()
+          s=s.replace("for (const capability of ['postnl_delivery_date', 'postnl_delivery_window']) {", "for (const capability of ['postnl_delivery_date', 'postnl_delivery_window', 'postnl_package_status', 'postnl_package_sender', 'postnl_package_receiver', 'postnl_package_tracking', 'postnl_package_event', 'postnl_package_status_time']) {")
+
+          if '_updateGlobalSnapshotTokens(snapshot = {})' not in s:
+              marker='  _parseLocalOrZonedParts(value) {'
+              block=r'''  async _updateGlobalSnapshotTokens(snapshot = {}) {
+    const letters = Array.isArray(snapshot.liveLetters) ? snapshot.liveLetters : [];
+    const packages = (snapshot.packages || []).filter(item => !item.delivered);
+    const newestMail = [...letters].sort((a, b) => new Date(b.deliveryDate || 0) - new Date(a.deliveryDate || 0))[0] || {};
+    const activePackage = this._selectActivePackage(snapshot) || {};
+    const status = activePackage.id ? (localizePackageStatus(this.homey, activePackage.status) || '') : '';
+    const statusRaw = activePackage.id ? String(activePackage.statusRaw || activePackage.status || status || '') : '';
+    const deliveryDate = activePackage.deliveryDate ? this.api.formatDateDMY(activePackage.deliveryDate) : '';
+    const deliveryWindow = activePackage.deliveryWindow || this.api.formatWindow(activePackage.deliveryWindowFrom, activePackage.deliveryWindowTo) || '';
+    const dates = [...letters.map(item => item.deliveryDate).filter(Boolean), ...packages.map(item => item.deliveryDate).filter(Boolean)]
+      .sort((a, b) => new Date(a) - new Date(b));
+    const connected = this.api.hasCredentials();
+    const connectionStatus = connected
+      ? (this.homey.i18n.getLanguage() === 'nl' ? 'Verbonden' : 'Connected')
+      : (this.homey.i18n.getLanguage() === 'nl' ? 'Niet verbonden' : 'Not connected');
+    await this._flowDriver().updateGlobalTokens(this, {
+      mail_expected: letters.length > 0, mail_count: letters.length, mail_id: newestMail.id || '',
+      mail_title: newestMail.title || '', mail_sender: newestMail.sender || '',
+      mail_date: newestMail.deliveryDate ? this.api.formatDate(newestMail.deliveryDate) : '', mail_unread: Boolean(newestMail.unread),
+      package_count: packages.length, package_id: activePackage.id || '', package_sender: activePackage.sender || activePackage.title || '',
+      package_receiver: activePackage.receiver || '', package_title: activePackage.title || activePackage.sender || activePackage.barcode || '',
+      package_barcode: activePackage.barcode || '', package_status: status, package_status_raw: statusRaw,
+      package_status_code: activePackage.statusCode || '', package_status_event: activePackage.latestStatusEvent || statusRaw,
+      package_status_event_time: activePackage.statusChangedAt ? (this.api.formatDateTime(activePackage.statusChangedAt) || String(activePackage.statusChangedAt)) : '',
+      package_delivery_date: deliveryDate, package_delivery_window: deliveryWindow,
+      package_delivery_window_from: activePackage.deliveryWindowFrom ? this.api.formatTime(activePackage.deliveryWindowFrom) : '',
+      package_delivery_window_to: activePackage.deliveryWindowTo ? this.api.formatTime(activePackage.deliveryWindowTo) : '',
+      package_delivery_window_type: activePackage.deliveryWindowType || '', package_details_url: activePackage.detailsUrl || '',
+      package_shipment_type: activePackage.shipmentType || '', package_delivery_address_type: activePackage.deliveryAddressType || '',
+      package_direction: activePackage.direction || '', package_created_at: activePackage.createdAt ? this.api.formatDateTime(activePackage.createdAt) : '',
+      package_delivered: Boolean(activePackage.delivered), package_shared_from: activePackage.sourceDisplayName || '',
+      package_source_account_id: activePackage.sourceAccountId || '', package_tracking: activePackage.barcode || activePackage.id || '',
+      next_delivery: dates[0] ? this.api.formatDate(dates[0]) : '', connection_status: connectionStatus,
+      last_update: snapshot.updatedAt ? this.api.formatDateTime(snapshot.updatedAt) : '',
+    });
+  }
+
+'''
+              s=s.replace(marker,block+marker)
+
+          if 'const officialPackageStatus = nextPackage' not in s:
+              s=s.replace('    const connected = this.api.hasCredentials();\n    const values = {', "    const connected = this.api.hasCredentials();\n    const officialPackageStatus = nextPackage\n      ? String(nextPackage.statusRaw || nextPackage.latestStatusEvent || localizePackageStatus(this.homey, nextPackage.status) || nextPackage.status || '')\n      : '—';\n    const packageSender = nextPackage ? String(nextPackage.sender || nextPackage.title || nextPackage.sourceDisplayName || '—') : '—';\n    const packageReceiver = nextPackage ? String(nextPackage.receiver || '—') : '—';\n    const packageTracking = nextPackage ? String(nextPackage.barcode || nextPackage.id || '—') : '—';\n    const packageEvent = nextPackage ? String(nextPackage.latestStatusEvent || nextPackage.statusRaw || localizePackageStatus(this.homey, nextPackage.status) || nextPackage.status || '—') : '—';\n    const packageStatusTime = nextPackage?.statusChangedAt ? (this.api.formatDateTime(nextPackage.statusChangedAt) || String(nextPackage.statusChangedAt)) : '—';\n    const values = {")
+
+          start="""      postnl_delivery_date: packageDeliveryDate ? this.api.formatDateDMY(packageDeliveryDate) : '—',
+      postnl_delivery_window: packageDeliveryWindow || '—',
+      postnl_status: !connected ? (this.homey.i18n.getLanguage() === 'nl' ? 'Niet verbonden' : 'Not connected')
+        : error ? `${this.homey.i18n.getLanguage() === 'nl' ? 'Fout' : 'Error'}: ${error.message}`
+          : snapshot.mailApiStatus === 'temporarily_unavailable' ? (this.homey.i18n.getLanguage() === 'nl' ? 'Verbonden • Mijn PostNL niet beschikbaar' : 'Connected • My PostNL unavailable')
+            : snapshot.mailApiStatus === 'available' ? (this.homey.i18n.getLanguage() === 'nl' ? 'Verbonden • Mijn PostNL actief' : 'Connected • My PostNL active')
+              : (snapshot.updatedAt ? (this.homey.i18n.getLanguage() === 'nl' ? 'Verbonden' : 'Connected') : (this.homey.i18n.getLanguage() === 'nl' ? 'Wachten op synchronisatie' : 'Waiting for sync')),
+      postnl_last_update: updated,
+"""
+          repl="""      postnl_delivery_date: packageDeliveryDate ? this.api.formatDateDMY(packageDeliveryDate) : '—',
+      postnl_delivery_window: packageDeliveryWindow || '—',
+      postnl_package_status: officialPackageStatus,
+      postnl_package_sender: packageSender,
+      postnl_package_receiver: packageReceiver,
+      postnl_package_tracking: packageTracking,
+      postnl_package_event: packageEvent,
+      postnl_package_status_time: packageStatusTime,
+      postnl_status: connected
+        ? (this.homey.i18n.getLanguage() === 'nl' ? 'Verbonden' : 'Connected')
+        : (this.homey.i18n.getLanguage() === 'nl' ? 'Niet verbonden' : 'Not connected'),
+      postnl_last_update: updated,
+"""
+          if start in s: s=s.replace(start,repl,1)
+          if "await this._updateGlobalSnapshotTokens(snapshot)" not in s:
+              s=s.replace("    await this._refreshPackageImageBuffer(true, activePackage).catch(this.error);\n\n    if (error)", "    await this._refreshPackageImageBuffer(true, activePackage).catch(this.error);\n    await this._updateGlobalSnapshotTokens(snapshot).catch(error => this.error('[GlobalToken] snapshot update failed', error));\n\n    if (error)")
+          p.write_text(s)
+
+          # --- Capabilities ---
+          capdir=Path('.homeycompose/capabilities'); capdir.mkdir(parents=True,exist_ok=True)
+          caps={
+            'postnl_status': ('Connection status','Verbindingsstatus','/assets/status.svg'),
+            'postnl_package_status': ('Parcel status','Pakketstatus','/assets/package.svg'),
+            'postnl_package_sender': ('Parcel sender','Afzender pakket','/assets/package.svg'),
+            'postnl_package_receiver': ('Parcel receiver','Ontvanger pakket','/assets/package.svg'),
+            'postnl_package_tracking': ('Tracking number','Trackingnummer','/assets/package.svg'),
+            'postnl_package_event': ('Latest parcel event','Laatste pakketgebeurtenis','/assets/package.svg'),
+            'postnl_package_status_time': ('Parcel status time','Tijdstip pakketstatus','/assets/clock.svg'),
+          }
+          for cid,(en,nl,icon) in caps.items():
+              (capdir/f'{cid}.json').write_text(json.dumps({'type':'string','title':{'en':en,'nl':nl},'getable':True,'setable':False,'insights':False,'icon':icon},ensure_ascii=False,indent=2)+'\n')
+
+          wanted=['postnl_mail_expected','postnl_mail_count','postnl_package_count','postnl_next_delivery','postnl_delivery_date','postnl_delivery_window','postnl_package_status','postnl_package_sender','postnl_package_receiver','postnl_package_tracking','postnl_package_event','postnl_package_status_time','postnl_status','postnl_last_update']
+          p=Path('drivers/account/driver.compose.json'); d=json.loads(p.read_text()); d['capabilities']=wanted; p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
+
+          # --- Generated app.json mirrors compose ---
+          p=Path('app.json'); a=json.loads(p.read_text())
+          for cid,(en,nl,icon) in caps.items(): a.setdefault('capabilities',{})[cid]={'type':'string','title':{'en':en,'nl':nl},'getable':True,'setable':False,'insights':False,'icon':icon}
+          for drv in a.get('drivers',[]):
+              if drv.get('id')=='account': drv['capabilities']=wanted
+          p.write_text(json.dumps(a,ensure_ascii=False,indent=2)+'\n')
+
+          # --- My Packages: wrap long official status instead of ellipsis ---
+          p=Path('widgets/mijn-pakket/public/index.html'); s=p.read_text()
+          s=s.replace('grid-template-columns:54px minmax(0,1fr) minmax(70px,120px)','grid-template-columns:54px minmax(0,1fr) minmax(90px,130px)')
+          s=s.replace('.badge{display:block;max-width:120px;padding:5px 8px;border-radius:999px;background:var(--pill);color:var(--pill-text);font-size:10px;font-weight:800;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}', '.badge{display:block;max-width:130px;padding:6px 8px;border-radius:14px;background:var(--pill);color:var(--pill-text);font-size:10px;line-height:1.18;font-weight:800;text-align:center;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;word-break:normal}')
+          p.write_text(s)
+
+          # --- Changelog ---
+          p=Path('.homeychangelog.json'); c=json.loads(p.read_text())
+          c['1.1.13']={
+            'en':'Flow system overhaul: all Flow cards remain device-specific, while current PostNL data and event values are also available as global Flow tokens. Parcel status changes now use the full official PostNL Track & Trace status/timeline. Device capabilities were expanded with parcel status, sender, receiver, tracking number, latest parcel event and status time. Status is now Connection status and shows only Connected / Not connected. My Packages wraps long official PostNL statuses onto multiple lines instead of truncating them.',
+            'nl':'Flow-systeem volledig herzien: alle Flow-kaarten blijven apparaatgebonden, terwijl actuele PostNL-data en gebeurteniswaarden ook als globale Flow-tokens beschikbaar zijn. Pakketstatuswijzigingen gebruiken nu de volledige officiële PostNL Track & Trace-status/tijdlijn. De apparaat-capabilities zijn uitgebreid met pakketstatus, afzender, ontvanger, trackingnummer, laatste pakketgebeurtenis en tijdstip van de status. Status heet nu Verbindingsstatus en toont alleen Verbonden / Niet verbonden. Mijn Pakketten laat lange officiële PostNL-statussen over meerdere regels doorlopen in plaats van ze af te kappen.'
+          }
+          p.write_text(json.dumps(c,ensure_ascii=False,indent=2)+'\n')
+          PY
+      - name: Validate
+        run: |
+          node --check drivers/account/driver.js
+          node --check drivers/account/device.js
+          python -m json.tool app.json >/dev/null
+          python -m json.tool drivers/account/driver.compose.json >/dev/null
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drivers/account/driver.js drivers/account/device.js drivers/account/driver.compose.json widgets/mijn-pakket/public/index.html app.json .homeychangelog.json .homeycompose/capabilities
+          git rm .github/workflows/sync113-globalcaps.yml
+          git commit -m "PostNL v1.1.13: global tokens, package capabilities and wrapped status"
+          git push
