@@ -1,0 +1,145 @@
+ages: [], updatedAt: null, account: profile || null, mailApiStatus: 'unknown', mailApiError: null },
+       },
+     };
+   }
+diff --git a/lib/postnl-api.js b/lib/postnl-api.js
+index a40c28d..3865f8e 100644
+--- a/lib/postnl-api.js
++++ b/lib/postnl-api.js
+@@ -10,6 +10,7 @@ const REDIRECT_URI = 'postnl://login';
+ const SCOPE = 'profile openid email address phone poa-profiles-api';
+ const GRAPHQL_URL = 'https://jouw.postnl.nl/account/api/graphql';
+ const MYMAIL_URL = 'https://jouw.postnl.nl/services/serverdrivenui/api/MyMail/letter';
++const TRACK_API_URL = 'https://jouw.postnl.nl/track-and-trace/api/trackAndTrace';
+ 
+ class PostNLApi {
+   constructor({ homey, log, storage = null }) {
+@@ -367,24 +368,145 @@ class PostNLApi {
+     const data = await this.graphql(query);
+     const incoming = (data.trackedShipments?.receiverShipments || []).map(item => this._mapPackage(item, 'incoming'));
+     const outgoing = (data.trackedShipments?.senderShipments || []).map(item => this._mapPackage(item, 'outgoing'));
+-    return [...incoming, ...outgoing];
++    const packages = [...incoming, ...outgoing];
++
++    // The account GraphQL list only exposes coarse shipment state. Hydrate each
++    // shipment from PostNL's own Track & Trace endpoint so Flow cards receive the
++    // exact status text/timeline shown by the official PostNL experience.
++    const enriched = await Promise.all(packages.map(async parcel => {
++      try { return await this._enrichPackageTracking(parcel); }
++      catch (error) {
++        this.log('PostNL Track & Trace enrichment failed', parcel.barcode || parcel.id, error.message);
++        return parcel;
++      }
++    }));
++    return enriched;
++  }
++
++  _trackingKeyFromDetailsUrl(detailsUrl) {
++    if (!detailsUrl) return '';
++    try {
++      const url = new URL(detailsUrl);
++      const marker = '/track-and-trace/';
++      const pos = url.pathname.indexOf(marker);
++      if (pos < 0) return '';
++      const slug = decodeURIComponent(url.pathname.slice(pos + marker.length).replace(/^\/+|\/+$/g, ''));
++      if (!slug) return '';
++      const parts = slug.split('/').filter(Boolean);
++      if (parts.length >= 3) {
++        const [barcode, postalCode, country] = parts;
++        return `${barcode}-${String(country).toUpperCase()}-${postalCode}`;
++      }
++      return parts[0] || '';
++    } catch (_) { return ''; }
++  }
++
++  _extractTrackingColli(data, barcode = '') {
++    let colli = data && typeof data === 'object' ? data : {};
++    if (Object.prototype.hasOwnProperty.call(colli, 'colli')) colli = colli.colli;
++    if (Array.isArray(colli)) return colli[0] || {};
++    if (colli && typeof colli === 'object' && !colli.statusPhase) {
++      if (barcode && colli[barcode] && typeof colli[barcode] === 'object') return colli[barcode];
++      return Object.values(colli).find(value => value && typeof value === 'object') || {};
++    }
++    return colli && typeof colli === 'object' ? colli : {};
++  }
++
++  _trackingEventTime(event = {}) {
++    return event.observationDate || event.dateTime || event.timestamp || event.timeStamp || '';
++  }
++
++  _trackingEventDescription(event = {}) {
++    return String(event.description || event.message || event.status || event.eventDescription || '').trim();
++  }
++
++  async _fetchTrackingDetail(parcel) {
++    const key = this._trackingKeyFromDetailsUrl(parcel.detailsUrl);
++    if (!key) return null;
++    const url = `${TRACK_API_URL}/${encodeURIComponent(key)}?language=nl`;
++    const response = await fetch(url, {
++      method: 'GET',
++      headers: {
++        Accept: 'application/json',
++        'Accept-Language': 'nl-NL,nl;q=0.9',
++        'User-Agent': 'Mozilla/5.0',
++      },
++    });
++    if (!response.ok) throw this._error(response.status, `PostNL Track & Trace ${response.status}`);
++    return this._json(response);
++  }
++
++  async refreshPackageTracking(parcel) {
++    return this._enrichPackageTracking({ ...(parcel || {}) });
++  }
++
++  async _enrichPackageTracking(parcel) {
++    const detail = await this._fetchTrackingDetail(parcel);
++    if (!detail) return parcel;
++    const colli = this._extractTrackingColli(detail, parcel.barcode);
++    if (!colli || !Object.keys(colli).length) return parcel;
++
++    const phase = colli.statusPhase && typeof colli.statusPhase === 'object' ? colli.statusPhase : {};
++    const events = [...(Array.isArray(colli.events) ? colli.events : []), ...(Array.isArray(colli.observations) ? colli.observations : [])]
++      .map(event => ({
++        description: this._trackingEventDescription(event),
++        timestamp: this._trackingEventTime(event),
++        location: typeof event?.location === 'object' ? String(event.location?.name || '') : String(event?.location || ''),
++      }))
++      .filter(event => event.description || event.timestamp)
++      .sort((a, b) => (Date.parse(a.timestamp || '') || 0) - (Date.parse(b.timestamp || '') || 0));
++    const latestEvent = events[events.length - 1] || null;
++    const officialStatus = String(phase.message || latestEvent?.description || parcel.status || '').trim();
++    const statusCode = String(phase.code || phase.status || phase.phase || phase.id || '').trim();
++    const statusChangedAt = String(colli.lastObservation || latestEvent?.timestamp || '').trim();
++    const latestEventDescription = String(latestEvent?.description || officialStatus || '').trim();
++    const fingerprint = [officialStatus, statusCode, statusChangedAt, latestEventDescription, latestEvent?.timestamp || '', events.length].join('|');
++
++    const eta = colli.eta && typeof colli.eta === 'object' ? colli.eta : {};
++    const etaFrom = eta.start || colli.expectedDeliveryDate || parcel.deliveryWindowFrom || null;
++    const etaTo = eta.end || parcel.deliveryWindowTo || null;
++    const deliveredByStatus = /\b(bezorgd|afgehaald)\b/i.test(officialStatus);
++
++    return {
++      ...parcel,
++      status: officialStatus || parcel.status,
++      statusRaw: officialStatus || parcel.status,
++      statusCode,
++      statusChangedAt,
++      latestStatusEvent: latestEventDescription,
++      statusEvents: events,
++      statusFingerprint: fingerprint,
++      delivered: Boolean(parcel.delivered || deliveredByStatus),
++      deliveryDate: parcel.deliveredTimeStamp || etaFrom || parcel.deliveryDate || null,
++      deliveryWindowFrom: etaFrom || parcel.deliveryWindowFrom || null,
++      deliveryWindowTo: etaTo || parcel.deliveryWindowTo || null,
++      deliveryWindow: this.formatWindow(etaFrom, etaTo) || parcel.deliveryWindow || '',
++    };
+   }
+ 
+   _mapPackage(item, direction) {
+     const sender = String(item.title || item.sourceDisplayName || '').trim();
+     const receiver = String(item.receiverTitle || '').trim();
++    const fallbackStatus = item.delivered
++      ? (this.homey.i18n.getLanguage() === 'nl' ? 'Bezorgd' : 'Delivered')
++      : (item.deliveryWindowFrom || item.deliveryWindowTo
++        ? (this.homey.i18n.getLanguage() === 'nl' ? 'Onderweg' : 'In transit')
++        : (this.homey.i18n.getLanguage
