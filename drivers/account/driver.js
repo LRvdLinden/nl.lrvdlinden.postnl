@@ -13,6 +13,11 @@ class PostNLDriver extends Homey.Driver {
       new_package: this.homey.flow.getDeviceTriggerCard('new_package'),
       delivery_window_known: this.homey.flow.getDeviceTriggerCard('delivery_window_known'),
       package_status_changed: this.homey.flow.getDeviceTriggerCard('package_status_changed'),
+      package_delivered: this.homey.flow.getDeviceTriggerCard('package_delivered'),
+      delivery_window_changed: this.homey.flow.getDeviceTriggerCard('delivery_window_changed'),
+      package_event_changed: this.homey.flow.getDeviceTriggerCard('package_event_changed'),
+      package_weight_known: this.homey.flow.getDeviceTriggerCard('package_weight_known'),
+      package_dimensions_known: this.homey.flow.getDeviceTriggerCard('package_dimensions_known'),
       sync_failed: this.homey.flow.getDeviceTriggerCard('sync_failed'),
       login_expired: this.homey.flow.getDeviceTriggerCard('login_expired'),
     };
@@ -20,6 +25,10 @@ class PostNLDriver extends Homey.Driver {
     this.homey.flow.getConditionCard('mail_expected').registerRunListener(async ({ device }) => Boolean(device && device.isMailExpected()));
     this.homey.flow.getConditionCard('packages_underway').registerRunListener(async ({ device }) => Boolean(device && device.hasPackagesUnderway()));
     this.homey.flow.getConditionCard('delivery_window_known').registerRunListener(async ({ device }) => Boolean(device && device.hasDeliveryWindowKnown()));
+    this.homey.flow.getConditionCard('postnl_connected').registerRunListener(async ({ device }) => Boolean(device && device.isPostNLConnected()));
+    this.homey.flow.getConditionCard('package_has_weight').registerRunListener(async ({ device }) => Boolean(device && device.currentPackageHasWeight()));
+    this.homey.flow.getConditionCard('package_has_dimensions').registerRunListener(async ({ device }) => Boolean(device && device.currentPackageHasDimensions()));
+    this.homey.flow.getConditionCard('package_status_is').registerRunListener(async ({ device, status }) => Boolean(device && device.currentPackageStatusIs(status)));
     this.homey.flow.getActionCard('sync_now').registerRunListener(async ({ device }) => {
       if (!device) throw new Error('No PostNL device selected.');
       await device.sync({ reason: 'flow', force: true });
@@ -115,7 +124,7 @@ class PostNLDriver extends Homey.Driver {
   async updateGlobalEventTokens(cardId, device, tokens = {}) {
     const common = { last_trigger: String(cardId || ''), last_trigger_time: new Date().toISOString() };
     if (cardId === 'new_mail') Object.assign(common, { mail_count: tokens.count, mail_id: tokens.id, mail_title: tokens.title, mail_sender: tokens.sender, mail_date: tokens.date, mail_unread: tokens.unread });
-    if (['new_package', 'delivery_window_known', 'package_status_changed'].includes(cardId)) Object.assign(common, { package_id: tokens.id, package_sender: tokens.sender, package_receiver: tokens.receiver, package_title: tokens.title, package_barcode: tokens.barcode, package_status: tokens.status, package_status_raw: tokens.status_raw, package_status_code: tokens.status_code, package_status_event: tokens.status_event, package_status_event_time: tokens.status_event_time, package_delivery_date: tokens.delivery_date, package_delivery_window: tokens.delivery_window, package_delivery_window_from: tokens.delivery_window_from, package_delivery_window_to: tokens.delivery_window_to, package_delivery_window_type: tokens.delivery_window_type, package_details_url: tokens.details_url, package_shipment_type: tokens.shipment_type, package_delivery_address_type: tokens.delivery_address_type, package_direction: tokens.direction, package_created_at: tokens.created_at, package_delivered: tokens.delivered, package_shared_from: tokens.shared_from, package_source_account_id: tokens.source_account_id, package_tracking: tokens.package_tracking || tokens.barcode || tokens.id, old_status: tokens.old_status });
+    if (['new_package', 'delivery_window_known', 'package_status_changed', 'package_delivered', 'delivery_window_changed', 'package_event_changed', 'package_weight_known', 'package_dimensions_known'].includes(cardId)) Object.assign(common, { package_id: tokens.id, package_sender: tokens.sender, package_receiver: tokens.receiver, package_title: tokens.title, package_barcode: tokens.barcode, package_status: tokens.status, package_status_raw: tokens.status_raw, package_status_code: tokens.status_code, package_status_event: tokens.status_event, package_status_event_time: tokens.status_event_time, package_delivery_date: tokens.delivery_date, package_delivery_window: tokens.delivery_window, package_delivery_window_from: tokens.delivery_window_from, package_delivery_window_to: tokens.delivery_window_to, package_delivery_window_type: tokens.delivery_window_type, package_details_url: tokens.details_url, package_shipment_type: tokens.shipment_type, package_delivery_address_type: tokens.delivery_address_type, package_direction: tokens.direction, package_created_at: tokens.created_at, package_delivered: tokens.delivered, package_shared_from: tokens.shared_from, package_source_account_id: tokens.source_account_id, package_tracking: tokens.package_tracking || tokens.barcode || tokens.id, old_status: tokens.old_status });
     if (cardId === 'sync_failed') common.last_error = tokens.error;
     await this.updateGlobalTokens(device, common);
   }

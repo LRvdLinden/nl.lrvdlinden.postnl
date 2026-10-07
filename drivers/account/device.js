@@ -152,6 +152,11 @@ class PostNLDevice extends Homey.Device {
   async triggerNewPackage(tokens = {}) { return this._triggerDeviceFlow('new_package', tokens); }
   async triggerDeliveryWindowKnown(tokens = {}) { return this._triggerDeviceFlow('delivery_window_known', tokens); }
   async triggerPackageStatusChanged(tokens = {}) { return this._triggerDeviceFlow('package_status_changed', tokens); }
+  async triggerPackageDelivered(tokens = {}) { return this._triggerDeviceFlow('package_delivered', tokens); }
+  async triggerDeliveryWindowChanged(tokens = {}) { return this._triggerDeviceFlow('delivery_window_changed', tokens); }
+  async triggerPackageEventChanged(tokens = {}) { return this._triggerDeviceFlow('package_event_changed', tokens); }
+  async triggerPackageWeightKnown(tokens = {}) { return this._triggerDeviceFlow('package_weight_known', tokens); }
+  async triggerPackageDimensionsKnown(tokens = {}) { return this._triggerDeviceFlow('package_dimensions_known', tokens); }
   async triggerSyncFailed(message = '') { return this._triggerDeviceFlow('sync_failed', { error: String(message || '') }); }
   async triggerLoginExpired() { return this._triggerDeviceFlow('login_expired', {}); }
 
@@ -252,11 +257,22 @@ class PostNLDevice extends Homey.Device {
       const hadWindow = Boolean(old && !old.delivered && this._hasDeliveryWindow(old));
       if (hasWindow && !hadWindow) await this.triggerDeliveryWindowKnown(tokens);
 
-      if (old && this._packageStatusFingerprint(old) !== this._packageStatusFingerprint(parcel)) {
-        await this.triggerPackageStatusChanged({
-          ...tokens,
-          old_status: String(old.statusRaw || localizePackageStatus(this.homey, old.status) || old.status || ''),
-        });
+      if (old) {
+        const oldWindow = old.deliveryWindow || this.api.formatWindow(old.deliveryWindowFrom, old.deliveryWindowTo) || '';
+        const newWindow = parcel.deliveryWindow || this.api.formatWindow(parcel.deliveryWindowFrom, parcel.deliveryWindowTo) || '';
+        if (newWindow && oldWindow && newWindow !== oldWindow && !parcel.delivered) await this.triggerDeliveryWindowChanged({ ...tokens, old_delivery_window: oldWindow });
+        const oldEvent = String(old.latestStatusEvent || old.statusRaw || old.status || '');
+        const newEvent = String(parcel.latestStatusEvent || parcel.statusRaw || parcel.status || '');
+        if (newEvent && newEvent !== oldEvent) await this.triggerPackageEventChanged({ ...tokens, old_event: oldEvent });
+        if (!String(old.weight || '').trim() && String(parcel.weight || '').trim()) await this.triggerPackageWeightKnown(tokens);
+        if (!String(old.dimensions || '').trim() && String(parcel.dimensions || '').trim()) await this.triggerPackageDimensionsKnown(tokens);
+        if (!old.delivered && parcel.delivered) await this.triggerPackageDelivered(tokens);
+        if (this._packageStatusFingerprint(old) !== this._packageStatusFingerprint(parcel)) {
+          await this.triggerPackageStatusChanged({
+            ...tokens,
+            old_status: String(old.statusRaw || localizePackageStatus(this.homey, old.status) || old.status || ''),
+          });
+        }
       }
     }
 
@@ -270,6 +286,12 @@ class PostNLDevice extends Homey.Device {
         const refreshed = await this.api.refreshPackageTracking(old);
         if (this._packageStatusFingerprint(old) !== this._packageStatusFingerprint(refreshed)) {
           const tokens = await this._packageTokens(refreshed);
+          const oldEvent = String(old.latestStatusEvent || old.statusRaw || old.status || '');
+          const newEvent = String(refreshed.latestStatusEvent || refreshed.statusRaw || refreshed.status || '');
+          if (newEvent && newEvent !== oldEvent) await this.triggerPackageEventChanged({ ...tokens, old_event: oldEvent });
+          if (!old.delivered && refreshed.delivered) await this.triggerPackageDelivered(tokens);
+          if (!String(old.weight || '').trim() && String(refreshed.weight || '').trim()) await this.triggerPackageWeightKnown(tokens);
+          if (!String(old.dimensions || '').trim() && String(refreshed.dimensions || '').trim()) await this.triggerPackageDimensionsKnown(tokens);
           await this.triggerPackageStatusChanged({
             ...tokens,
             old_status: String(old.statusRaw || localizePackageStatus(this.homey, old.status) || old.status || ''),
@@ -603,6 +625,15 @@ class PostNLDevice extends Homey.Device {
   isMailExpected() { return Boolean(this.getCapabilityValue('postnl_mail_expected')); }
   hasPackagesUnderway() { return Number(this.getCapabilityValue('postnl_package_count') || 0) > 0; }
   hasDeliveryWindowKnown() { return (this.snapshot.packages || []).some(parcel => !parcel.delivered && this._hasDeliveryWindow(parcel)); }
+  isPostNLConnected() { return Boolean(this.api && this.api.hasCredentials()); }
+  currentPackageHasWeight() { const parcel = this._selectActivePackage(); return Boolean(parcel && String(parcel.weight || '').trim()); }
+  currentPackageHasDimensions() { const parcel = this._selectActivePackage(); return Boolean(parcel && String(parcel.dimensions || '').trim()); }
+  currentPackageStatusIs(expected = '') {
+    const parcel = this._selectActivePackage();
+    if (!parcel) return false;
+    const actual = String(parcel.statusRaw || parcel.latestStatusEvent || localizePackageStatus(this.homey, parcel.status) || parcel.status || '').trim().toLocaleLowerCase();
+    return actual === String(expected || '').trim().toLocaleLowerCase();
+  }
 
   getWidgetData() {
     return {
