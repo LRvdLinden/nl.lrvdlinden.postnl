@@ -159,5 +159,9 @@
   "1.2.3": {
     "en": "Added device Flow triggers for parcel delivered, delivery window changed, new PostNL parcel event, parcel weight available and parcel dimensions available. Added conditions for PostNL connected, parcel weight available, parcel dimensions available and current parcel status. Restored the v1.2.2 widget preview images.",
     "nl": "Apparaat-Flowtriggers toegevoegd voor pakket bezorgd, bezorgvenster gewijzigd, nieuwe PostNL-pakketgebeurtenis, pakketgewicht bekend en pakketafmetingen bekend. Ook voorwaarden toegevoegd voor PostNL verbonden, pakketgewicht beschikbaar, pakketafmetingen beschikbaar en huidige pakketstatus. De widget-previews van v1.2.2 zijn teruggezet."
+  },
+  "1.2.4": {
+    "en": "Flow card definitions are now fully included in Homey Compose. Added parcel delivered, delivery window changed, new PostNL parcel event, parcel weight available and parcel dimensions available triggers, plus conditions for connection, parcel weight, parcel dimensions and current parcel status. Keeps the v1.2.2 widget previews.",
+    "nl": "De nieuwe Flow-kaarten zijn nu volledig opgenomen in Homey Compose. Triggers toegevoegd voor pakket bezorgd, bezorgvenster gewijzigd, nieuwe PostNL-pakketgebeurtenis, pakketgewicht bekend en pakketafmetingen bekend, plus voorwaarden voor verbinding, pakketgewicht, pakketafmetingen en huidige pakketstatus. De widget-previews van v1.2.2 blijven behouden."
   }
 }
