@@ -163,5 +163,9 @@
   "1.2.4": {
     "en": "Flow card definitions are now fully included in Homey Compose. Added parcel delivered, delivery window changed, new PostNL parcel event, parcel weight available and parcel dimensions available triggers, plus conditions for connection, parcel weight, parcel dimensions and current parcel status. Keeps the v1.2.2 widget previews.",
     "nl": "De nieuwe Flow-kaarten zijn nu volledig opgenomen in Homey Compose. Triggers toegevoegd voor pakket bezorgd, bezorgvenster gewijzigd, nieuwe PostNL-pakketgebeurtenis, pakketgewicht bekend en pakketafmetingen bekend, plus voorwaarden voor verbinding, pakketgewicht, pakketafmetingen en huidige pakketstatus. De widget-previews van v1.2.2 blijven behouden."
+  },
+  "1.2.5": {
+    "en": "Updated all condition Flow cards to support Homey's inverted condition state. Fixed the current parcel status condition to use titleFormatted for the selected status instead of showing the raw [[status]] placeholder.",
+    "nl": "Alle conditie-Flowkaarten ondersteunen nu de omgekeerde Homey-conditie. De kaart voor de huidige pakketstatus gebruikt nu titleFormatted voor de gekozen status en toont niet langer de ruwe [[status]]-placeholder."
   }
 }
