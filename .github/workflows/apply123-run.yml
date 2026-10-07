@@ -1,0 +1,33 @@
+name: Apply PostNL v1.2.3 Flow update
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/apply123-run.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Apply update
+        run: python .github/apply123.py
+      - name: Validate
+        run: |
+          node --check drivers/account/driver.js
+          node --check drivers/account/device.js
+          python -m json.tool app.json >/dev/null
+          test "$(node -p "require('./package.json').version")" = "1.2.3"
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.json drivers/account/driver.js drivers/account/device.js .homeychangelog.json widgets/*/preview-*.png
+          git rm -f .github/apply123.py .github/workflows/apply123-run.yml .github/workflows/apply123-flow.yml
+          git commit -m "PostNL v1.2.3: add package Flow cards and restore previews"
+          git push origin main
