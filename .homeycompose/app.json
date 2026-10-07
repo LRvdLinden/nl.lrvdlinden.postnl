@@ -1,6 +1,6 @@
 {
   "id": "nl.lrvdlinden.postnl",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "compatibility": ">=12.3.0",
   "sdk": 3,
   "platforms": [
@@ -24,7 +24,7 @@
   },
   "copyright": "Léon van der Linden",
   "license": "GPL-3.0-or-later",
-  "homepage": "https://lrvdlinden.app",
+  "homepage": "https://lrvdlinden.gitbook.io/postnl-for-homey",
   "support": "https://community.homey.app/t/app-pro-postnl-for-homey/159674",
   "bugs": {
     "url": "https://community.homey.app/t/app-pro-postnl-for-homey/159674"

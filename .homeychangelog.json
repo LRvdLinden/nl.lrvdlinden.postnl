@@ -155,5 +155,9 @@
   "1.2.2": {
     "en": "Fixed My Packages widget crash caused by the shipment type formatter not being defined.",
     "nl": "Crash in de Mijn Pakketten-widget opgelost waarbij de formatter voor het zendingstype niet was gedefinieerd."
+  },
+  "1.2.3": {
+    "en": "Updated the widget preview images so they better match the actual widgets while still following Homey preview guidelines without recognizable text. Updated the app homepage in app.json to the PostNL for Homey developer website.",
+    "nl": "De previewafbeeldingen van de widgets zijn vernieuwd zodat ze beter aansluiten op de echte widgets en tegelijk voldoen aan de Homey-richtlijnen zonder herkenbare tekst. Daarnaast is de homepage in app.json bijgewerkt naar de PostNL for Homey developer website."
   }
 }
