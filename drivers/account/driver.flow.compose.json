@@ -2390,56 +2390,56 @@
     {
       "id": "mail_expected",
       "title": {
-        "en": "Mail is expected",
-        "nl": "Er wordt post verwacht"
+        "en": "Mail !{{is|isn't}} expected",
+        "nl": "Post !{{wordt|wordt niet}} verwacht"
       },
       "args": []
     },
     {
       "id": "packages_underway",
       "title": {
-        "en": "Parcels are underway",
-        "nl": "Er zijn pakketten onderweg"
+        "en": "Parcels !{{are|aren't}} underway",
+        "nl": "Er !{{zijn|zijn geen}} pakketten onderweg"
       },
       "args": []
     },
     {
       "id": "delivery_window_known",
       "title": {
-        "en": "A delivery window is known",
-        "nl": "Er is een bezorgvenster bekend"
+        "en": "A delivery window !{{is|isn't}} known",
+        "nl": "Er !{{is|is geen}} bezorgvenster bekend"
       },
       "args": []
     },
     {
       "id": "postnl_connected",
       "title": {
-        "en": "PostNL is connected",
-        "nl": "PostNL is verbonden"
+        "en": "PostNL !{{is|isn't}} connected",
+        "nl": "PostNL !{{is|is niet}} verbonden"
       },
       "args": []
     },
     {
       "id": "package_has_weight",
       "title": {
-        "en": "The current parcel has weight information",
-        "nl": "Het huidige pakket heeft gewichtsinformatie"
+        "en": "The current parcel !{{has|doesn't have}} weight information",
+        "nl": "Het huidige pakket !{{heeft|heeft geen}} gewichtsinformatie"
       },
       "args": []
     },
     {
       "id": "package_has_dimensions",
       "title": {
-        "en": "The current parcel has dimensions",
-        "nl": "Het huidige pakket heeft afmetingen"
+        "en": "The current parcel !{{has|doesn't have}} dimensions",
+        "nl": "Het huidige pakket !{{heeft|heeft geen}} afmetingen"
       },
       "args": []
     },
     {
       "id": "package_status_is",
       "title": {
-        "en": "The current parcel status is [[status]]",
-        "nl": "De huidige pakketstatus is [[status]]"
+        "en": "The current parcel status !{{is|isn't}}",
+        "nl": "De huidige pakketstatus !{{is|is niet}}"
       },
       "args": [
         {
@@ -2454,7 +2454,11 @@
             "nl": "bijv. Bezorger is onderweg"
           }
         }
-      ]
+      ],
+      "titleFormatted": {
+        "en": "The current parcel status !{{is|isn't}} [[status]]",
+        "nl": "De huidige pakketstatus !{{is|is niet}} [[status]]"
+      }
     }
   ],
   "actions": [
