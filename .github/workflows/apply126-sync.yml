@@ -14,11 +14,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Apply v1.2.6 patch
+      - name: Rebuild v1.2.6 source from clean v1.2.5 baseline
         run: |
           cat .sync/patch0.b64 .sync/patch1.b64 .sync/patch2.b64 .sync/patch3.b64 .sync/patch4.b64 | base64 -d | gzip -dc > /tmp/postnl126.patch
+          git worktree add /tmp/postnl125 v1.2.5
+          cd /tmp/postnl125
           git apply --check /tmp/postnl126.patch
           git apply /tmp/postnl126.patch
+          cd "$GITHUB_WORKSPACE"
+          rsync -a /tmp/postnl125/ ./             --exclude '.git'             --exclude '*.png'             --exclude '*.gif'             --exclude 'package.json'             --exclude 'package-lock.json'             --exclude '.homeycompose/app.json'
           rm -rf widgets/reis-pakket
           rm -f drivers/account/pair/repair_login.html
           rm -f .github/workflows/clean121.yml .github/workflows/publish-v1.2.1-final.yml .github/workflows/rebuild121-clean.yml
@@ -36,6 +40,7 @@ jobs:
           python -m json.tool drivers/account/driver.flow.compose.json >/dev/null
           test -f drivers/account/repair/repair_login.html
           test ! -e widgets/reis-pakket
+          grep -q 'type.*dropdown' drivers/account/driver.flow.compose.json
       - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
