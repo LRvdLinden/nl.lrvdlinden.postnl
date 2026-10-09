@@ -9,7 +9,6 @@ const { renderDeliveryCard, renderNoPackageCard, loadDeliveryVan, hhmm } = requi
 
 const WIDGET_SYNC_REASONS = new Set(['widget', 'widget-live']);
 const WIDGET_SYNC_MIN_INTERVAL_MS = 3 * 60 * 1000;
-const FLOW_IMAGE_KEEP = 8;
 
 class PostNLDevice extends Homey.Device {
   async onInit() {
@@ -24,7 +23,7 @@ class PostNLDevice extends Homey.Device {
     this._syncing = null;
     this._lastSyncFinishedAt = 0;
     this._packageImageKey = null;
-    this._flowImages = [];
+    this._flowImages = new Map();
     this._storage = {
       get: key => this.getStoreValue(key),
       set: (key, value) => this.setStoreValue(key, value),
@@ -207,7 +206,11 @@ class PostNLDevice extends Homey.Device {
     // The Flow image token is the shared "Mijn Bezorging" camera image. It is
     // rendered lazily when Homey actually requests the image, instead of once
     // per parcel on every sync (each render allocates several MB).
-    const packageImage = await this._createFlowPackageImage(parcel).catch(error => { this.error('[FlowImage] render failed', error?.message || error); return null; });
+    // Never leave the image token empty: fall back to the shared "My Delivery"
+    // image if a parcel image cannot be created.
+    const packageImage = await this._flowPackageImage(parcel)
+      .catch(error => { this.error('[FlowImage] parcel image failed', error?.message || error); return this._ensurePackageCameraImage(); })
+      .catch(() => null);
     const status = String(parcel.statusRaw || parcel.latestStatusEvent || parcel.status || localizePackageStatus(this.homey, parcel.status) || '').trim();
     const deliveryDate = parcel.deliveryDate ? this.api.formatDateDMY(parcel.deliveryDate) : '';
     const deliveryWindow = parcel.deliveryWindow || this.api.formatWindow(parcel.deliveryWindowFrom, parcel.deliveryWindowTo) || '';
@@ -589,30 +592,46 @@ class PostNLDevice extends Homey.Device {
     };
   }
 
-  // A dedicated image for one Flow trigger. Earlier builds handed every parcel
-  // Flow the shared "My Delivery" camera image, which was rendered later (when
-  // e.g. WhatsApp fetched it) from whatever state the device had at that
-  // moment, so notifications could show the previous status. The PNG is now
-  // rendered immediately from this exact parcel and frozen in its own image.
-  async _createFlowPackageImage(parcel) {
-    const language = this.homey.i18n.getLanguage() === 'nl' ? 'nl' : 'en';
-    const buffer = renderDeliveryCard(this._deliveryCardOptions(parcel, language).opts);
-    const image = await this.homey.images.createImage();
-    const tracking = String(parcel.barcode || parcel.id || 'parcel').replace(/[^a-zA-Z0-9_-]/g, '_');
-    image.setStream(async stream => {
-      stream.contentType = 'image/png';
-      stream.filename = `postnl-${tracking}-${Date.now()}.png`;
-      stream.end(buffer);
-      return stream;
-    });
-    // Keep a few recent trigger images (~30 KB each) so Flows that fetch the
-    // image a little later still get it; release the oldest ones.
-    this._flowImages.push(image);
-    while (this._flowImages.length > FLOW_IMAGE_KEEP) {
-      const old = this._flowImages.shift();
-      if (old?.unregister) await old.unregister().catch(() => {});
+  // Image token for parcel Flows. Every parcel gets its own persistent Homey
+  // image; on every trigger the PNG is redrawn from this exact parcel and
+  // frozen into that image, so a notification shows the status of the change
+  // that fired it. The image object itself stays registered while the parcel
+  // is in the snapshot, so a Flow that reads it later never gets an empty
+  // token (1.2.11 released short-lived images, which could cause
+  // "Missing token value: package_image").
+  async _flowPackageImage(parcel) {
+    const key = String(parcel?.barcode || parcel?.id || '').trim() || 'unknown';
+    let entry = this._flowImages.get(key);
+    if (!entry) {
+      const image = await this.homey.images.createImage();
+      entry = { image, buffer: null, tracking: key.replace(/[^a-zA-Z0-9_-]/g, '_') };
+      image.setStream(async stream => {
+        if (!entry.buffer?.length) entry.buffer = await this._refreshPackageImageBuffer(false);
+        stream.contentType = 'image/png';
+        stream.filename = `postnl-${entry.tracking}.png`;
+        stream.end(entry.buffer);
+        return stream;
+      });
+      this._flowImages.set(key, entry);
     }
-    return image;
+    try {
+      const language = this.homey.i18n.getLanguage() === 'nl' ? 'nl' : 'en';
+      entry.buffer = renderDeliveryCard(this._deliveryCardOptions(parcel, language).opts);
+    } catch (error) {
+      this.error('[FlowImage] render failed', key, error?.message || error);
+    }
+    if (entry.image.update) await entry.image.update().catch(() => {});
+    return entry.image;
+  }
+
+  // Release images of parcels that are no longer in the PostNL snapshot.
+  async _pruneFlowImages(snapshot = this.snapshot) {
+    const keep = new Set((snapshot?.packages || []).map(item => String(item?.barcode || item?.id || '').trim()).filter(Boolean));
+    for (const [key, entry] of this._flowImages) {
+      if (keep.has(key)) continue;
+      this._flowImages.delete(key);
+      if (entry.image?.unregister) await entry.image.unregister().catch(() => {});
+    }
   }
 
   async getPackageDeliveryImage(parcel = null) {
@@ -820,6 +839,7 @@ class PostNLDevice extends Homey.Device {
       this._packageImageBuffer = null;
       if (this._packageCameraImage?.update) await this._packageCameraImage.update().catch(this.error);
     }
+    await this._pruneFlowImages(snapshot).catch(this.error);
     await this._updateGlobalSnapshotTokens(snapshot).catch(error => this.error('[GlobalToken] snapshot update failed', error));
 
 

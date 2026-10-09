@@ -1,6 +1,6 @@
 {
   "id": "nl.lrvdlinden.postnl",
-  "version": "1.2.11",
+  "version": "1.2.12",
   "compatibility": ">=12.3.0",
   "sdk": 3,
   "platforms": [

@@ -191,5 +191,9 @@
   "1.2.11": {
     "en": "Fixed parcel Flows (for example via WhatsApp) sending an image that still showed the previous parcel status. Every parcel Flow now gets its own image, drawn at the moment of the trigger with the current status, delivery window and progress.",
     "nl": "Opgelost dat pakket-Flows (bijvoorbeeld via WhatsApp) een afbeelding meestuurden met nog de vorige pakketstatus. Elke pakket-Flow krijgt nu een eigen afbeelding, getekend op het moment van de trigger met de actuele status, het bezorgvenster en de voortgang."
+  },
+  "1.2.12": {
+    "en": "Fixed parcel Flows failing with \"Missing token value: package_image\". Every parcel now keeps its own image for as long as it is in your PostNL account; it is redrawn with the current status on every trigger, and the image token is never left empty.",
+    "nl": "Opgelost dat pakket-Flows faalden met \"Missing token value: package_image\". Elk pakket houdt nu een eigen afbeelding zolang het in je PostNL-account staat; die wordt bij elke trigger opnieuw getekend met de actuele status, en de afbeeldingstoken is nooit meer leeg."
   }
 }
