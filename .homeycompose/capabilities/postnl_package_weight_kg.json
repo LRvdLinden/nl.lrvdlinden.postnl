@@ -1,0 +1,16 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Parcel weight (kg)",
+    "nl": "Gewicht pakket (kg)"
+  },
+  "getable": true,
+  "setable": false,
+  "insights": false,
+  "icon": "/assets/package.svg",
+  "units": {
+    "en": "kg",
+    "nl": "kg"
+  },
+  "decimals": 2
+}

@@ -1,0 +1,16 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Parcel width",
+    "nl": "Breedte pakket"
+  },
+  "getable": true,
+  "setable": false,
+  "insights": false,
+  "icon": "/assets/package.svg",
+  "units": {
+    "en": "cm",
+    "nl": "cm"
+  },
+  "decimals": 1
+}

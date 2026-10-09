@@ -1,0 +1,11 @@
+{
+  "type": "string",
+  "title": {
+    "en": "Full status history",
+    "nl": "Volledige status-history"
+  },
+  "getable": true,
+  "setable": false,
+  "insights": false,
+  "icon": "/assets/package.svg"
+}

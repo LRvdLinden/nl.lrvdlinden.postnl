@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "nl.lrvdlinden.postnl",
-  "version": "1.2.5",
+  "version": "1.2.9",
   "compatibility": ">=12.3.0",
   "sdk": 3,
   "platforms": [
@@ -90,7 +90,6 @@
       "settings": []
     },
     "pakket-details": {
-      "id": "pakket-details",
       "name": {
         "en": "My Delivery",
         "nl": "Mijn Bezorging"
@@ -112,7 +111,9 @@
         "filter": {
           "capabilities": "postnl_package_count"
         }
-      }
+      },
+      "id": "pakket-details",
+      "settings": []
     },
     "pakket-reis": {
       "name": {
@@ -124,10 +125,6 @@
         "getData": {
           "method": "GET",
           "path": "/"
-        },
-        "sync": {
-          "method": "POST",
-          "path": "/sync"
         }
       },
       "devices": {
@@ -138,32 +135,6 @@
         }
       },
       "id": "pakket-reis",
-      "settings": []
-    },
-    "reis-pakket": {
-      "name": {
-        "en": "Parcel Journey",
-        "nl": "Reis van je pakket"
-      },
-      "height": 420,
-      "api": {
-        "getData": {
-          "method": "GET",
-          "path": "/"
-        },
-        "sync": {
-          "method": "POST",
-          "path": "/sync"
-        }
-      },
-      "devices": {
-        "type": "app",
-        "singular": true,
-        "filter": {
-          "capabilities": "postnl_package_count"
-        }
-      },
-      "id": "reis-pakket",
       "settings": []
     }
   },
@@ -561,22 +532,6 @@
             }
           },
           {
-            "name": "package_weight",
-            "type": "string",
-            "title": {
-              "en": "Package weight",
-              "nl": "Gewicht pakket"
-            }
-          },
-          {
-            "name": "package_dimensions",
-            "type": "string",
-            "title": {
-              "en": "Package dimensions",
-              "nl": "Afmetingen pakket"
-            }
-          },
-          {
             "name": "weight",
             "type": "string",
             "title": {
@@ -590,6 +545,78 @@
             "title": {
               "en": "Dimensions",
               "nl": "Afmetingen"
+            }
+          },
+          {
+            "name": "weight_kg",
+            "type": "number",
+            "title": {
+              "en": "Parcel weight (kg)",
+              "nl": "Gewicht pakket (kg)"
+            }
+          },
+          {
+            "name": "dimension_length",
+            "type": "number",
+            "title": {
+              "en": "Parcel length (cm)",
+              "nl": "Lengte pakket (cm)"
+            }
+          },
+          {
+            "name": "dimension_width",
+            "type": "number",
+            "title": {
+              "en": "Parcel width (cm)",
+              "nl": "Breedte pakket (cm)"
+            }
+          },
+          {
+            "name": "dimension_height",
+            "type": "number",
+            "title": {
+              "en": "Parcel height (cm)",
+              "nl": "Hoogte pakket (cm)"
+            }
+          },
+          {
+            "name": "status_history",
+            "type": "string",
+            "title": {
+              "en": "Full status history",
+              "nl": "Volledige status-history"
+            }
+          },
+          {
+            "name": "observation_code",
+            "type": "string",
+            "title": {
+              "en": "PostNL observation code",
+              "nl": "PostNL observationCode"
+            }
+          },
+          {
+            "name": "canonical_status",
+            "type": "string",
+            "title": {
+              "en": "Canonical parcel status",
+              "nl": "Canonieke pakketstatus"
+            }
+          },
+          {
+            "name": "pickup",
+            "type": "boolean",
+            "title": {
+              "en": "PostNL Point delivery",
+              "nl": "Bezorging bij PostNL-punt"
+            }
+          },
+          {
+            "name": "pickup_point",
+            "type": "string",
+            "title": {
+              "en": "PostNL Point",
+              "nl": "PostNL-punt"
             }
           }
         ]
@@ -850,22 +877,6 @@
             }
           },
           {
-            "name": "package_weight",
-            "type": "string",
-            "title": {
-              "en": "Package weight",
-              "nl": "Gewicht pakket"
-            }
-          },
-          {
-            "name": "package_dimensions",
-            "type": "string",
-            "title": {
-              "en": "Package dimensions",
-              "nl": "Afmetingen pakket"
-            }
-          },
-          {
             "name": "weight",
             "type": "string",
             "title": {
@@ -879,6 +890,78 @@
             "title": {
               "en": "Dimensions",
               "nl": "Afmetingen"
+            }
+          },
+          {
+            "name": "weight_kg",
+            "type": "number",
+            "title": {
+              "en": "Parcel weight (kg)",
+              "nl": "Gewicht pakket (kg)"
+            }
+          },
+          {
+            "name": "dimension_length",
+            "type": "number",
+            "title": {
+              "en": "Parcel length (cm)",
+              "nl": "Lengte pakket (cm)"
+            }
+          },
+          {
+            "name": "dimension_width",
+            "type": "number",
+            "title": {
+              "en": "Parcel width (cm)",
+              "nl": "Breedte pakket (cm)"
+            }
+          },
+          {
+            "name": "dimension_height",
+            "type": "number",
+            "title": {
+              "en": "Parcel height (cm)",
+              "nl": "Hoogte pakket (cm)"
+            }
+          },
+          {
+            "name": "status_history",
+            "type": "string",
+            "title": {
+              "en": "Full status history",
+              "nl": "Volledige status-history"
+            }
+          },
+          {
+            "name": "observation_code",
+            "type": "string",
+            "title": {
+              "en": "PostNL observation code",
+              "nl": "PostNL observationCode"
+            }
+          },
+          {
+            "name": "canonical_status",
+            "type": "string",
+            "title": {
+              "en": "Canonical parcel status",
+              "nl": "Canonieke pakketstatus"
+            }
+          },
+          {
+            "name": "pickup",
+            "type": "boolean",
+            "title": {
+              "en": "PostNL Point delivery",
+              "nl": "Bezorging bij PostNL-punt"
+            }
+          },
+          {
+            "name": "pickup_point",
+            "type": "string",
+            "title": {
+              "en": "PostNL Point",
+              "nl": "PostNL-punt"
             }
           }
         ]
@@ -1146,22 +1229,6 @@
             }
           },
           {
-            "name": "package_weight",
-            "type": "string",
-            "title": {
-              "en": "Package weight",
-              "nl": "Gewicht pakket"
-            }
-          },
-          {
-            "name": "package_dimensions",
-            "type": "string",
-            "title": {
-              "en": "Package dimensions",
-              "nl": "Afmetingen pakket"
-            }
-          },
-          {
             "name": "weight",
             "type": "string",
             "title": {
@@ -1175,6 +1242,78 @@
             "title": {
               "en": "Dimensions",
               "nl": "Afmetingen"
+            }
+          },
+          {
+            "name": "weight_kg",
+            "type": "number",
+            "title": {
+              "en": "Parcel weight (kg)",
+              "nl": "Gewicht pakket (kg)"
+            }
+          },
+          {
+            "name": "dimension_length",
+            "type": "number",
+            "title": {
+              "en": "Parcel length (cm)",
+              "nl": "Lengte pakket (cm)"
+            }
+          },
+          {
+            "name": "dimension_width",
+            "type": "number",
+            "title": {
+              "en": "Parcel width (cm)",
+              "nl": "Breedte pakket (cm)"
+            }
+          },
+          {
+            "name": "dimension_height",
+            "type": "number",
+            "title": {
+              "en": "Parcel height (cm)",
+              "nl": "Hoogte pakket (cm)"
+            }
+          },
+          {
+            "name": "status_history",
+            "type": "string",
+            "title": {
+              "en": "Full status history",
+              "nl": "Volledige status-history"
+            }
+          },
+          {
+            "name": "observation_code",
+            "type": "string",
+            "title": {
+              "en": "PostNL observation code",
+              "nl": "PostNL observationCode"
+            }
+          },
+          {
+            "name": "canonical_status",
+            "type": "string",
+            "title": {
+              "en": "Canonical parcel status",
+              "nl": "Canonieke pakketstatus"
+            }
+          },
+          {
+            "name": "pickup",
+            "type": "boolean",
+            "title": {
+              "en": "PostNL Point delivery",
+              "nl": "Bezorging bij PostNL-punt"
+            }
+          },
+          {
+            "name": "pickup_point",
+            "type": "string",
+            "title": {
+              "en": "PostNL Point",
+              "nl": "PostNL-punt"
             }
           }
         ]
@@ -1472,22 +1611,6 @@
             }
           },
           {
-            "name": "package_weight",
-            "type": "string",
-            "title": {
-              "en": "Package weight",
-              "nl": "Gewicht pakket"
-            }
-          },
-          {
-            "name": "package_dimensions",
-            "type": "string",
-            "title": {
-              "en": "Package dimensions",
-              "nl": "Afmetingen pakket"
-            }
-          },
-          {
             "name": "weight",
             "type": "string",
             "title": {
@@ -1501,6 +1624,78 @@
             "title": {
               "en": "Dimensions",
               "nl": "Afmetingen"
+            }
+          },
+          {
+            "name": "weight_kg",
+            "type": "number",
+            "title": {
+              "en": "Parcel weight (kg)",
+              "nl": "Gewicht pakket (kg)"
+            }
+          },
+          {
+            "name": "dimension_length",
+            "type": "number",
+            "title": {
+              "en": "Parcel length (cm)",
+              "nl": "Lengte pakket (cm)"
+            }
+          },
+          {
+            "name": "dimension_width",
+            "type": "number",
+            "title": {
+              "en": "Parcel width (cm)",
+              "nl": "Breedte pakket (cm)"
+            }
+          },
+          {
+            "name": "dimension_height",
+            "type": "number",
+            "title": {
+              "en": "Parcel height (cm)",
+              "nl": "Hoogte pakket (cm)"
+            }
+          },
+          {
+            "name": "status_history",
+            "type": "string",
+            "title": {
+              "en": "Full status history",
+              "nl": "Volledige status-history"
+            }
+          },
+          {
+            "name": "observation_code",
+            "type": "string",
+            "title": {
+              "en": "PostNL observation code",
+              "nl": "PostNL observationCode"
+            }
+          },
+          {
+            "name": "canonical_status",
+            "type": "string",
+            "title": {
+              "en": "Canonical parcel status",
+              "nl": "Canonieke pakketstatus"
+            }
+          },
+          {
+            "name": "pickup",
+            "type": "boolean",
+            "title": {
+              "en": "PostNL Point delivery",
+              "nl": "Bezorging bij PostNL-punt"
+            }
+          },
+          {
+            "name": "pickup_point",
+            "type": "string",
+            "title": {
+              "en": "PostNL Point",
+              "nl": "PostNL-punt"
             }
           }
         ],
@@ -1769,22 +1964,6 @@
             }
           },
           {
-            "name": "package_weight",
-            "type": "string",
-            "title": {
-              "en": "Package weight",
-              "nl": "Gewicht pakket"
-            }
-          },
-          {
-            "name": "package_dimensions",
-            "type": "string",
-            "title": {
-              "en": "Package dimensions",
-              "nl": "Afmetingen pakket"
-            }
-          },
-          {
             "name": "weight",
             "type": "string",
             "title": {
@@ -1798,6 +1977,78 @@
             "title": {
               "en": "Dimensions",
               "nl": "Afmetingen"
+            }
+          },
+          {
+            "name": "weight_kg",
+            "type": "number",
+            "title": {
+              "en": "Parcel weight (kg)",
+              "nl": "Gewicht pakket (kg)"
+            }
+          },
+          {
+            "name": "dimension_length",
+            "type": "number",
+            "title": {
+              "en": "Parcel length (cm)",
+              "nl": "Lengte pakket (cm)"
+            }
+          },
+          {
+            "name": "dimension_width",
+            "type": "number",
+            "title": {
+              "en": "Parcel width (cm)",
+              "nl": "Breedte pakket (cm)"
+            }
+          },
+          {
+            "name": "dimension_height",
+            "type": "number",
+            "title": {
+              "en": "Parcel height (cm)",
+              "nl": "Hoogte pakket (cm)"
+            }
+          },
+          {
+            "name": "status_history",
+            "type": "string",
+            "title": {
+              "en": "Full status history",
+              "nl": "Volledige status-history"
+            }
+          },
+          {
+            "name": "observation_code",
+            "type": "string",
+            "title": {
+              "en": "PostNL observation code",
+              "nl": "PostNL observationCode"
+            }
+          },
+          {
+            "name": "canonical_status",
+            "type": "string",
+            "title": {
+              "en": "Canonical parcel status",
+              "nl": "Canonieke pakketstatus"
+            }
+          },
+          {
+            "name": "pickup",
+            "type": "boolean",
+            "title": {
+              "en": "PostNL Point delivery",
+              "nl": "Bezorging bij PostNL-punt"
+            }
+          },
+          {
+            "name": "pickup_point",
+            "type": "string",
+            "title": {
+              "en": "PostNL Point",
+              "nl": "PostNL-punt"
             }
           }
         ],
@@ -2066,22 +2317,6 @@
             }
           },
           {
-            "name": "package_weight",
-            "type": "string",
-            "title": {
-              "en": "Package weight",
-              "nl": "Gewicht pakket"
-            }
-          },
-          {
-            "name": "package_dimensions",
-            "type": "string",
-            "title": {
-              "en": "Package dimensions",
-              "nl": "Afmetingen pakket"
-            }
-          },
-          {
             "name": "weight",
             "type": "string",
             "title": {
@@ -2095,6 +2330,78 @@
             "title": {
               "en": "Dimensions",
               "nl": "Afmetingen"
+            }
+          },
+          {
+            "name": "weight_kg",
+            "type": "number",
+            "title": {
+              "en": "Parcel weight (kg)",
+              "nl": "Gewicht pakket (kg)"
+            }
+          },
+          {
+            "name": "dimension_length",
+            "type": "number",
+            "title": {
+              "en": "Parcel length (cm)",
+              "nl": "Lengte pakket (cm)"
+            }
+          },
+          {
+            "name": "dimension_width",
+            "type": "number",
+            "title": {
+              "en": "Parcel width (cm)",
+              "nl": "Breedte pakket (cm)"
+            }
+          },
+          {
+            "name": "dimension_height",
+            "type": "number",
+            "title": {
+              "en": "Parcel height (cm)",
+              "nl": "Hoogte pakket (cm)"
+            }
+          },
+          {
+            "name": "status_history",
+            "type": "string",
+            "title": {
+              "en": "Full status history",
+              "nl": "Volledige status-history"
+            }
+          },
+          {
+            "name": "observation_code",
+            "type": "string",
+            "title": {
+              "en": "PostNL observation code",
+              "nl": "PostNL observationCode"
+            }
+          },
+          {
+            "name": "canonical_status",
+            "type": "string",
+            "title": {
+              "en": "Canonical parcel status",
+              "nl": "Canonieke pakketstatus"
+            }
+          },
+          {
+            "name": "pickup",
+            "type": "boolean",
+            "title": {
+              "en": "PostNL Point delivery",
+              "nl": "Bezorging bij PostNL-punt"
+            }
+          },
+          {
+            "name": "pickup_point",
+            "type": "string",
+            "title": {
+              "en": "PostNL Point",
+              "nl": "PostNL-punt"
             }
           }
         ]
@@ -2354,22 +2661,6 @@
             }
           },
           {
-            "name": "package_weight",
-            "type": "string",
-            "title": {
-              "en": "Package weight",
-              "nl": "Gewicht pakket"
-            }
-          },
-          {
-            "name": "package_dimensions",
-            "type": "string",
-            "title": {
-              "en": "Package dimensions",
-              "nl": "Afmetingen pakket"
-            }
-          },
-          {
             "name": "weight",
             "type": "string",
             "title": {
@@ -2383,6 +2674,78 @@
             "title": {
               "en": "Dimensions",
               "nl": "Afmetingen"
+            }
+          },
+          {
+            "name": "weight_kg",
+            "type": "number",
+            "title": {
+              "en": "Parcel weight (kg)",
+              "nl": "Gewicht pakket (kg)"
+            }
+          },
+          {
+            "name": "dimension_length",
+            "type": "number",
+            "title": {
+              "en": "Parcel length (cm)",
+              "nl": "Lengte pakket (cm)"
+            }
+          },
+          {
+            "name": "dimension_width",
+            "type": "number",
+            "title": {
+              "en": "Parcel width (cm)",
+              "nl": "Breedte pakket (cm)"
+            }
+          },
+          {
+            "name": "dimension_height",
+            "type": "number",
+            "title": {
+              "en": "Parcel height (cm)",
+              "nl": "Hoogte pakket (cm)"
+            }
+          },
+          {
+            "name": "status_history",
+            "type": "string",
+            "title": {
+              "en": "Full status history",
+              "nl": "Volledige status-history"
+            }
+          },
+          {
+            "name": "observation_code",
+            "type": "string",
+            "title": {
+              "en": "PostNL observation code",
+              "nl": "PostNL observationCode"
+            }
+          },
+          {
+            "name": "canonical_status",
+            "type": "string",
+            "title": {
+              "en": "Canonical parcel status",
+              "nl": "Canonieke pakketstatus"
+            }
+          },
+          {
+            "name": "pickup",
+            "type": "boolean",
+            "title": {
+              "en": "PostNL Point delivery",
+              "nl": "Bezorging bij PostNL-punt"
+            }
+          },
+          {
+            "name": "pickup_point",
+            "type": "string",
+            "title": {
+              "en": "PostNL Point",
+              "nl": "PostNL-punt"
             }
           }
         ]
@@ -2642,22 +3005,6 @@
             }
           },
           {
-            "name": "package_weight",
-            "type": "string",
-            "title": {
-              "en": "Package weight",
-              "nl": "Gewicht pakket"
-            }
-          },
-          {
-            "name": "package_dimensions",
-            "type": "string",
-            "title": {
-              "en": "Package dimensions",
-              "nl": "Afmetingen pakket"
-            }
-          },
-          {
             "name": "weight",
             "type": "string",
             "title": {
@@ -2671,6 +3018,78 @@
             "title": {
               "en": "Dimensions",
               "nl": "Afmetingen"
+            }
+          },
+          {
+            "name": "weight_kg",
+            "type": "number",
+            "title": {
+              "en": "Parcel weight (kg)",
+              "nl": "Gewicht pakket (kg)"
+            }
+          },
+          {
+            "name": "dimension_length",
+            "type": "number",
+            "title": {
+              "en": "Parcel length (cm)",
+              "nl": "Lengte pakket (cm)"
+            }
+          },
+          {
+            "name": "dimension_width",
+            "type": "number",
+            "title": {
+              "en": "Parcel width (cm)",
+              "nl": "Breedte pakket (cm)"
+            }
+          },
+          {
+            "name": "dimension_height",
+            "type": "number",
+            "title": {
+              "en": "Parcel height (cm)",
+              "nl": "Hoogte pakket (cm)"
+            }
+          },
+          {
+            "name": "status_history",
+            "type": "string",
+            "title": {
+              "en": "Full status history",
+              "nl": "Volledige status-history"
+            }
+          },
+          {
+            "name": "observation_code",
+            "type": "string",
+            "title": {
+              "en": "PostNL observation code",
+              "nl": "PostNL observationCode"
+            }
+          },
+          {
+            "name": "canonical_status",
+            "type": "string",
+            "title": {
+              "en": "Canonical parcel status",
+              "nl": "Canonieke pakketstatus"
+            }
+          },
+          {
+            "name": "pickup",
+            "type": "boolean",
+            "title": {
+              "en": "PostNL Point delivery",
+              "nl": "Bezorging bij PostNL-punt"
+            }
+          },
+          {
+            "name": "pickup_point",
+            "type": "string",
+            "title": {
+              "en": "PostNL Point",
+              "nl": "PostNL-punt"
             }
           }
         ]
@@ -2831,8 +3250,17 @@
         "postnl_package_status_time",
         "postnl_package_delivered",
         "postnl_package_shipment_type",
-        "postnl_package_dimensions",
         "postnl_package_weight",
+        "postnl_package_weight_kg",
+        "postnl_package_length",
+        "postnl_package_width",
+        "postnl_package_height",
+        "postnl_package_status_history",
+        "postnl_package_observation_code",
+        "postnl_package_canonical_status",
+        "postnl_package_pickup",
+        "postnl_package_pickup_point",
+        "postnl_package_dimensions",
         "postnl_status",
         "postnl_last_update"
       ],
@@ -2857,6 +3285,28 @@
     }
   ],
   "capabilities": {
+    "postnl_delivery_date": {
+      "type": "string",
+      "title": {
+        "en": "Delivery date",
+        "nl": "Bezorgdatum"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/calendar.svg"
+    },
+    "postnl_delivery_window": {
+      "type": "string",
+      "title": {
+        "en": "Delivery window",
+        "nl": "Bezorgvenster"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/delivery.svg"
+    },
     "postnl_last_update": {
       "type": "string",
       "title": {
@@ -2903,6 +3353,17 @@
       "insights": false,
       "icon": "/assets/calendar.svg"
     },
+    "postnl_package_canonical_status": {
+      "type": "string",
+      "title": {
+        "en": "Canonical status",
+        "nl": "Canonieke status"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/package.svg"
+    },
     "postnl_package_count": {
       "type": "number",
       "title": {
@@ -2915,77 +3376,23 @@
       "insights": true,
       "icon": "/assets/package.svg"
     },
-    "postnl_status": {
-      "type": "string",
+    "postnl_package_delivered": {
+      "type": "boolean",
       "title": {
-        "en": "Connection status",
-        "nl": "Verbindingsstatus"
+        "en": "Parcel delivered",
+        "nl": "Pakket bezorgd"
       },
       "getable": true,
       "setable": false,
-      "insights": false,
-      "icon": "/assets/status.svg"
-    },
-    "postnl_delivery_date": {
-      "type": "string",
-      "title": {
-        "en": "Delivery date",
-        "nl": "Bezorgdatum"
-      },
-      "getable": true,
-      "setable": false,
-      "insights": false,
-      "icon": "/assets/calendar.svg"
-    },
-    "postnl_delivery_window": {
-      "type": "string",
-      "title": {
-        "en": "Delivery window",
-        "nl": "Bezorgvenster"
-      },
-      "getable": true,
-      "setable": false,
-      "insights": false,
-      "icon": "/assets/delivery.svg"
-    },
-    "postnl_package_status": {
-      "type": "string",
-      "title": {
-        "en": "Parcel status",
-        "nl": "Pakketstatus"
-      },
-      "getable": true,
-      "setable": false,
-      "insights": false,
+      "uiComponent": "sensor",
+      "insights": true,
       "icon": "/assets/package.svg"
     },
-    "postnl_package_sender": {
+    "postnl_package_dimensions": {
       "type": "string",
       "title": {
-        "en": "Parcel sender",
-        "nl": "Afzender pakket"
-      },
-      "getable": true,
-      "setable": false,
-      "insights": false,
-      "icon": "/assets/package.svg"
-    },
-    "postnl_package_receiver": {
-      "type": "string",
-      "title": {
-        "en": "Parcel receiver",
-        "nl": "Ontvanger pakket"
-      },
-      "getable": true,
-      "setable": false,
-      "insights": false,
-      "icon": "/assets/package.svg"
-    },
-    "postnl_package_tracking": {
-      "type": "string",
-      "title": {
-        "en": "Tracking number",
-        "nl": "Trackingnummer"
+        "en": "Parcel dimensions",
+        "nl": "Afmetingen pakket"
       },
       "getable": true,
       "setable": false,
@@ -3003,6 +3410,127 @@
       "insights": false,
       "icon": "/assets/package.svg"
     },
+    "postnl_package_height": {
+      "type": "number",
+      "title": {
+        "en": "Parcel height",
+        "nl": "Hoogte pakket"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/package.svg",
+      "units": {
+        "en": "cm",
+        "nl": "cm"
+      },
+      "decimals": 1
+    },
+    "postnl_package_length": {
+      "type": "number",
+      "title": {
+        "en": "Parcel length",
+        "nl": "Lengte pakket"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/package.svg",
+      "units": {
+        "en": "cm",
+        "nl": "cm"
+      },
+      "decimals": 1
+    },
+    "postnl_package_observation_code": {
+      "type": "string",
+      "title": {
+        "en": "Observation code",
+        "nl": "ObservationCode"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/package.svg"
+    },
+    "postnl_package_pickup": {
+      "type": "boolean",
+      "title": {
+        "en": "PostNL Point delivery",
+        "nl": "Bezorging bij PostNL-punt"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": true,
+      "icon": "/assets/package.svg",
+      "uiComponent": "sensor"
+    },
+    "postnl_package_pickup_point": {
+      "type": "string",
+      "title": {
+        "en": "PostNL Point",
+        "nl": "PostNL-punt"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/package.svg"
+    },
+    "postnl_package_receiver": {
+      "type": "string",
+      "title": {
+        "en": "Parcel receiver",
+        "nl": "Ontvanger pakket"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/package.svg"
+    },
+    "postnl_package_sender": {
+      "type": "string",
+      "title": {
+        "en": "Parcel sender",
+        "nl": "Afzender pakket"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/package.svg"
+    },
+    "postnl_package_shipment_type": {
+      "type": "string",
+      "title": {
+        "en": "Shipment type",
+        "nl": "Type zending"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/package.svg"
+    },
+    "postnl_package_status": {
+      "type": "string",
+      "title": {
+        "en": "Parcel status",
+        "nl": "Pakketstatus"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/package.svg"
+    },
+    "postnl_package_status_history": {
+      "type": "string",
+      "title": {
+        "en": "Full status history",
+        "nl": "Volledige status-history"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/package.svg"
+    },
     "postnl_package_status_time": {
       "type": "string",
       "title": {
@@ -3014,23 +3542,11 @@
       "insights": false,
       "icon": "/assets/clock.svg"
     },
-    "postnl_package_delivered": {
-      "type": "boolean",
-      "title": {
-        "en": "Parcel delivered",
-        "nl": "Pakket bezorgd"
-      },
-      "getable": true,
-      "setable": false,
-      "uiComponent": "sensor",
-      "insights": true,
-      "icon": "/assets/package.svg"
-    },
-    "postnl_package_shipment_type": {
+    "postnl_package_tracking": {
       "type": "string",
       "title": {
-        "en": "Shipment type",
-        "nl": "Type zending"
+        "en": "Tracking number",
+        "nl": "Trackingnummer"
       },
       "getable": true,
       "setable": false,
@@ -3048,16 +3564,48 @@
       "insights": false,
       "icon": "/assets/package.svg"
     },
-    "postnl_package_dimensions": {
-      "type": "string",
+    "postnl_package_weight_kg": {
+      "type": "number",
       "title": {
-        "en": "Parcel dimensions",
-        "nl": "Afmetingen pakket"
+        "en": "Parcel weight (kg)",
+        "nl": "Gewicht pakket (kg)"
       },
       "getable": true,
       "setable": false,
       "insights": false,
-      "icon": "/assets/package.svg"
+      "icon": "/assets/package.svg",
+      "units": {
+        "en": "kg",
+        "nl": "kg"
+      },
+      "decimals": 2
+    },
+    "postnl_package_width": {
+      "type": "number",
+      "title": {
+        "en": "Parcel width",
+        "nl": "Breedte pakket"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/package.svg",
+      "units": {
+        "en": "cm",
+        "nl": "cm"
+      },
+      "decimals": 1
+    },
+    "postnl_status": {
+      "type": "string",
+      "title": {
+        "en": "Connection status",
+        "nl": "Verbindingsstatus"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "icon": "/assets/status.svg"
     }
   }
 }

@@ -8,10 +8,6 @@
     "getData": {
       "method": "GET",
       "path": "/"
-    },
-    "sync": {
-      "method": "POST",
-      "path": "/sync"
     }
   },
   "devices": {

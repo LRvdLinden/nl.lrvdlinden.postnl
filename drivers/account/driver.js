@@ -74,7 +74,16 @@ class PostNLDriver extends Homey.Driver {
       package_source_account_id: { type: 'string', en: 'Parcel source account ID', nl: 'Bronaccount-ID pakket' },
       package_tracking: { type: 'string', en: 'Parcel tracking number', nl: 'Trackingnummer pakket' },
       package_weight: { type: 'string', en: 'Parcel weight', nl: 'Gewicht pakket' },
+      package_weight_kg: { type: 'number', en: 'Parcel weight (kg)', nl: 'Gewicht pakket (kg)' },
       package_dimensions: { type: 'string', en: 'Parcel dimensions', nl: 'Afmetingen pakket' },
+      package_dimension_length: { type: 'number', en: 'Parcel length (cm)', nl: 'Lengte pakket (cm)' },
+      package_dimension_width: { type: 'number', en: 'Parcel width (cm)', nl: 'Breedte pakket (cm)' },
+      package_dimension_height: { type: 'number', en: 'Parcel height (cm)', nl: 'Hoogte pakket (cm)' },
+      package_status_history: { type: 'string', en: 'Full parcel status history', nl: 'Volledige pakketstatus-history' },
+      package_observation_code: { type: 'string', en: 'PostNL observation code', nl: 'PostNL observationCode' },
+      package_canonical_status: { type: 'string', en: 'Canonical parcel status', nl: 'Canonieke pakketstatus' },
+      package_pickup: { type: 'boolean', en: 'PostNL Point delivery', nl: 'Bezorging bij PostNL-punt' },
+      package_pickup_point: { type: 'string', en: 'PostNL Point', nl: 'PostNL-punt' },
       next_delivery: { type: 'string', en: 'Next delivery', nl: 'Volgende bezorging' },
       connection_status: { type: 'string', en: 'PostNL connection status', nl: 'PostNL-verbindingsstatus' },
       last_update: { type: 'string', en: 'Last PostNL update', nl: 'Laatste PostNL-update' },
@@ -101,8 +110,12 @@ class PostNLDriver extends Homey.Driver {
       const id = `postnl_${deviceKey}_${name}`;
       const title = `${deviceName} · ${definition[language] || definition.en}`;
       let token;
-      try { token = await this.homey.flow.createToken(id, { type: definition.type, title }); }
-      catch (error) { try { token = await this.homey.flow.getToken(id); } catch (_) { throw error; } }
+      try {
+        token = await this.homey.flow.createToken(id, { type: definition.type, title });
+      } catch (error) {
+        try { token = await this.homey.flow.getToken(id); }
+        catch (_) { throw error; }
+      }
       if (token) set.set(name, token);
     }
     return set;
@@ -112,7 +125,9 @@ class PostNLDriver extends Homey.Driver {
     const set = await this.ensureGlobalTokens(device);
     const definitions = this._globalTokenDefinitions();
     await Promise.all(Object.entries(values).map(async ([name, value]) => {
-      const token = set.get(name); const definition = definitions[name]; if (!token || !definition) return;
+      const token = set.get(name);
+      const definition = definitions[name];
+      if (!token || !definition) return;
       let safeValue = value;
       if (definition.type === 'boolean') safeValue = Boolean(value);
       else if (definition.type === 'number') safeValue = Number.isFinite(Number(value)) ? Number(value) : 0;
@@ -123,8 +138,23 @@ class PostNLDriver extends Homey.Driver {
 
   async updateGlobalEventTokens(cardId, device, tokens = {}) {
     const common = { last_trigger: String(cardId || ''), last_trigger_time: new Date().toISOString() };
-    if (cardId === 'new_mail') Object.assign(common, { mail_count: tokens.count, mail_id: tokens.id, mail_title: tokens.title, mail_sender: tokens.sender, mail_date: tokens.date, mail_unread: tokens.unread });
-    if (['new_package', 'delivery_window_known', 'package_status_changed', 'package_delivered', 'delivery_window_changed', 'package_event_changed', 'package_weight_known', 'package_dimensions_known'].includes(cardId)) Object.assign(common, { package_id: tokens.id, package_sender: tokens.sender, package_receiver: tokens.receiver, package_title: tokens.title, package_barcode: tokens.barcode, package_status: tokens.status, package_status_raw: tokens.status_raw, package_status_code: tokens.status_code, package_status_event: tokens.status_event, package_status_event_time: tokens.status_event_time, package_delivery_date: tokens.delivery_date, package_delivery_window: tokens.delivery_window, package_delivery_window_from: tokens.delivery_window_from, package_delivery_window_to: tokens.delivery_window_to, package_delivery_window_type: tokens.delivery_window_type, package_details_url: tokens.details_url, package_shipment_type: tokens.shipment_type, package_delivery_address_type: tokens.delivery_address_type, package_direction: tokens.direction, package_created_at: tokens.created_at, package_delivered: tokens.delivered, package_shared_from: tokens.shared_from, package_source_account_id: tokens.source_account_id, package_tracking: tokens.package_tracking || tokens.barcode || tokens.id, old_status: tokens.old_status });
+    if (cardId === 'new_mail') Object.assign(common, {
+      mail_count: tokens.count, mail_id: tokens.id, mail_title: tokens.title, mail_sender: tokens.sender,
+      mail_date: tokens.date, mail_unread: tokens.unread,
+    });
+    if (['new_package', 'delivery_window_known', 'package_status_changed', 'package_delivered', 'delivery_window_changed', 'package_event_changed', 'package_weight_known', 'package_dimensions_known'].includes(cardId)) Object.assign(common, {
+      package_id: tokens.id, package_sender: tokens.sender, package_receiver: tokens.receiver,
+      package_title: tokens.title, package_barcode: tokens.barcode, package_status: tokens.status,
+      package_status_raw: tokens.status_raw, package_status_code: tokens.status_code,
+      package_status_event: tokens.status_event, package_status_event_time: tokens.status_event_time,
+      package_delivery_date: tokens.delivery_date, package_delivery_window: tokens.delivery_window,
+      package_delivery_window_from: tokens.delivery_window_from, package_delivery_window_to: tokens.delivery_window_to,
+      package_delivery_window_type: tokens.delivery_window_type, package_details_url: tokens.details_url,
+      package_shipment_type: tokens.shipment_type, package_delivery_address_type: tokens.delivery_address_type,
+      package_direction: tokens.direction, package_created_at: tokens.created_at, package_delivered: tokens.delivered,
+      package_shared_from: tokens.shared_from, package_source_account_id: tokens.source_account_id,
+      package_tracking: tokens.package_tracking || tokens.barcode || tokens.id, package_weight: tokens.weight, package_weight_kg: tokens.weight_kg, package_dimensions: tokens.dimensions, package_dimension_length: tokens.dimension_length, package_dimension_width: tokens.dimension_width, package_dimension_height: tokens.dimension_height, package_status_history: tokens.status_history, package_observation_code: tokens.observation_code, package_canonical_status: tokens.canonical_status, package_pickup: tokens.pickup, package_pickup_point: tokens.pickup_point, old_status: tokens.old_status,
+    });
     if (cardId === 'sync_failed') common.last_error = tokens.error;
     await this.updateGlobalTokens(device, common);
   }
@@ -174,22 +204,22 @@ class PostNLDriver extends Homey.Driver {
   async onPair(session) {
     const api = this._createPairApi();
     let profile = null;
-    session.setHandler('start_auth', async () => api.createAuthorization());
-    session.setHandler('complete_auth', async callback => {
-      await api.completeAuthorization(callback);
+    session.setHandler('login_credentials', async ({ username, password } = {}) => {
+      await api.loginWithPassword(username, password);
       profile = await api.fetchProfile();
-      return { authenticated: true, username: profile?.username || '', device: this._accountDevice(profile, api) };
+      if (!profile?.username) profile = { ...(profile || {}), username: String(username || '').trim() };
+      return { authenticated: true, username: profile.username, device: this._accountDevice(profile, api) };
     });
   }
 
   async onRepair(session, device) {
     const api = this._createPairApi();
-    session.setHandler('start_auth', async () => api.createAuthorization());
-    session.setHandler('complete_auth', async callback => {
-      await api.completeAuthorization(callback);
-      const profile = await api.fetchProfile();
+    session.setHandler('login_credentials', async ({ username, password } = {}) => {
+      await api.loginWithPassword(username, password);
+      let profile = await api.fetchProfile();
+      if (!profile?.username) profile = { ...(profile || {}), username: String(username || '').trim() };
       await device.updateCredentials(api.exportAuth(), profile);
-      return { authenticated: true, username: profile?.username || '' };
+      return true;
     });
   }
 }

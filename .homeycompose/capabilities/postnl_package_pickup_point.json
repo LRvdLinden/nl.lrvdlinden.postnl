@@ -1,0 +1,11 @@
+{
+  "type": "string",
+  "title": {
+    "en": "PostNL Point",
+    "nl": "PostNL-punt"
+  },
+  "getable": true,
+  "setable": false,
+  "insights": false,
+  "icon": "/assets/package.svg"
+}

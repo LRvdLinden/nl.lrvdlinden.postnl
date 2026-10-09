@@ -1,0 +1,12 @@
+{
+  "type": "boolean",
+  "title": {
+    "en": "PostNL Point delivery",
+    "nl": "Bezorging bij PostNL-punt"
+  },
+  "getable": true,
+  "setable": false,
+  "insights": true,
+  "icon": "/assets/package.svg",
+  "uiComponent": "sensor"
+}

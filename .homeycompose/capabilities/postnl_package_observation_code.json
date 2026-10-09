@@ -1,0 +1,11 @@
+{
+  "type": "string",
+  "title": {
+    "en": "Observation code",
+    "nl": "ObservationCode"
+  },
+  "getable": true,
+  "setable": false,
+  "insights": false,
+  "icon": "/assets/package.svg"
+}

@@ -129,8 +129,8 @@
     "nl": "Mijn Bezorging gebruikt nu de geanimeerde PostNL-bezorgbus GIF zolang een pakket onderweg is. De lege status zonder pakket behoudt de statische busafbeelding."
   },
   "1.1.10": {
-    "en": "Fixed My Delivery GIF rendering by matching the proven MyParcel PostNL implementation exactly. The original PostNL van GIF remains byte-for-byte unchanged and is shown with the same animated-van class and CSS sizing used by the working PostNL package-details widget.",
-    "nl": "De GIF-weergave in Mijn Bezorging is hersteld door exact dezelfde implementatie te gebruiken als de werkende PostNL-pakketdetailswidget in MyParcel. De originele PostNL-bus GIF blijft byte-voor-byte ongewijzigd en gebruikt dezelfde animated-van class en CSS-afmetingen."
+    "en": "My Delivery now renders the original animated PostNL van GIF at its native 480×340 pixel size without CSS downscaling. The wrapper only clips transparent canvas space so the GIF frames, sharpness and animation timing remain untouched.",
+    "nl": "Mijn Bezorging toont de originele geanimeerde PostNL-bus GIF nu op de native grootte van 480×340 pixels zonder CSS-verkleining. Alleen de transparante ruimte rondom wordt door de widget uitgesneden; frames, scherpte en animatiesnelheid blijven volledig ongewijzigd."
   },
   "1.1.11": {
     "en": "My Post is now fully live and no longer keeps a local 21-day mail archive. The widget refreshes directly from the PostNL account, removes mail items as soon as PostNL no longer returns them, and refreshes automatically while the widget is open.",
@@ -141,16 +141,16 @@
     "nl": "Automatische Homey Timeline-meldingen voor het opnieuw verbinden van PostNL zijn verwijderd. Mijn Post opent nu direct vanuit de laatste live snapshot en ververst PostNL op de achtergrond, waardoor het lange laadscherm verdwijnt terwijl de widget live-only blijft."
   },
   "1.1.13": {
-    "en": "Flow system overhaul: Flow cards remain device-specific while current PostNL values are also exposed as global Flow tokens. Official PostNL Track & Trace statuses are preserved. Device capabilities now include connection status, parcel status, sender, receiver, tracking number, latest event, status time, delivered state and shipment type. Long parcel statuses wrap in My Packages and are fully shown in the My Delivery camera/image token.",
-    "nl": "Flow-systeem volledig herzien: Flow-kaarten blijven apparaatgebonden, terwijl actuele PostNL-waarden ook als globale Flow-tokens beschikbaar zijn. Officiële PostNL Track & Trace-statussen blijven volledig behouden. De apparaat-capabilities bevatten nu verbindingsstatus, pakketstatus, afzender, ontvanger, trackingnummer, laatste gebeurtenis, tijdstip status, bezorgd-status en type zending. Lange pakketstatussen lopen door in Mijn Pakketten en worden volledig weergegeven in de Mijn Bezorging camera/image-token."
+    "en": "Flow system overhaul: Flow cards remain device-specific while current PostNL values are also exposed as global Flow tokens. Official PostNL Track & Trace statuses are preserved. Device capabilities now include connection status, parcel status, sender, receiver, tracking number, latest event, status time, delivered state and shipment type. Long parcel statuses now wrap in My Packages and are fully shown in the My Delivery camera/image token.",
+    "nl": "Flow-systeem volledig herzien: Flow-kaarten blijven apparaatgebonden, terwijl actuele PostNL-waarden ook als globale Flow-tokens beschikbaar zijn. Officiële PostNL Track & Trace-statussen blijven volledig behouden. De apparaat-capabilities bevatten nu verbindingsstatus, pakketstatus, afzender, ontvanger, trackingnummer, laatste gebeurtenis, tijdstip status, bezorgd-status en type zending. Lange pakketstatussen lopen nu door in Mijn Pakketten en worden volledig weergegeven in de Mijn Bezorging camera/image-token."
   },
   "1.2.0": {
     "en": "Updated capability icons: the delivery window now uses the delivery icon and all parcel-related capabilities now use the new package icon provided.",
     "nl": "Capabiliteit-iconen bijgewerkt: het bezorgvenster gebruikt nu het delivery-icoon en alle pakketgerelateerde capabilities gebruiken nu het nieuwe package-icoon uit de bijlage."
   },
   "1.2.1": {
-    "en": "Added Parcel Journey widget with the official PostNL tracking timeline for the current active parcel. When no parcel is underway, including after delivery, the widget shows an empty state. Added parcel weight and dimensions to device capabilities, global Flow tokens, package Flow trigger tokens and My Packages details whenever PostNL provides these values.",
-    "nl": "Nieuwe widget Reis van je pakket met de officiële PostNL Track & Trace-tijdlijn van het huidige actieve pakket. Wanneer er geen pakket onderweg is, dus ook na bezorging, toont de widget een lege status. Gewicht en afmetingen zijn toegevoegd aan apparaat-capabilities, globale Flow-tokens, pakket-Flowtokens en Mijn Pakketten-details wanneer PostNL deze gegevens beschikbaar stelt."
+    "en": "Added the Parcel Journey widget plus parcel weight and dimensions as capabilities and Flow tokens when provided by PostNL. The journey widget is read-only and refreshes from the existing device snapshot to avoid extra forced PostNL synchronisations. Shipment type `Parcel` is now shown as `Parcel` in English and `Pakket` in Dutch.",
+    "nl": "Nieuwe Reis van je pakket-widget toegevoegd, plus pakketgewicht en afmetingen als capabilities en Flow-tokens wanneer PostNL deze gegevens beschikbaar stelt. De reis-widget leest alleen de bestaande device-snapshot en forceert geen extra PostNL-synchronisaties. Het zendingstype `Parcel` wordt nu in het Nederlands als `Pakket` weergegeven."
   },
   "1.2.2": {
     "en": "Fixed My Packages widget crash caused by the shipment type formatter not being defined.",
@@ -167,5 +167,21 @@
   "1.2.5": {
     "en": "Updated all condition Flow cards to support Homey's inverted condition state. Fixed the current parcel status condition to use titleFormatted for the selected status instead of showing the raw [[status]] placeholder.",
     "nl": "Alle conditie-Flowkaarten ondersteunen nu de omgekeerde Homey-conditie. De kaart voor de huidige pakketstatus gebruikt nu titleFormatted voor de gekozen status en toont niet langer de ruwe [[status]]-placeholder."
+  },
+  "1.2.6": {
+    "en": "Enriched parcel data and direct PostNL login. Fixed Repair with a branded login screen, made Parcel Journey vertically scrollable, corrected native PostNL dimensions from millimetres to centimetres, and reduced memory usage by avoiding persisted base64 mail scans and repeated delivery-image rendering.",
+    "nl": "Pakketgegevens en directe PostNL-login uitgebreid. Repair hersteld met een branded inlogscherm, Reis van je pakket verticaal scrollbaar gemaakt, native PostNL-afmetingen correct van millimeters naar centimeters omgerekend en geheugengebruik verlaagd door base64-postscans niet meer te bewaren en bezorgafbeeldingen niet onnodig steeds opnieuw te renderen."
+  },
+  "1.2.7": {
+    "en": "Expanded PostNL parcel data with weight in kilograms, separate parcel dimensions, full status history, observation codes, canonical status and pickup information. Improved direct PostNL Pair/Repair login, Parcel Journey scrolling and memory usage, and corrected PostNL dimension conversion.",
+    "nl": "PostNL-pakketgegevens uitgebreid met gewicht in kilogrammen, losse pakketafmetingen, volledige statushistorie, observation codes, canonical status en afhaalinformatie. Directe PostNL-login in Pair/Repair, scrollen in Reis van je pakket en geheugengebruik verbeterd en de omzetting van PostNL-afmetingen gecorrigeerd."
+  },
+  "1.2.8": {
+    "en": "Fixed old delivered shipments unexpectedly triggering parcel Flows. Delivered shipments that reappear in the PostNL account feed are now treated as historical, while real active-to-delivered transitions still trigger normally. Package matching now prefers the stable tracking barcode to avoid false new-package events when PostNL changes an internal shipment key.",
+    "nl": "Opgelost dat oude bezorgde zendingen onverwacht pakket-Flows konden activeren. Bezorgde zendingen die opnieuw in de PostNL-accountfeed verschijnen worden nu als historisch behandeld, terwijl echte overgangen van actief naar bezorgd normaal blijven triggeren. Pakketten worden nu bij voorkeur op het stabiele trackingnummer gekoppeld om foutieve nieuwe-pakket-events door wijzigende interne PostNL-sleutels te voorkomen."
+  },
+  "1.2.9": {
+    "en": "Fixed the app repeatedly crashing on Homey's memory limit. The My Delivery image was redrawn for every parcel, including old delivered ones, on every sync; it is now drawn only when it is viewed. Track & Trace is fetched for active parcels and the 5 most recent deliveries, a few at a time, and only the 15 most recent deliveries are kept. Mail scans are no longer downloaded again on every sync, open widgets no longer start a full sync every minute, and font and image buffers use less memory. Also fixed parcels with the status \"will be delivered today\" being treated as delivered.",
+    "nl": "Opgelost dat de app herhaaldelijk crashte op de geheugenlimiet van Homey. De Mijn Bezorging-afbeelding werd bij elke synchronisatie voor elk pakket opnieuw getekend, ook voor oude bezorgde zendingen; dat gebeurt nu alleen wanneer de afbeelding wordt bekeken. Track & Trace wordt alleen opgehaald voor actieve pakketten en de 5 meest recente bezorgingen, een paar tegelijk, en alleen de 15 meest recente bezorgingen worden bewaard. Postscans worden niet meer bij elke synchronisatie opnieuw gedownload, open widgets starten niet langer elke minuut een volledige synchronisatie en lettertype- en afbeeldingsbuffers gebruiken minder geheugen. Ook opgelost dat pakketten met de status \"wordt vandaag bezorgd\" als bezorgd werden gezien."
   }
 }
