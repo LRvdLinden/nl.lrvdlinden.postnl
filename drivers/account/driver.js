@@ -91,6 +91,10 @@ class PostNLDriver extends Homey.Driver {
       last_error: { type: 'string', en: 'Last PostNL error', nl: 'Laatste PostNL-fout' },
       last_trigger: { type: 'string', en: 'Last PostNL trigger', nl: 'Laatste PostNL-trigger' },
       last_trigger_time: { type: 'string', en: 'Last PostNL trigger time', nl: 'Tijdstip laatste PostNL-trigger' },
+      // Global image tokens are available in every Flow, whichever card started
+      // it (unlike trigger tokens, which only exist when that card fired).
+      package_image: { type: 'image', en: 'Parcel image', nl: 'Pakketafbeelding' },
+      mail_image: { type: 'image', en: 'Latest mail scan', nl: 'Scan laatste poststuk' },
     };
   }
 
@@ -129,6 +133,11 @@ class PostNLDriver extends Homey.Driver {
       const definition = definitions[name];
       if (!token || !definition) return;
       let safeValue = value;
+      if (definition.type === 'image') {
+        if (!value) return;
+        await token.setValue(value).catch(error => this.error('[GlobalToken]', name, error));
+        return;
+      }
       if (definition.type === 'boolean') safeValue = Boolean(value);
       else if (definition.type === 'number') safeValue = Number.isFinite(Number(value)) ? Number(value) : 0;
       else safeValue = value == null ? '' : String(value);
@@ -140,7 +149,7 @@ class PostNLDriver extends Homey.Driver {
     const common = { last_trigger: String(cardId || ''), last_trigger_time: new Date().toISOString() };
     if (cardId === 'new_mail') Object.assign(common, {
       mail_count: tokens.count, mail_id: tokens.id, mail_title: tokens.title, mail_sender: tokens.sender,
-      mail_date: tokens.date, mail_unread: tokens.unread,
+      mail_date: tokens.date, mail_unread: tokens.unread, mail_image: tokens.image,
     });
     if (['new_package', 'delivery_window_known', 'package_status_changed', 'package_delivered', 'delivery_window_changed', 'package_event_changed', 'package_weight_known', 'package_dimensions_known'].includes(cardId)) Object.assign(common, {
       package_id: tokens.id, package_sender: tokens.sender, package_receiver: tokens.receiver,
@@ -154,6 +163,7 @@ class PostNLDriver extends Homey.Driver {
       package_direction: tokens.direction, package_created_at: tokens.created_at, package_delivered: tokens.delivered,
       package_shared_from: tokens.shared_from, package_source_account_id: tokens.source_account_id,
       package_tracking: tokens.package_tracking || tokens.barcode || tokens.id, package_weight: tokens.weight, package_weight_kg: tokens.weight_kg, package_dimensions: tokens.dimensions, package_dimension_length: tokens.dimension_length, package_dimension_width: tokens.dimension_width, package_dimension_height: tokens.dimension_height, package_status_history: tokens.status_history, package_observation_code: tokens.observation_code, package_canonical_status: tokens.canonical_status, package_pickup: tokens.pickup, package_pickup_point: tokens.pickup_point, old_status: tokens.old_status,
+      package_image: tokens.package_image,
     });
     if (cardId === 'sync_failed') common.last_error = tokens.error;
     await this.updateGlobalTokens(device, common);

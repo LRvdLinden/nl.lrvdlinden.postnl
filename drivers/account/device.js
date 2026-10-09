@@ -428,6 +428,8 @@ class PostNLDevice extends Homey.Device {
       next_delivery: dates[0] ? this.api.formatDate(dates[0]) : '',
       connection_status: connected ? (this.homey.i18n.getLanguage() === 'nl' ? 'Verbonden' : 'Connected') : (this.homey.i18n.getLanguage() === 'nl' ? 'Niet verbonden' : 'Not connected'),
       last_update: snapshot.updatedAt ? this.api.formatDateTime(snapshot.updatedAt) : '',
+      package_image: this._packageCameraImage || null,
+      mail_image: this._latestMailImage || null,
     });
   }
 
@@ -795,6 +797,7 @@ class PostNLDevice extends Homey.Device {
       if (image) {
         await this.setCameraImage('latest_mail_item', imageTitle, image);
         this._latestMailImageId = latestWithImage.id;
+        this._latestMailImage = image;
       }
     }
     if (!latestWithImage) {
@@ -804,6 +807,7 @@ class PostNLDevice extends Homey.Device {
         if (image) {
           await this.setCameraImage('latest_mail_item', imageTitle, image);
           this._latestMailImageId = placeholderId;
+          this._latestMailImage = image;
         }
       }
     }
