@@ -23,7 +23,6 @@ class PostNLDevice extends Homey.Device {
     this._syncing = null;
     this._lastSyncFinishedAt = 0;
     this._packageImageKey = null;
-    this._flowImages = new Map();
     this._storage = {
       get: key => this.getStoreValue(key),
       set: (key, value) => this.setStoreValue(key, value),
@@ -592,46 +591,22 @@ class PostNLDevice extends Homey.Device {
     };
   }
 
-  // Image token for parcel Flows. Every parcel gets its own persistent Homey
-  // image; on every trigger the PNG is redrawn from this exact parcel and
-  // frozen into that image, so a notification shows the status of the change
-  // that fired it. The image object itself stays registered while the parcel
-  // is in the snapshot, so a Flow that reads it later never gets an empty
-  // token (1.2.11 released short-lived images, which could cause
-  // "Missing token value: package_image").
+  // Image token for parcel Flows. Homey only shows the image reliably when it
+  // is the device's registered "My Delivery" camera image (separately created
+  // images showed a Homey logo or "Missing token value" in 1.2.11/1.2.12).
+  // Right before the trigger, that image is frozen on this exact parcel and
+  // status, so a notification never shows the previous status.
   async _flowPackageImage(parcel) {
-    const key = String(parcel?.barcode || parcel?.id || '').trim() || 'unknown';
-    let entry = this._flowImages.get(key);
-    if (!entry) {
-      const image = await this.homey.images.createImage();
-      entry = { image, buffer: null, tracking: key.replace(/[^a-zA-Z0-9_-]/g, '_') };
-      image.setStream(async stream => {
-        if (!entry.buffer?.length) entry.buffer = await this._refreshPackageImageBuffer(false);
-        stream.contentType = 'image/png';
-        stream.filename = `postnl-${entry.tracking}.png`;
-        stream.end(entry.buffer);
-        return stream;
-      });
-      this._flowImages.set(key, entry);
-    }
-    try {
-      const language = this.homey.i18n.getLanguage() === 'nl' ? 'nl' : 'en';
-      entry.buffer = renderDeliveryCard(this._deliveryCardOptions(parcel, language).opts);
-    } catch (error) {
-      this.error('[FlowImage] render failed', key, error?.message || error);
-    }
-    if (entry.image.update) await entry.image.update().catch(() => {});
-    return entry.image;
+    const image = await this._ensurePackageCameraImage();
+    this._activePackageForImage = parcel || null;
+    await this._refreshPackageImageBuffer(true, parcel || null);
+    if (image?.update) await image.update().catch(() => {});
+    return image;
   }
 
-  // Release images of parcels that are no longer in the PostNL snapshot.
-  async _pruneFlowImages(snapshot = this.snapshot) {
-    const keep = new Set((snapshot?.packages || []).map(item => String(item?.barcode || item?.id || '').trim()).filter(Boolean));
-    for (const [key, entry] of this._flowImages) {
-      if (keep.has(key)) continue;
-      this._flowImages.delete(key);
-      if (entry.image?.unregister) await entry.image.unregister().catch(() => {});
-    }
+  _packageImageKeyFor(parcel) {
+    const language = this.homey.i18n.getLanguage() === 'nl' ? 'nl' : 'en';
+    return parcel ? this._deliveryCardOptions(parcel, language).key : `none:${language}`;
   }
 
   async getPackageDeliveryImage(parcel = null) {
@@ -832,14 +807,14 @@ class PostNLDevice extends Homey.Device {
     const activePackage = this._selectActivePackage(snapshot);
     this._activePackageForImage = activePackage;
     await this._ensurePackageCameraImage().catch(this.error);
-    // Render on demand (camera stream) instead of on every sync; tell Homey the
-    // image may have changed so viewers fetch the new version.
-    if (this._packageImageKey !== null) {
+    // Render on demand (camera stream) instead of on every sync. Only drop the
+    // cached PNG (and tell Homey) when what should be shown actually changed.
+    const wantedKey = this._packageImageKeyFor(activePackage);
+    if (this._packageImageKey !== null && this._packageImageKey !== wantedKey) {
       this._packageImageKey = null;
       this._packageImageBuffer = null;
       if (this._packageCameraImage?.update) await this._packageCameraImage.update().catch(this.error);
     }
-    await this._pruneFlowImages(snapshot).catch(this.error);
     await this._updateGlobalSnapshotTokens(snapshot).catch(error => this.error('[GlobalToken] snapshot update failed', error));
 
 
