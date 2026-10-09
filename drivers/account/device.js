@@ -247,6 +247,25 @@ class PostNLDevice extends Homey.Device {
     return tokens;
   }
 
+  // Readable status history for the device tile. The raw JSON (still used for
+  // the Flow token) has no spaces to break on, so on the Homey web app it ran
+  // off the tile. Newest first, a few recent events, short date/time.
+  _formatStatusHistory(history = [], maxEvents = 3) {
+    const list = Array.isArray(history) ? history : [];
+    const lines = [];
+    for (const event of [...list].reverse()) {
+      const text = String(event?.raw_status || '').trim();
+      if (!text) continue;
+      const when = this.api.formatDateTime(event.timestamp) || '';
+      const short = when.replace(/^(\d{2}-\d{2})-\d{4},?/, '$1');
+      lines.push(short ? `${short} – ${text}` : text);
+      if (lines.length >= maxEvents) break;
+    }
+    if (!lines.length) return '—';
+    const value = lines.join('\n');
+    return value.length > 300 ? `${value.slice(0, 297)}...` : value;
+  }
+
   _hasDeliveryWindow(parcel = {}) {
     return Boolean(
       String(parcel.deliveryWindow || '').trim()
@@ -719,7 +738,7 @@ class PostNLDevice extends Homey.Device {
       postnl_package_length: typeof nextPackage?.dimensionLengthCm === 'number' && Number.isFinite(nextPackage.dimensionLengthCm) ? nextPackage.dimensionLengthCm : null,
       postnl_package_width: typeof nextPackage?.dimensionWidthCm === 'number' && Number.isFinite(nextPackage.dimensionWidthCm) ? nextPackage.dimensionWidthCm : null,
       postnl_package_height: typeof nextPackage?.dimensionHeightCm === 'number' && Number.isFinite(nextPackage.dimensionHeightCm) ? nextPackage.dimensionHeightCm : null,
-      postnl_package_status_history: JSON.stringify(nextPackage?.statusHistory || []),
+      postnl_package_status_history: this._formatStatusHistory(nextPackage?.statusHistory),
       postnl_package_observation_code: nextPackage?.observationCode || '—',
       postnl_package_canonical_status: nextPackage?.canonicalStatus || 'unknown',
       postnl_package_pickup: Boolean(nextPackage?.pickup),

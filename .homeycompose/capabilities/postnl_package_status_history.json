@@ -1,8 +1,8 @@
 {
   "type": "string",
   "title": {
-    "en": "Full status history",
-    "nl": "Volledige status-history"
+    "en": "Status history",
+    "nl": "Statusgeschiedenis"
   },
   "getable": true,
   "setable": false,

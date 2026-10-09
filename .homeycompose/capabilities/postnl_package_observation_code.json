@@ -2,7 +2,7 @@
   "type": "string",
   "title": {
     "en": "Observation code",
-    "nl": "ObservationCode"
+    "nl": "Observatiecode"
   },
   "getable": true,
   "setable": false,
