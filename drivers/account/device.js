@@ -9,6 +9,7 @@ const { renderDeliveryCard, renderNoPackageCard, loadDeliveryVan, hhmm } = requi
 
 const WIDGET_SYNC_REASONS = new Set(['widget', 'widget-live']);
 const WIDGET_SYNC_MIN_INTERVAL_MS = 3 * 60 * 1000;
+const FLOW_IMAGE_KEEP = 8;
 
 class PostNLDevice extends Homey.Device {
   async onInit() {
@@ -23,6 +24,7 @@ class PostNLDevice extends Homey.Device {
     this._syncing = null;
     this._lastSyncFinishedAt = 0;
     this._packageImageKey = null;
+    this._flowImages = [];
     this._storage = {
       get: key => this.getStoreValue(key),
       set: (key, value) => this.setStoreValue(key, value),
@@ -205,7 +207,7 @@ class PostNLDevice extends Homey.Device {
     // The Flow image token is the shared "Mijn Bezorging" camera image. It is
     // rendered lazily when Homey actually requests the image, instead of once
     // per parcel on every sync (each render allocates several MB).
-    const packageImage = await this._ensurePackageCameraImage().catch(() => null);
+    const packageImage = await this._createFlowPackageImage(parcel).catch(error => { this.error('[FlowImage] render failed', error?.message || error); return null; });
     const status = String(parcel.statusRaw || parcel.latestStatusEvent || parcel.status || localizePackageStatus(this.homey, parcel.status) || '').trim();
     const deliveryDate = parcel.deliveryDate ? this.api.formatDateDMY(parcel.deliveryDate) : '';
     const deliveryWindow = parcel.deliveryWindow || this.api.formatWindow(parcel.deliveryWindowFrom, parcel.deliveryWindowTo) || '';
@@ -329,12 +331,15 @@ class PostNLDevice extends Homey.Device {
       // Historical delivered parcels never trigger anything; skip token work.
       if (old && old.delivered && parcel.delivered) continue;
 
-      const tokens = await this._packageTokens(parcel);
-      if (!old && !parcel.delivered) await this.triggerNewPackage(tokens);
+      // Tokens (and the parcel image) are only built when a Flow actually fires,
+      // once per parcel per sync.
+      let tokensPromise = null;
+      const getTokens = () => (tokensPromise = tokensPromise || this._packageTokens(parcel));
+      if (!old && !parcel.delivered) await this.triggerNewPackage(await getTokens());
 
       const hasWindow = !parcel.delivered && this._hasDeliveryWindow(parcel);
       const hadWindow = Boolean(old && !old.delivered && this._hasDeliveryWindow(old));
-      if (hasWindow && !hadWindow) await this.triggerDeliveryWindowKnown(tokens);
+      if (hasWindow && !hadWindow) await this.triggerDeliveryWindowKnown(await getTokens());
 
       if (old) {
         // A package that was already delivered in the previous snapshot is
@@ -344,16 +349,16 @@ class PostNLDevice extends Homey.Device {
 
         const oldWindow = old.deliveryWindow || this.api.formatWindow(old.deliveryWindowFrom, old.deliveryWindowTo) || '';
         const newWindow = parcel.deliveryWindow || this.api.formatWindow(parcel.deliveryWindowFrom, parcel.deliveryWindowTo) || '';
-        if (newWindow && oldWindow && newWindow !== oldWindow && !parcel.delivered) await this.triggerDeliveryWindowChanged({ ...tokens, old_delivery_window: oldWindow });
+        if (newWindow && oldWindow && newWindow !== oldWindow && !parcel.delivered) await this.triggerDeliveryWindowChanged({ ...(await getTokens()), old_delivery_window: oldWindow });
         const oldEvent = String(old.latestStatusEvent || old.statusRaw || old.status || '');
         const newEvent = String(parcel.latestStatusEvent || parcel.statusRaw || parcel.status || '');
-        if (newEvent && newEvent !== oldEvent) await this.triggerPackageEventChanged({ ...tokens, old_event: oldEvent });
-        if (!String(old.weight || '').trim() && String(parcel.weight || '').trim()) await this.triggerPackageWeightKnown(tokens);
-        if (!String(old.dimensions || '').trim() && String(parcel.dimensions || '').trim()) await this.triggerPackageDimensionsKnown(tokens);
-        if (!old.delivered && parcel.delivered) await this.triggerPackageDelivered(tokens);
+        if (newEvent && newEvent !== oldEvent) await this.triggerPackageEventChanged({ ...(await getTokens()), old_event: oldEvent });
+        if (!String(old.weight || '').trim() && String(parcel.weight || '').trim()) await this.triggerPackageWeightKnown(await getTokens());
+        if (!String(old.dimensions || '').trim() && String(parcel.dimensions || '').trim()) await this.triggerPackageDimensionsKnown(await getTokens());
+        if (!old.delivered && parcel.delivered) await this.triggerPackageDelivered(await getTokens());
         if (this._packageStatusFingerprint(old) !== this._packageStatusFingerprint(parcel)) {
           await this.triggerPackageStatusChanged({
-            ...tokens,
+            ...(await getTokens()),
             old_status: String(old.statusRaw || localizePackageStatus(this.homey, old.status) || old.status || ''),
           });
         }
@@ -532,6 +537,16 @@ class PostNLDevice extends Homey.Device {
       return this._packageImageBuffer;
     }
 
+    const { key, opts } = this._deliveryCardOptions(activePackage, language);
+    if (!force && this._packageImageKey === key && this._packageImageBuffer?.length) return this._packageImageBuffer;
+    this._packageImageBuffer = renderDeliveryCard(opts);
+    this._packageImageKey = key;
+    return this._packageImageBuffer;
+  }
+
+  // Everything drawn on the delivery card for one specific parcel, plus a cache
+  // key that changes whenever something visible changes.
+  _deliveryCardOptions(activePackage, language = 'nl') {
     const from = this._parseLocalOrZonedParts(activePackage.deliveryWindowFrom);
     const to = this._parseLocalOrZonedParts(activePackage.deliveryWindowTo);
     let progress = 0;
@@ -565,14 +580,39 @@ class PostNLDevice extends Homey.Device {
     const headline = this._deliveryHeadline(activePackage, language);
     // Only re-render when something visible changed (progress in 1% steps).
     const key = JSON.stringify([sender, status, headline, tracking, Math.round(progress * 100), windowStartPct, windowEndPct, timelineStart, timelineMid, timelineEnd]);
-    if (!force && this._packageImageKey === key && this._packageImageBuffer?.length) return this._packageImageBuffer;
-    const vanPng = loadDeliveryVan();
-    this._packageImageBuffer = renderDeliveryCard({
-      sender, status, headline, tracking, progress, windowStartPct, windowEndPct,
-      timelineStart, timelineMid, timelineEnd, vanPng,
+    return {
+      key,
+      opts: {
+        sender, status, headline, tracking, progress, windowStartPct, windowEndPct,
+        timelineStart, timelineMid, timelineEnd, vanPng: loadDeliveryVan(),
+      },
+    };
+  }
+
+  // A dedicated image for one Flow trigger. Earlier builds handed every parcel
+  // Flow the shared "My Delivery" camera image, which was rendered later (when
+  // e.g. WhatsApp fetched it) from whatever state the device had at that
+  // moment, so notifications could show the previous status. The PNG is now
+  // rendered immediately from this exact parcel and frozen in its own image.
+  async _createFlowPackageImage(parcel) {
+    const language = this.homey.i18n.getLanguage() === 'nl' ? 'nl' : 'en';
+    const buffer = renderDeliveryCard(this._deliveryCardOptions(parcel, language).opts);
+    const image = await this.homey.images.createImage();
+    const tracking = String(parcel.barcode || parcel.id || 'parcel').replace(/[^a-zA-Z0-9_-]/g, '_');
+    image.setStream(async stream => {
+      stream.contentType = 'image/png';
+      stream.filename = `postnl-${tracking}-${Date.now()}.png`;
+      stream.end(buffer);
+      return stream;
     });
-    this._packageImageKey = key;
-    return this._packageImageBuffer;
+    // Keep a few recent trigger images (~30 KB each) so Flows that fetch the
+    // image a little later still get it; release the oldest ones.
+    this._flowImages.push(image);
+    while (this._flowImages.length > FLOW_IMAGE_KEEP) {
+      const old = this._flowImages.shift();
+      if (old?.unregister) await old.unregister().catch(() => {});
+    }
+    return image;
   }
 
   async getPackageDeliveryImage(parcel = null) {

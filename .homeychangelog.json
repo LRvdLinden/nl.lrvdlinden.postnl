@@ -187,5 +187,9 @@
   "1.2.10": {
     "en": "Fixed the status history on the PostNL device showing an unreadable block of raw data that ran off the tile in the Homey web app. It now shows the 3 most recent PostNL events, newest first, with date and time. The Dutch name of the observation code capability is now translated. The My Packages popup now shows much more parcel data: stage, weight, dimensions, PostNL Point, status time, registration and delivery time, observation code, the full parcel journey and a button to open the parcel at PostNL.",
     "nl": "Opgelost dat de statusgeschiedenis op het PostNL-apparaat in de Homey-webapp als onleesbaar blok ruwe data buiten de tegel liep. Je ziet nu de 3 meest recente PostNL-gebeurtenissen, nieuwste eerst, met datum en tijd. De Nederlandse naam van de observatiecode is nu vertaald. De popup van Mijn Pakketten toont nu veel meer pakketgegevens: fase, gewicht, afmetingen, PostNL-punt, statustijd, aanmeld- en bezorgtijd, observatiecode, de volledige reis van je pakket en een knop om het pakket bij PostNL te openen."
+  },
+  "1.2.11": {
+    "en": "Fixed parcel Flows (for example via WhatsApp) sending an image that still showed the previous parcel status. Every parcel Flow now gets its own image, drawn at the moment of the trigger with the current status, delivery window and progress.",
+    "nl": "Opgelost dat pakket-Flows (bijvoorbeeld via WhatsApp) een afbeelding meestuurden met nog de vorige pakketstatus. Elke pakket-Flow krijgt nu een eigen afbeelding, getekend op het moment van de trigger met de actuele status, het bezorgvenster en de voortgang."
   }
 }
