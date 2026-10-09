@@ -1,0 +1,57 @@
+name: Release PostNL for Homey
+# Maakt (of werkt bij) een GitHub-release met zip zodra er een nieuwe versie op main staat.
+# Versie komt uit .homeycompose/app.json. Releasetekst uit .github/release-notes/v<versie>.md,
+# of anders uit .homeychangelog.json (NL + EN).
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.homeycompose/app.json'
+      - '.homeychangelog.json'
+      - '.github/release-notes/**'
+      - '.github/workflows/release.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: release
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Versie bepalen
+        id: v
+        run: echo "version=$(jq -r .version .homeycompose/app.json)" >> "$GITHUB_OUTPUT"
+      - name: Zip bouwen
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          NAME="PostNL-for-Homey-v${VERSION}"
+          mkdir -p /tmp/build
+          git archive --format=tar --prefix="${NAME}/" HEAD | tar -x -C /tmp/build
+          rm -rf "/tmp/build/${NAME}/.github" "/tmp/build/${NAME}/.sync"
+          (cd /tmp/build && zip -qr -X -D "/tmp/${NAME}.zip" "${NAME}")
+          echo "ZIP=/tmp/${NAME}.zip" >> "$GITHUB_ENV"
+      - name: Releasetekst
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          if [ -f ".github/release-notes/v${VERSION}.md" ]; then
+            cp ".github/release-notes/v${VERSION}.md" /tmp/notes.md
+          else
+            jq -r --arg v "$VERSION" '"## 🇳🇱 Wat is er nieuw\n\n" + (.[$v].nl // "") + "\n\n## 🇬🇧 What'"'"'s new\n\n" + (.[$v].en // "")' .homeychangelog.json > /tmp/notes.md
+          fi
+      - name: Release maken of bijwerken
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          TAG="v${VERSION}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --title "PostNL ${TAG}" --notes-file /tmp/notes.md
+            gh release upload "$TAG" "$ZIP" --clobber
+          else
+            gh release create "$TAG" "$ZIP" --target "$GITHUB_SHA" --title "PostNL ${TAG}" --notes-file /tmp/notes.md --latest
+          fi
