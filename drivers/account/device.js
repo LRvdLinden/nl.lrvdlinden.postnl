@@ -598,6 +598,9 @@ class PostNLDevice extends Homey.Device {
   // status, so a notification never shows the previous status.
   async _flowPackageImage(parcel) {
     const image = await this._ensurePackageCameraImage();
+    // Delivered parcels never get a new image: the token keeps the current
+    // My Delivery image (next active parcel or "no parcel on the way").
+    if (parcel?.delivered) return image;
     this._activePackageForImage = parcel || null;
     await this._refreshPackageImageBuffer(true, parcel || null);
     if (image?.update) await image.update().catch(() => {});
