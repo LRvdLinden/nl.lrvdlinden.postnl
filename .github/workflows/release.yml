@@ -50,6 +50,10 @@ jobs:
         run: |
           TAG="v${VERSION}"
           if gh release view "$TAG" >/dev/null 2>&1; then
+            # Zelfde versie bijgewerkt: tag meeschuiven naar de nieuwste commit,
+            # zodat ook de "Source code"-downloads van de release actueel zijn.
+            git tag -f "$TAG" "$GITHUB_SHA"
+            git push -f origin "refs/tags/$TAG"
             gh release edit "$TAG" --title "PostNL ${TAG}" --notes-file /tmp/notes.md
             gh release upload "$TAG" "$ZIP" --clobber
           else
